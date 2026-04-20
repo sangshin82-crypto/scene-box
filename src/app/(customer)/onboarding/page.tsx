@@ -8,25 +8,25 @@ const BLUE = "#2563EB";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!phone.trim()) { setError("전화번호를 입력해주세요."); return; }
+    if (!name.trim()) { setError("이름을 입력해주세요."); return; }
+    if (!phone.trim()) { setError("휴대폰 번호를 입력해주세요."); return; }
     setIsSubmitting(true);
     setError("");
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
-    const name = user.user_metadata?.name ?? user.user_metadata?.full_name ?? "이름 없음";
-
     const { error: upsertError } = await supabase
       .from("clients")
       .upsert({
         id: user.id,
-        name: name,
+        name: name.trim(),
         contact_phone: phone,
       }, { onConflict: "id" });
 
@@ -59,11 +59,36 @@ export default function OnboardingPage() {
             안녕하세요! 👋
           </p>
           <p style={{ fontSize: 13, color: "#6B7280", marginTop: 6, lineHeight: 1.6 }}>
-            서비스 이용을 위해<br />연락처를 입력해주세요.
+            서비스 이용을 위해<br />정보를 입력해주세요.
           </p>
         </div>
 
         <div style={{ background: "#fff", borderRadius: 20, padding: "32px 24px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+          
+          <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 8 }}>
+            이름
+          </label>
+          <input
+            type="text"
+            placeholder="이름을 입력해주세요"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: 12,
+              border: "1.5px solid #E5E7EB",
+              fontSize: 16,
+              color: "#111827",
+              outline: "none",
+              boxSizing: "border-box",
+              marginBottom: 20,
+              background: "#fff",
+              WebkitTextFillColor: "#111827",
+            }}
+          />
+
           <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 8 }}>
             휴대폰 번호
           </label>
