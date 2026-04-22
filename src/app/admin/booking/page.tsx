@@ -19,9 +19,15 @@ type Space = {
 type Transport = {
   id: string;
   client_id: string;
-  truck_type: string;
+  origin_address: string | null;
+  destination: string | null;
   scheduled_at: string;
-  pickup_address: string | null;
+  truck_type: string;
+  helper_option: string | null;
+  driver_note: string | null;
+  confirmed_fare: number | null;
+  management_fee: number | null;
+  total_charge: number | null;
   status: string;
   created_at: string;
   clients: { name: string } | null;
@@ -59,7 +65,7 @@ export default function BookingManagement() {
           .order('end_date', { ascending: true }),
         supabase
           .from('transport_requests')
-          .select('id, client_id, truck_type, scheduled_at, pickup_address, status, created_at, clients(name)')
+          .select('id, client_id, origin_address, destination, scheduled_at, truck_type, helper_option, driver_note, confirmed_fare, management_fee, total_charge, status, created_at, clients(name)')
           .order('created_at', { ascending: false }),
         supabase
           .from('disposal_requests')
@@ -78,6 +84,11 @@ export default function BookingManagement() {
   const fmtDate = (d: string) => {
     const date = new Date(d);
     return `${date.getFullYear().toString().slice(2)}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  const fmtDateTime = (d: string) => {
+    const date = new Date(d);
+    return `${date.getFullYear().toString().slice(2)}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
   const getDday = (endDate: string) => Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -100,27 +111,29 @@ export default function BookingManagement() {
     }
   };
 
+  const helperLabel = (option: string | null) => {
+    switch (option) {
+      case 'none':   return null;
+      case 'porter': return '👷 포터 동행';
+      default:       return option ? `👷 ${option}` : null;
+    }
+  };
+
   const filteredSpaces = spaces.filter(s =>
-    !query ||
-    (s.clients?.name ?? '').includes(query) ||
-    (s.grids?.grid_number ?? '').includes(query) ||
-    (s.grids?.zone ?? '').includes(query)
+    !query || (s.clients?.name ?? '').includes(query) || (s.grids?.grid_number ?? '').includes(query)
   );
 
   const filteredTransports = transports.filter(t =>
     !query ||
     (t.clients?.name ?? '').includes(query) ||
-    (t.truck_type ?? '').includes(query) ||
-    (t.pickup_address ?? '').includes(query)
+    (t.origin_address ?? '').includes(query) ||
+    (t.destination ?? '').includes(query) ||
+    (t.truck_type ?? '').includes(query)
   );
 
   const filteredDisposals = disposals.filter(d =>
-    !query ||
-    (d.clients?.name ?? '').includes(query) ||
-    (d.waste_type ?? '').includes(query)
+    !query || (d.clients?.name ?? '').includes(query) || (d.waste_type ?? '').includes(query)
   );
-
-  const tabCount = { space: filteredSpaces.length, transport: filteredTransports.length, disposal: filteredDisposals.length };
 
   const pendingTransports = transports.filter(t => t.status === 'pending').length;
   const pendingDisposals = disposals.filter(d => d.status === 'pending').length;
@@ -138,13 +151,15 @@ export default function BookingManagement() {
       <div className="bg-white px-4 py-3 border-b border-gray-200">
         <div className="flex justify-between items-center mb-3">
           <h1 className="text-lg font-bold text-gray-900">예약 관리</h1>
-          <span className="text-sm text-gray-400">{tabCount[activeTab]}건</span>
+          <span className="text-sm text-gray-400">
+            {activeTab === 'space' ? filteredSpaces.length : activeTab === 'transport' ? filteredTransports.length : filteredDisposals.length}건
+          </span>
         </div>
         <div className="bg-gray-100 rounded-lg flex items-center px-3 py-2">
           <span className="text-gray-400 mr-2">🔍</span>
           <input
             type="text"
-            placeholder="이름 / 상태 검색"
+            placeholder="이름 / 주소 / 상태 검색"
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="bg-transparent border-none outline-none w-full text-sm"
@@ -163,9 +178,7 @@ export default function BookingManagement() {
             key={tab.key}
             onClick={() => { setActiveTab(tab.key); setQuery(''); }}
             className={`relative flex-1 py-3 text-xs font-bold transition-colors ${
-              activeTab === tab.key
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-400'
+              activeTab === tab.key ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'
             }`}
           >
             {tab.label}
@@ -214,41 +227,74 @@ export default function BookingManagement() {
           ) : (
             filteredTransports.map(t => {
               const { label, color, bg } = getStatusBadge(t.status);
+              const helper = helperLabel(t.helper_option);
               return (
                 <div key={t.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                  <div className="flex justify-between items-start mb-2">
+                  {/* 상단: 고객명 + 상태 */}
+                  <div className="flex justify-between items-start mb-3">
                     <p className="font-bold text-gray-900">{t.clients?.name ?? '고객'}</p>
                     <span className={`text-xs font-bold ${color} ${bg} px-2 py-1 rounded-md`}>{label}</span>
                   </div>
-                  <p className="text-sm text-gray-700 font-medium mb-1">🚚 {t.truck_type}</p>
-                  {t.pickup_address && (
-                    <p className="text-xs text-gray-500 mb-1">📍 {t.pickup_address}</p>
+
+                  {/* 차량 + 포터 */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-bold text-gray-800">🚚 {t.truck_type}</span>
+                    {helper && (
+                      <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">{helper}</span>
+                    )}
+                  </div>
+
+                  {/* 출발지 → 도착지 */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-2 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs text-green-600 font-bold mt-0.5 shrink-0">출발</span>
+                      <span className="text-xs text-gray-700">{t.origin_address ?? '—'}</span>
+                    </div>
+                    <div className="border-l-2 border-dashed border-gray-300 ml-[18px] h-2" />
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs text-blue-600 font-bold mt-0.5 shrink-0">도착</span>
+                      <span className="text-xs text-gray-700">{t.destination ?? '—'}</span>
+                    </div>
+                  </div>
+
+                  {/* 예약일시 */}
+                  <p className="text-xs text-blue-500 font-medium mb-1">📅 {fmtDateTime(t.scheduled_at)}</p>
+
+                  {/* 기사 메모 */}
+                  {t.driver_note && (
+                    <p className="text-xs text-orange-600 bg-orange-50 rounded-md px-2 py-1.5 mb-2">
+                      💬 {t.driver_note}
+                    </p>
                   )}
-                  <p className="text-xs text-gray-400">신청일: {fmtDate(t.created_at)}</p>
-                  {t.scheduled_at && (
-                    <p className="text-xs text-blue-500 font-medium mt-1">📅 예약일: {fmtDate(t.scheduled_at)}</p>
+
+                  {/* 요금 정보 */}
+                  {(t.confirmed_fare || t.management_fee || t.total_charge) && (
+                    <div className="bg-blue-50 rounded-lg p-2.5 mb-2 space-y-1">
+                      {t.confirmed_fare && <p className="text-xs text-gray-600">확정 요금: <span className="font-bold text-gray-900">{t.confirmed_fare.toLocaleString()}원</span></p>}
+                      {t.management_fee && <p className="text-xs text-gray-600">관리 수수료: <span className="font-bold text-gray-900">{t.management_fee.toLocaleString()}원</span></p>}
+                      {t.total_charge && <p className="text-xs text-blue-700 font-bold">총 청구액: {t.total_charge.toLocaleString()}원</p>}
+                    </div>
                   )}
+
+                  <p className="text-xs text-gray-400 mb-2">신청일: {fmtDate(t.created_at)}</p>
+
                   {/* 상태 변경 버튼 */}
                   {t.status === 'pending' && (
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2">
                       <button
                         onClick={async () => {
                           await supabase.from('transport_requests').update({ status: 'confirmed' }).eq('id', t.id);
                           setTransports(prev => prev.map(x => x.id === t.id ? { ...x, status: 'confirmed' } : x));
                         }}
                         className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold"
-                      >
-                        ✅ 확정
-                      </button>
+                      >✅ 확정</button>
                       <button
                         onClick={async () => {
                           await supabase.from('transport_requests').update({ status: 'cancelled' }).eq('id', t.id);
                           setTransports(prev => prev.map(x => x.id === t.id ? { ...x, status: 'cancelled' } : x));
                         }}
                         className="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-bold"
-                      >
-                        ✕ 취소
-                      </button>
+                      >✕ 취소</button>
                     </div>
                   )}
                   {t.status === 'confirmed' && (
@@ -257,10 +303,8 @@ export default function BookingManagement() {
                         await supabase.from('transport_requests').update({ status: 'completed' }).eq('id', t.id);
                         setTransports(prev => prev.map(x => x.id === t.id ? { ...x, status: 'completed' } : x));
                       }}
-                      className="w-full mt-3 py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
-                    >
-                      🏁 완료 처리
-                    </button>
+                      className="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
+                    >🏁 완료 처리</button>
                   )}
                 </div>
               );
@@ -279,7 +323,7 @@ export default function BookingManagement() {
               const { label, color, bg } = getStatusBadge(d.status);
               return (
                 <div key={d.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-3">
                     <p className="font-bold text-gray-900">{d.clients?.name ?? '고객'}</p>
                     <span className={`text-xs font-bold ${color} ${bg} px-2 py-1 rounded-md`}>{label}</span>
                   </div>
@@ -294,28 +338,23 @@ export default function BookingManagement() {
                   ) : (
                     <p className="text-xs text-orange-500 mb-1">💰 정산금액: 미입력</p>
                   )}
-                  <p className="text-xs text-gray-400">신청일: {fmtDate(d.created_at)}</p>
-                  {/* 상태 변경 버튼 */}
+                  <p className="text-xs text-gray-400 mb-2">신청일: {fmtDate(d.created_at)}</p>
                   {d.status === 'pending' && (
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2">
                       <button
                         onClick={async () => {
                           await supabase.from('disposal_requests').update({ status: 'confirmed' }).eq('id', d.id);
                           setDisposals(prev => prev.map(x => x.id === d.id ? { ...x, status: 'confirmed' } : x));
                         }}
                         className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold"
-                      >
-                        ✅ 확정
-                      </button>
+                      >✅ 확정</button>
                       <button
                         onClick={async () => {
                           await supabase.from('disposal_requests').update({ status: 'cancelled' }).eq('id', d.id);
                           setDisposals(prev => prev.map(x => x.id === d.id ? { ...x, status: 'cancelled' } : x));
                         }}
                         className="flex-1 py-2 rounded-lg bg-gray-100 text-gray-600 text-xs font-bold"
-                      >
-                        ✕ 취소
-                      </button>
+                      >✕ 취소</button>
                     </div>
                   )}
                   {d.status === 'confirmed' && (
@@ -324,10 +363,8 @@ export default function BookingManagement() {
                         await supabase.from('disposal_requests').update({ status: 'completed' }).eq('id', d.id);
                         setDisposals(prev => prev.map(x => x.id === d.id ? { ...x, status: 'completed' } : x));
                       }}
-                      className="w-full mt-3 py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
-                    >
-                      🏁 완료 처리
-                    </button>
+                      className="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
+                    >🏁 완료 처리</button>
                   )}
                 </div>
               );
