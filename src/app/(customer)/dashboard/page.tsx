@@ -223,7 +223,7 @@ export default function DashboardPage() {
                   </span>
                   {gridCount > 0 && (
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: `linear-gradient(90deg, ${BLUE}, #60A5FA)`, padding: "3px 8px", borderRadius: 99, whiteSpace: "nowrap" }}>
-                      높이 10m 무제한
+                      단일품목 기준 높이 10m 무제한
                     </span>
                   )}
                 </div>
