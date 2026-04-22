@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { LayoutDashboard, CalendarClock, DollarSign, Users, Map } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 
 const ADMIN_EMAIL = 'easy.keep.kr@gmail.com';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
 
@@ -41,32 +42,61 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {children}
 
       {pathname !== '/admin/login' && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 z-[100] flex justify-around items-center h-14">
-          <button onClick={() => router.push('/admin')}
-            className={`flex flex-col items-center justify-center w-full h-full ${pathname === '/admin' ? 'text-blue-600 font-bold' : 'text-gray-400 font-medium'}`}>
-            <span className="text-xl mb-0.5">📊</span>
-            <span className="text-[10px]">대시보드</span>
-          </button>
-
-          <button onClick={() => router.push('/admin/booking')}
-            className={`flex flex-col items-center justify-center w-full h-full ${pathname.startsWith('/admin/booking') ? 'text-blue-600 font-bold' : 'text-gray-400 font-medium'}`}>
-            <span className="text-xl mb-0.5">📦</span>
-            <span className="text-[10px]">예약관리</span>
-          </button>
-
-          <button onClick={() => router.push('/admin/billing')}
-            className={`flex flex-col items-center justify-center w-full h-full ${pathname.startsWith('/admin/billing') ? 'text-blue-600 font-bold' : 'text-gray-400 font-medium'}`}>
-            <span className="text-xl mb-0.5">💲</span>
-            <span className="text-[10px]">정산</span>
-          </button>
-
-          <button onClick={() => router.push('/admin/clients')}
-            className={`flex flex-col items-center justify-center w-full h-full ${pathname.startsWith('/admin/clients') ? 'text-blue-600 font-bold' : 'text-gray-400 font-medium'}`}>
-            <span className="text-xl mb-0.5">👥</span>
-            <span className="text-[10px]">고객관리</span>
-          </button>
+        <div style={{
+          position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430, background: '#fff',
+          borderTop: '0.5px solid #E5E7EB', zIndex: 100,
+          display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 56,
+        }}>
+          <NavBtn
+            icon={LayoutDashboard}
+            label="대시보드"
+            active={pathname === '/admin'}
+            onClick={() => router.push('/admin')}
+          />
+          <NavBtn
+            icon={CalendarClock}
+            label="예약관리"
+            active={pathname.startsWith('/admin/booking')}
+            onClick={() => router.push('/admin/booking')}
+          />
+          <NavBtn
+            icon={Map}
+            label="공간현황"
+            active={pathname.startsWith('/admin/reservation')}
+            onClick={() => router.push('/admin/reservation')}
+          />
+          <NavBtn
+            icon={DollarSign}
+            label="정산"
+            active={pathname.startsWith('/admin/billing')}
+            onClick={() => router.push('/admin/billing')}
+          />
+          <NavBtn
+            icon={Users}
+            label="고객관리"
+            active={pathname.startsWith('/admin/clients')}
+            onClick={() => router.push('/admin/clients')}
+          />
         </div>
       )}
     </>
+  );
+}
+
+function NavBtn({ icon: Icon, label, active, onClick }: {
+  icon: React.ElementType; label: string; active: boolean; onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      width: '100%', height: '100%', gap: 3,
+      background: 'none', border: 'none', cursor: 'pointer',
+      color: active ? '#2563EB' : '#9CA3AF',
+    }}>
+      <Icon size={19} strokeWidth={active ? 2 : 1.5} />
+      <span style={{ fontSize: 9, fontWeight: active ? 700 : 400 }}>{label}</span>
+      {active && <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#2563EB', marginTop: -2 }} />}
+    </button>
   );
 }
