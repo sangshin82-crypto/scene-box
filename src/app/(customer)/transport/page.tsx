@@ -128,7 +128,7 @@ export default function TransportPage() {
       <div style={{ width: "100%", maxWidth: 430, minHeight: "100vh", paddingBottom: 160 }}>
 
         {/* 헤더 */}
-        <div style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 32, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px" }}>
+        <div style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px" }}>
           <button type="button" onClick={() => router.back()} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
             <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
           </button>
@@ -138,7 +138,7 @@ export default function TransportPage() {
           </button>
         </div>
 
-        <div style={{ padding: "24px 16px 0", display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ padding: "56px 16px 0", display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* STEP 1 */}
           <section>

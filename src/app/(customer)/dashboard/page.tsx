@@ -183,7 +183,7 @@ export default function DashboardPage() {
           </button>
         </header>
 
-        <div className="flex flex-col gap-4 px-4 pt-5">
+        <div className="flex flex-col gap-4 px-4" style={{ paddingTop: 52 }}>
 
           {/* 보관 현황 카드 */}
           <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "20px" }}>
