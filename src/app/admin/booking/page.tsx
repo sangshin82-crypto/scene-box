@@ -36,8 +36,10 @@ type Transport = {
 type Disposal = {
   id: string;
   client_id: string;
-  waste_type: string | null;
-  estimated_weight: number | null;
+  measured_weight_kg: number | null;
+  unit_price_per_kg: number | null;
+  disposal_charge: number | null;
+  transport_fee: number | null;
   total_charge: number | null;
   status: string;
   created_at: string;
@@ -69,7 +71,7 @@ export default function BookingManagement() {
           .order('created_at', { ascending: false }),
         supabase
           .from('disposal_requests')
-          .select('id, client_id, waste_type, estimated_weight, total_charge, status, created_at, clients(name)')
+          .select('id, client_id, measured_weight_kg, unit_price_per_kg, disposal_charge, transport_fee, total_charge, status, created_at, clients(name)')
           .order('created_at', { ascending: false }),
       ]);
 
@@ -132,7 +134,7 @@ export default function BookingManagement() {
   );
 
   const filteredDisposals = disposals.filter(d =>
-    !query || (d.clients?.name ?? '').includes(query) || (d.waste_type ?? '').includes(query)
+    !query || (d.clients?.name ?? '').includes(query)
   );
 
   const pendingTransports = transports.filter(t => t.status === 'pending').length;
@@ -159,7 +161,7 @@ export default function BookingManagement() {
           <span className="text-gray-400 mr-2">🔍</span>
           <input
             type="text"
-            placeholder="이름 / 주소 / 상태 검색"
+            placeholder="이름 / 주소 검색"
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="bg-transparent border-none outline-none w-full text-sm"
@@ -230,13 +232,11 @@ export default function BookingManagement() {
               const helper = helperLabel(t.helper_option);
               return (
                 <div key={t.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                  {/* 상단: 고객명 + 상태 */}
                   <div className="flex justify-between items-start mb-3">
                     <p className="font-bold text-gray-900">{t.clients?.name ?? '고객'}</p>
                     <span className={`text-xs font-bold ${color} ${bg} px-2 py-1 rounded-md`}>{label}</span>
                   </div>
 
-                  {/* 차량 + 포터 */}
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-bold text-gray-800">🚚 {t.truck_type}</span>
                     {helper && (
@@ -244,7 +244,6 @@ export default function BookingManagement() {
                     )}
                   </div>
 
-                  {/* 출발지 → 도착지 */}
                   <div className="bg-gray-50 rounded-lg p-3 mb-2 space-y-1.5">
                     <div className="flex items-start gap-2">
                       <span className="text-xs text-green-600 font-bold mt-0.5 shrink-0">출발</span>
@@ -257,17 +256,14 @@ export default function BookingManagement() {
                     </div>
                   </div>
 
-                  {/* 예약일시 */}
                   <p className="text-xs text-blue-500 font-medium mb-1">📅 {fmtDateTime(t.scheduled_at)}</p>
 
-                  {/* 기사 메모 */}
                   {t.driver_note && (
                     <p className="text-xs text-orange-600 bg-orange-50 rounded-md px-2 py-1.5 mb-2">
                       💬 {t.driver_note}
                     </p>
                   )}
 
-                  {/* 요금 정보 */}
                   {(t.confirmed_fare || t.management_fee || t.total_charge) && (
                     <div className="bg-blue-50 rounded-lg p-2.5 mb-2 space-y-1">
                       {t.confirmed_fare && <p className="text-xs text-gray-600">확정 요금: <span className="font-bold text-gray-900">{t.confirmed_fare.toLocaleString()}원</span></p>}
@@ -278,7 +274,6 @@ export default function BookingManagement() {
 
                   <p className="text-xs text-gray-400 mb-2">신청일: {fmtDate(t.created_at)}</p>
 
-                  {/* 상태 변경 버튼 */}
                   {t.status === 'pending' && (
                     <div className="flex gap-2">
                       <button
@@ -327,18 +322,31 @@ export default function BookingManagement() {
                     <p className="font-bold text-gray-900">{d.clients?.name ?? '고객'}</p>
                     <span className={`text-xs font-bold ${color} ${bg} px-2 py-1 rounded-md`}>{label}</span>
                   </div>
-                  {d.waste_type && (
-                    <p className="text-sm text-gray-700 font-medium mb-1">🗑️ {d.waste_type}</p>
+
+                  {d.measured_weight_kg && (
+                    <p className="text-xs text-gray-500 mb-1">⚖️ 실측 무게: <span className="font-bold text-gray-800">{d.measured_weight_kg}kg</span></p>
                   )}
-                  {d.estimated_weight && (
-                    <p className="text-xs text-gray-500 mb-1">⚖️ 예상 무게: {d.estimated_weight}kg</p>
+                  {d.unit_price_per_kg && (
+                    <p className="text-xs text-gray-500 mb-2">💵 kg당 단가: <span className="font-bold text-gray-800">{d.unit_price_per_kg.toLocaleString()}원</span></p>
                   )}
-                  {d.total_charge ? (
-                    <p className="text-xs text-blue-600 font-bold mb-1">💰 정산금액: {d.total_charge.toLocaleString()}원</p>
-                  ) : (
-                    <p className="text-xs text-orange-500 mb-1">💰 정산금액: 미입력</p>
-                  )}
+
+                  <div className="bg-blue-50 rounded-lg p-2.5 mb-2 space-y-1">
+                    {d.disposal_charge
+                      ? <p className="text-xs text-gray-600">폐기 비용: <span className="font-bold text-gray-900">{d.disposal_charge.toLocaleString()}원</span></p>
+                      : <p className="text-xs text-orange-500">폐기 비용: 미입력</p>
+                    }
+                    {d.transport_fee
+                      ? <p className="text-xs text-gray-600">운송비: <span className="font-bold text-gray-900">{d.transport_fee.toLocaleString()}원</span></p>
+                      : <p className="text-xs text-gray-400">운송비: 없음</p>
+                    }
+                    {d.total_charge
+                      ? <p className="text-xs text-blue-700 font-bold">총 청구액: {d.total_charge.toLocaleString()}원</p>
+                      : <p className="text-xs text-orange-500 font-bold">총 청구액: 미입력</p>
+                    }
+                  </div>
+
                   <p className="text-xs text-gray-400 mb-2">신청일: {fmtDate(d.created_at)}</p>
+
                   {d.status === 'pending' && (
                     <div className="flex gap-2">
                       <button
