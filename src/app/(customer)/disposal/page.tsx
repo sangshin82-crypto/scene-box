@@ -71,86 +71,80 @@ export default function DisposalPage() {
   };
 
   return (
-    <div style={{ background: "#F3F4F6", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", display: "flex", justifyContent: "center" }}>
+    <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: 430, minHeight: "100vh", paddingBottom: 130 }}>
 
         {/* 헤더 */}
-        <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px" }}>
+        <div style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px" }}>
           <button type="button" onClick={() => router.back()} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
-            <ChevronLeft size={24} color="#374151" />
+            <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
           </button>
-          <span style={{ fontSize: 17, fontWeight: 700, color: "#111827" }}>폐기 정산 요청</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>폐기 정산 요청</span>
           <button onClick={() => router.back()} style={{ padding: 4, background: "none", border: "none", cursor: "pointer" }}>
-            <X size={22} color="#374151" />
+            <X size={21} color="#374151" strokeWidth={1.8} />
           </button>
         </div>
 
-        <div style={{ padding: "20px 16px 0", display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* 전화번호 띠 높이(32px) + 기존 패딩(20px) */}
+        <div style={{ padding: "56px 16px 0", display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* STEP 1: 폐기 진행 안내 */}
+          {/* STEP 1 */}
           <section>
             <StepLabel n={1} title="폐기 진행 프로세스 안내" />
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingLeft: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-              {/* 1단계 */}
-              <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #E5E7EB", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Phone size={20} color={BLUE} strokeWidth={1.8} />
+              <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Phone size={19} color={BLUE} strokeWidth={1.6} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>① 전화 상담</p>
-                  <p style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>① 전화 상담</p>
+                  <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
                     폐기 요청 접수 후 담당자가 직접 연락드립니다.<br />
                     폐기할 물품의 종류와 수량을 상담을 통해 확인합니다.
                   </p>
                 </div>
               </div>
 
-              {/* 화살표 */}
-              <div style={{ textAlign: "center", color: "#D1D5DB", fontSize: 20 }}>↓</div>
+              <div style={{ textAlign: "center", color: "#CBD5E1", fontSize: 18 }}>↓</div>
 
-              {/* 2단계 */}
-              <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #E5E7EB", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Scale size={20} color="#7C3AED" strokeWidth={1.8} />
+              <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Scale size={19} color="#7C3AED" strokeWidth={1.6} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>② 무게 측정 및 단가 확인</p>
-                  <p style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>② 무게 측정 및 단가 확인</p>
+                  <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
                     창고 내 계근대(저울)로 폐기물 무게를 정확히 측정합니다.<br />
                     <span style={{ fontWeight: 600, color: "#7C3AED" }}>기본 단가: 1kg당 500원</span> (혼합 폐기물은 별도 협의)
                   </p>
                 </div>
               </div>
 
-              {/* 화살표 */}
-              <div style={{ textAlign: "center", color: "#D1D5DB", fontSize: 20 }}>↓</div>
+              <div style={{ textAlign: "center", color: "#CBD5E1", fontSize: 18 }}>↓</div>
 
-              {/* 3단계 */}
-              <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #E5E7EB", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <CheckCircle2 size={20} color="#10B981" strokeWidth={1.8} />
+              <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <CheckCircle2 size={19} color="#10B981" strokeWidth={1.6} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>③ 최종 고객 확인</p>
-                  <p style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>③ 최종 고객 확인</p>
+                  <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
                     측정된 무게와 최종 폐기 비용을 고객님께 안내 후<br />
                     동의를 받아 폐기를 진행합니다.
                   </p>
                 </div>
               </div>
 
-              {/* 화살표 */}
-              <div style={{ textAlign: "center", color: "#D1D5DB", fontSize: 20 }}>↓</div>
+              <div style={{ textAlign: "center", color: "#CBD5E1", fontSize: 18 }}>↓</div>
 
-              {/* 4단계 */}
-              <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #E5E7EB", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: "#FEF9C3", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <CreditCard size={20} color="#D97706" strokeWidth={1.8} />
+              <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", padding: "16px 18px", display: "flex", alignItems: "flex-start", gap: 14, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "#FFFBEB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <CreditCard size={19} color="#D97706" strokeWidth={1.6} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>④ 정산 탭에서 결제</p>
-                  <p style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>④ 정산 탭에서 결제</p>
+                  <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
                     폐기 완료 후 앱 하단 <span style={{ fontWeight: 700, color: "#D97706" }}>정산 탭</span>에서<br />
                     최종 청구서 확인 및 결제가 진행됩니다.
                   </p>
@@ -160,12 +154,12 @@ export default function DisposalPage() {
             </div>
           </section>
 
-          {/* STEP 2: 필수 확인 */}
+          {/* STEP 2 */}
           <section>
             <StepLabel n={2} title="필수 확인 사항" />
-            <div style={{ background: "#FEF2F2", borderRadius: 16, border: "1.5px solid #FECACA", padding: "16px 18px" }}>
+            <div style={{ background: "#FEF2F2", borderRadius: 18, border: "1.5px solid #FECACA", padding: "18px 18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <AlertTriangle size={18} color="#DC2626" style={{ flexShrink: 0 }} />
+                <AlertTriangle size={17} color="#DC2626" strokeWidth={1.8} style={{ flexShrink: 0 }} />
                 <p style={{ fontSize: 13, fontWeight: 700, color: "#DC2626" }}>폐기 후 복구는 불가능합니다</p>
               </div>
               <button onClick={() => setAgreed(p => !p)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0, display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -186,17 +180,17 @@ export default function DisposalPage() {
         </div>
 
         {/* 하단 버튼 */}
-        <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", borderTop: "1px solid #E5E7EB", padding: "14px 16px 20px", boxShadow: "0 -4px 20px rgba(0,0,0,0.08)", zIndex: 90 }}>
+        <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 20px", boxShadow: "0 -4px 20px rgba(0,0,0,0.06)", zIndex: 90 }}>
           <button
             onClick={handleSubmit}
             disabled={!agreed || isSubmitting}
-            style={{ width: "100%", padding: "16px 0", borderRadius: 14, border: "none", background: agreed ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: agreed ? "#fff" : "#9CA3AF", fontSize: 16, fontWeight: 700, cursor: agreed ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: agreed ? `0 4px 16px ${BLUE}55` : "none", transition: "all 0.2s" }}>
+            style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: agreed ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: agreed ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: agreed ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: agreed ? `0 4px 16px ${BLUE}55` : "none", transition: "all 0.2s" }}>
             {isSubmitting ? "요청 중..." : agreed
-              ? <><Trash2 size={18} color="#fff" strokeWidth={2} />폐기 확인 요청하기</>
+              ? <><Trash2 size={17} color="#fff" strokeWidth={2} />폐기 확인 요청하기</>
               : "위 내용에 동의해주세요"
             }
           </button>
-          <p style={{ textAlign: "center", fontSize: 11, color: "#9CA3AF", marginTop: 8 }}>
+          <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
             요청 접수 후 담당자가 연락드립니다
           </p>
         </div>
@@ -212,7 +206,7 @@ function StepLabel({ n, title }: { n: number; title: string }) {
       <span style={{ width: 22, height: 22, borderRadius: "50%", background: BLUE, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {n}
       </span>
-      <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{title}</span>
+      <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>{title}</span>
     </div>
   );
 }
