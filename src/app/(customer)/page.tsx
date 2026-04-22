@@ -11,7 +11,8 @@ const benefits = [
     icon: Ruler,
     color: BLUE,
     bg: "#EFF6FF",
-    title: "규격화된 전용 Grid, 위로는 10m 무제한",
+    title: "규격화된 전용 Grid, 단일 품목 기준 최대 높이 10m",
+    note: "*박스 적재는 높이 3m 기준",
     desc: "불규칙한 대형 소품과 세트장도 수직 공간을 100% 활용",
   },
   {
@@ -19,6 +20,7 @@ const benefits = [
     color: "#10B981",
     bg: "#ECFDF5",
     title: "전용 차량으로 원스톱 배차",
+    note: "",
     desc: "입고부터 납품까지, 전화 한 통으로 해결",
   },
   {
@@ -26,6 +28,7 @@ const benefits = [
     color: "#7C3AED",
     bg: "#F5F3FF",
     title: "저울로 재는 투명한 폐기 정산",
+    note: "",
     desc: "kg당 정량 계근, 눈 먼 폐기 비용은 없습니다",
   },
 ];
@@ -141,7 +144,7 @@ export default function LandingPage() {
             Why Scene Box?
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {benefits.map(({ icon: Icon, color, bg, title, desc }) => (
+            {benefits.map(({ icon: Icon, color, bg, title, note, desc }) => (
               <div
                 key={title}
                 style={{ background: "#fff", borderRadius: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 16 }}
@@ -151,6 +154,9 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 3 }}>{title}</p>
+                  {note && (
+                    <p style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 3 }}>{note}</p>
+                  )}
                   <p style={{ fontSize: 12, color: "#9CA3AF", lineHeight: 1.5 }}>{desc}</p>
                 </div>
               </div>
