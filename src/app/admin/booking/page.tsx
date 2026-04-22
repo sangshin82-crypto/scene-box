@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Phone } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 
 type Space = {
@@ -37,9 +36,14 @@ type Transport = {
 type Disposal = {
   id: string;
   client_id: string;
+  measured_weight_kg: number | null;
+  unit_price_per_kg: number | null;
+  disposal_charge: number | null;
+  transport_fee: number | null;
+  total_charge: number | null;
   status: string;
   created_at: string;
-  clients: { name: string; contact_phone: string | null } | null;
+  clients: { name: string } | null;
 };
 
 type Tab = 'space' | 'transport' | 'disposal';
@@ -67,7 +71,7 @@ export default function BookingManagement() {
           .order('created_at', { ascending: false }),
         supabase
           .from('disposal_requests')
-          .select('id, client_id, status, created_at, clients(name, contact_phone)')
+          .select('id, client_id, measured_weight_kg, unit_price_per_kg, disposal_charge, transport_fee, total_charge, status, created_at, clients(name)')
           .order('created_at', { ascending: false }),
       ]);
 
@@ -125,7 +129,8 @@ export default function BookingManagement() {
     !query ||
     (t.clients?.name ?? '').includes(query) ||
     (t.origin_address ?? '').includes(query) ||
-    (t.destination ?? '').includes(query)
+    (t.destination ?? '').includes(query) ||
+    (t.truck_type ?? '').includes(query)
   );
 
   const filteredDisposals = disposals.filter(d =>
@@ -318,30 +323,29 @@ export default function BookingManagement() {
                     <span className={`text-xs font-bold ${color} ${bg} px-2 py-1 rounded-md`}>{label}</span>
                   </div>
 
-                  {/* 연락처 + 전화 버튼 */}
-                  <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-3">
-                    <div className="flex items-center gap-2">
-                      <Phone size={13} color="#6B7280" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {d.clients?.contact_phone ?? '번호 없음'}
-                      </span>
-                    </div>
-                    {d.clients?.contact_phone && (
-                      
-                        href={`tel:${d.clients.contact_phone.replace(/-/g, '')}`}
-                        className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg"
-                      >
-                        전화하기
-                      </a>
-                    )}
+                  {d.measured_weight_kg && (
+                    <p className="text-xs text-gray-500 mb-1">⚖️ 실측 무게: <span className="font-bold text-gray-800">{d.measured_weight_kg}kg</span></p>
+                  )}
+                  {d.unit_price_per_kg && (
+                    <p className="text-xs text-gray-500 mb-2">💵 kg당 단가: <span className="font-bold text-gray-800">{d.unit_price_per_kg.toLocaleString()}원</span></p>
+                  )}
+
+                  <div className="bg-blue-50 rounded-lg p-2.5 mb-2 space-y-1">
+                    {d.disposal_charge
+                      ? <p className="text-xs text-gray-600">폐기 비용: <span className="font-bold text-gray-900">{d.disposal_charge.toLocaleString()}원</span></p>
+                      : <p className="text-xs text-orange-500">폐기 비용: 미입력</p>
+                    }
+                    {d.transport_fee
+                      ? <p className="text-xs text-gray-600">운송비: <span className="font-bold text-gray-900">{d.transport_fee.toLocaleString()}원</span></p>
+                      : <p className="text-xs text-gray-400">운송비: 없음</p>
+                    }
+                    {d.total_charge
+                      ? <p className="text-xs text-blue-700 font-bold">총 청구액: {d.total_charge.toLocaleString()}원</p>
+                      : <p className="text-xs text-orange-500 font-bold">총 청구액: 미입력</p>
+                    }
                   </div>
 
-                  <p className="text-xs text-gray-400 mb-3">신청일: {fmtDate(d.created_at)}</p>
-
-                  {/* 안내 문구 */}
-                  <p className="text-xs text-orange-600 bg-orange-50 rounded-md px-3 py-2 mb-3">
-                    📞 전화 상담 후 정산 탭에서 비용을 입력해주세요
-                  </p>
+                  <p className="text-xs text-gray-400 mb-2">신청일: {fmtDate(d.created_at)}</p>
 
                   {d.status === 'pending' && (
                     <div className="flex gap-2">
@@ -351,7 +355,7 @@ export default function BookingManagement() {
                           setDisposals(prev => prev.map(x => x.id === d.id ? { ...x, status: 'confirmed' } : x));
                         }}
                         className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold"
-                      >✅ 상담 완료</button>
+                      >✅ 확정</button>
                       <button
                         onClick={async () => {
                           await supabase.from('disposal_requests').update({ status: 'cancelled' }).eq('id', d.id);
@@ -368,7 +372,7 @@ export default function BookingManagement() {
                         setDisposals(prev => prev.map(x => x.id === d.id ? { ...x, status: 'completed' } : x));
                       }}
                       className="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
-                    >🏁 폐기 완료</button>
+                    >🏁 완료 처리</button>
                   )}
                 </div>
               );
