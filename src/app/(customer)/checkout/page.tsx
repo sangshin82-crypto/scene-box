@@ -90,7 +90,7 @@ function CheckoutInner() {
         deposit_amount: deposit,
         start_date:     startDate.toISOString().split("T")[0],
         end_date:       endDate.toISOString().split("T")[0],
-        status:         payMethod === "bank" ? "pending" : "active", // 무통장은 승인 대기 상태로
+        status:         "active", // 무통장/카드 상관없이 공간 계약은 우선 'active'로 확정하여 자리 선점
       }));
       const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
 if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
