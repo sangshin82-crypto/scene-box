@@ -297,27 +297,27 @@ function CheckoutInner() {
               </button>
               <div style={{ padding: "4px 0" }}>
 
-                {/* 1. 서비스 이용 약관 */}
+                {/* 1. 공간 임대업 및 초강력 면책 조항 */}
                 <TermRow
                   checked={checks.terms}
                   onToggle={() => toggleCheck("terms")}
                   onExpand={() => toggleExpand("terms")}
                   expanded={expanded.terms}
-                  label="[필수] 서비스 이용 약관 및 개인정보 처리방침 동의"
-                  color="#374151"
-                  detail="씬박스 서비스 이용약관 및 개인정보처리방침에 동의합니다. 서비스 이용 조건, 보관 불가 품목, 입출고 원칙, 요금 결제 등의 내용을 포함합니다."
+                  label="[필수] 본 서비스는 배상 책임보험이 없는 '공간 임대 서비스'이며, 훼손/파손 면책 조항에 모두 동의합니다."
+                  color="#DC2626"
+                  detail="씬박스는 보관업이 아닌 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 보험으로 커버해야 하며, 환경적 요인(온/습도) 및 불가항력적 사고로 인한 자연적 훼손에 대해 당사는 민·형사상 일체의 배상 책임을 지지 않습니다."
                 />
 
-                {/* 2. 보관료 연체 */}
+                {/* 2. 보증금 차감 및 연체 처분 */}
                 <TermRow
                   checked={checks.liability}
                   onToggle={() => toggleCheck("liability")}
                   onExpand={() => toggleExpand("liability")}
                   expanded={expanded.liability}
-                  label="[필수] 보관료 2개월 이상 연체 시, 적재물 직권 폐기 및 소유권 포기 동의"
+                  label="[필수] 보관료 연체 시 이행보증금 우선 차감 및 장기 연체 화물의 임의 처분에 동의합니다."
                   color="#DC2626"
                   icon={<AlertTriangle size={13} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />}
-                  detail="보관 기간 종료 후 연장 결제 또는 물품 반환이 이루어지지 않고 요금이 60일 이상 장기 연체될 경우, 회사는 사전 통지 후 임의로 화물을 처분하여 연체 보관료에 충당할 수 있습니다."
+                  detail="요금 연체 시 납부한 이행보증금에서 미납금이 우선 차감되며, 60일 이상 장기 연체 시 당사는 사전 통보 후 공간 확보를 위해 해당 화물을 임의로 반출, 매각, 또는 폐기 처분할 수 있습니다."
                 />
 
                 {/* 3. 출고 사전 예약 */}
@@ -326,9 +326,9 @@ function CheckoutInner() {
                   onToggle={() => toggleCheck("checkout")}
                   onExpand={() => toggleExpand("checkout")}
                   expanded={expanded.checkout}
-                  label="[필수] 보관 중인 물품 출고(부분 반환 포함) 시, 출고 희망일 최소 1영업일(24시간) 전까지 공식 채널(전화, 이메일, 메신저 등)을 통해 사전 예약을 확정해야 함에 동의합니다."
+                  label="[필수] 화물 출고(부분 반환 포함) 시, 최소 1영업일(24시간) 전 사전 예약 필수 원칙에 동의합니다."
                   color="#374151"
-                  detail="사전 예약 없이 당일 현장 방문을 통한 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다."
+                  detail="원활한 현장 작업 및 동선 확보를 위해 사전 예약 없는 당일 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다."
                 />
 
                 {/* 4. 보관 및 운송 전용 */}
@@ -339,7 +339,7 @@ function CheckoutInner() {
                   expanded={expanded.scope}
                   label="[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다."
                   color="#374151"
-                  detail="씬박스는 보관 및 운송 전용 서비스입니다. 현장 구조물 해체, 철거, 분해 작업은 서비스 범위에 포함되지 않습니다."
+                  detail="씬박스는 보관 및 운송 전용 서비스입니다. 미술 세트나 구조물의 현장 해체, 철거, 분해 작업은 서비스 범위에 포함되지 않습니다."
                 />
 
               </div>
