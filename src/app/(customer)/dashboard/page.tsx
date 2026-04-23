@@ -238,7 +238,7 @@ export default function DashboardPage() {
 
           {/* 퀵 액션 */}
           <div>
-            <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", marginBottom: 10, paddingLeft: 2, letterSpacing: "0.5px" }}>QUICK ACTION</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", marginBottom: 10, paddingLeft: 2, letterSpacing: "0.5px" }}>예약하기</p>
             <div className="flex flex-col gap-2">
               {quickActions.map(({ id, icon: Icon, label, sub, color, bg, route }) => (
                 <button key={id} onClick={() => router.push(route)}
