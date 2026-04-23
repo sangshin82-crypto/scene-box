@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 [추후 기재]일</p>
 
           <Section title="1. 개인정보의 수집 및 이용 목적">
-            <p style={{ marginBottom: 10 }}>스타일링소다(이하 "회사")는 씬박스 서비스 제공을 위해 아래와 같은 목적으로 개인정보를 수집하고 이용합니다.</p>
+            <p style={{ marginBottom: 10 }}>씬박스(이하 "회사")는 서비스 제공을 위해 아래와 같은 목적으로 개인정보를 수집하고 이용합니다.</p>
             <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>보관 서비스 예약, 화물 입/출고 관리, 고객 상담 및 클레임 대응</li>
               <li>서비스 이용 요금 결제, 청구서 및 세금계산서 발급</li>
@@ -54,12 +54,11 @@ export default function PrivacyPage() {
           <Section title="5. 개인정보 보호 책임자">
             <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
               <li><strong>성명:</strong> 박민지</li>
-              <li><strong>소속/직위:</strong> 스타일링소다 대표</li>
+              <li><strong>소속/직위:</strong> 씬박스 대표</li>
               <li><strong>연락처:</strong> 070-8057-6783 / 010-2897-8524</li>
               <li><strong>이메일:</strong> easy.keep.kr@gmail.com</li>
             </ul>
           </Section>
-
 
         </div>
       </div>
