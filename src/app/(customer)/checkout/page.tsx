@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft, X, CreditCard, Building2, Camera,
-  Copy, Check, AlertTriangle, FileText, ShieldCheck, ChevronDown,
+  Copy, Check, FileText, ShieldCheck, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
@@ -297,26 +297,25 @@ function CheckoutInner() {
               </button>
               <div style={{ padding: "4px 0" }}>
 
-                {/* 1. 공간 임대업 및 초강력 면책 조항 */}
+                {/* 1. B2B 전문성 강조 (옵션 1) - 파란색 강조 */}
                 <TermRow
                   checked={checks.terms}
                   onToggle={() => toggleCheck("terms")}
                   onExpand={() => toggleExpand("terms")}
                   expanded={expanded.terms}
-                  label="[필수] 본 서비스는 배상 책임보험이 없는 '공간 임대 서비스'이며, 훼손/파손 면책 조항에 모두 동의합니다."
-                  color="#DC2626"
-                  detail="씬박스는 보관업이 아닌 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 보험으로 커버해야 하며, 환경적 요인(온/습도) 및 불가항력적 사고로 인한 자연적 훼손에 대해 당사는 민·형사상 일체의 배상 책임을 지지 않습니다."
+                  label="[필수] 본 서비스는 B2B 전용 '물리적 공간(Grid) 대여 서비스'이며, 보관 물품에 대한 훼손/파손 면책 조항에 동의합니다."
+                  color={BLUE}
+                  detail="씬박스는 보관업이 아닌 물리적 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 자산 보험으로 커버해야 하며, 당사는 환경적 요인 및 불가항력적 사고로 인한 훼손에 대해 배상 책임을 지지 않습니다."
                 />
 
-                {/* 2. 보증금 차감 및 연체 처분 */}
+                {/* 2. 보증금 차감 및 연체 처분 - 아이콘 제거 */}
                 <TermRow
                   checked={checks.liability}
                   onToggle={() => toggleCheck("liability")}
                   onExpand={() => toggleExpand("liability")}
                   expanded={expanded.liability}
                   label="[필수] 보관료 연체 시 이행보증금 우선 차감 및 장기 연체 화물의 임의 처분에 동의합니다."
-                  color="#DC2626"
-                  icon={<AlertTriangle size={13} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />}
+                  color="#111827"
                   detail="요금 연체 시 납부한 이행보증금에서 미납금이 우선 차감되며, 60일 이상 장기 연체 시 당사는 사전 통보 후 공간 확보를 위해 해당 화물을 임의로 반출, 매각, 또는 폐기 처분할 수 있습니다."
                 />
 
@@ -327,7 +326,7 @@ function CheckoutInner() {
                   onExpand={() => toggleExpand("checkout")}
                   expanded={expanded.checkout}
                   label="[필수] 화물 출고(부분 반환 포함) 시, 최소 1영업일(24시간) 전 사전 예약 필수 원칙에 동의합니다."
-                  color="#374151"
+                  color="#111827"
                   detail="원활한 현장 작업 및 동선 확보를 위해 사전 예약 없는 당일 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다."
                 />
 
@@ -338,7 +337,7 @@ function CheckoutInner() {
                   onExpand={() => toggleExpand("scope")}
                   expanded={expanded.scope}
                   label="[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다."
-                  color="#374151"
+                  color="#111827"
                   detail="씬박스는 보관 및 운송 전용 서비스입니다. 미술 세트나 구조물의 현장 해체, 철거, 분해 작업은 서비스 범위에 포함되지 않습니다."
                 />
 
@@ -409,7 +408,7 @@ function TermRow({ checked, onToggle, onExpand, expanded, label, color, icon, de
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="flex items-start gap-1.5">
             {icon}
-            <span style={{ fontSize: 13, color, lineHeight: 1.5, fontWeight: color === "#DC2626" ? 600 : 400 }}>{label}</span>
+            <span style={{ fontSize: 13, color, lineHeight: 1.5, fontWeight: 600 }}>{label}</span>
           </div>
           {expanded && (
             <div style={{ marginTop: 8, padding: "10px 12px", background: "#F9FAFB", borderRadius: 8, fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
