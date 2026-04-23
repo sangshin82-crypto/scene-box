@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
-const BLUE  = "#2563EB";
-const GREEN = "#10B981";
+const BLUE   = "#2563EB";
+const GREEN  = "#10B981";
+const PURPLE = "#7C3AED";
 const KAKAO_CHAT_URL = "http://pf.kakao.com/_ngBCX/chat";
 
 type Client = { name: string; };
@@ -145,14 +146,14 @@ export default function DashboardPage() {
     fetchDashboard();
   }, []);
 
-  const zoneLabel  = spaces[0]?.grids?.[0]?.zone ? `${spaces[0].grids[0].zone}존` : "";
-  const gridCount  = spaces.length;
-  const dday       = nextPayDate ? getDday(nextPayDate) : null;
+  const zoneLabel = spaces[0]?.grids?.[0]?.zone ? `${spaces[0].grids[0].zone}존` : "";
+  const gridCount = spaces.length;
+  const dday      = nextPayDate ? getDday(nextPayDate) : null;
 
   const quickActions = [
-    { id: "store", icon: Package, label: "보관 / 공간 추가", sub: "새 아이템 입고 또는 그리드 추가", color: BLUE,      bg: "#EFF6FF", route: "/booking"   },
-    { id: "truck", icon: Truck,   label: "차량 배차 요청",   sub: "픽업·납품 차량 즉시 신청",       color: GREEN,     bg: "#ECFDF5", route: "/transport" },
-    { id: "scale", icon: Scale,   label: "계근대 폐기 정산", sub: "폐기물 무게 측정 및 비용 정산",   color: "#7C3AED", bg: "#F5F3FF", route: "/disposal"  },
+    { id: "store", icon: Package, label: "공간 예약", sub: "그리드 선택 및 보관 공간 예약", color: BLUE,   bg: "#EFF6FF", route: "/booking"   },
+    { id: "truck", icon: Truck,   label: "차량 배차", sub: "픽업·납품 차량 즉시 신청",     color: GREEN,  bg: "#ECFDF5", route: "/transport" },
+    { id: "scale", icon: Scale,   label: "폐기 요청", sub: "폐기물 처리 및 정산 신청",     color: PURPLE, bg: "#F5F3FF", route: "/disposal"  },
   ];
 
   if (isLoading) {
@@ -246,7 +247,7 @@ export default function DashboardPage() {
                     <Icon size={20} color={color} strokeWidth={1.5} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 2 }}>{label}</p>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: color, marginBottom: 2 }}>{label}</p>
                     <p style={{ fontSize: 11, color: "#94A3B8" }}>{sub}</p>
                   </div>
                   <ChevronRight size={16} color="#CBD5E1" strokeWidth={1.5} />
