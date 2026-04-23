@@ -137,8 +137,9 @@ function CheckoutInner() {
       
       router.push("/dashboard");
     } catch (err: any) {
-      console.error("결제 처리 실패:", err);
-      alert("처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      console.error("결제 처리 실패 상세:", err);
+      // 어떤 에러인지 화면에 정확하게 띄워줍니다
+      alert(`[데이터베이스 처리 오류]\n원인: ${err.message || "알 수 없는 오류"}\n\n※ 이 메시지를 자비스에게 알려주세요!`);
     }
     setIsSubmitting(false);
   };
