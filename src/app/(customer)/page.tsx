@@ -88,10 +88,7 @@ export default function LandingPage() {
             marginBottom: 24,
             boxShadow: "0 2px 12px rgba(16,185,129,0.12)",
           }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: GREEN, display: "inline-block",
-            }} />
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN, display: "inline-block" }} />
             <span style={{ fontSize: 11, fontWeight: 600, color: "#059669", letterSpacing: "0.3px" }}>
               B2B 특수화물 전문 공유창고
             </span>
@@ -99,20 +96,14 @@ export default function LandingPage() {
 
           {/* 로고 영문 */}
           <div style={{ marginBottom: 6 }}>
-            <span style={{
-              fontSize: 44, fontWeight: 900, color: "#0F172A",
-              letterSpacing: "-2px", lineHeight: 1,
-            }}>
+            <span style={{ fontSize: 44, fontWeight: 900, color: "#0F172A", letterSpacing: "-2px", lineHeight: 1 }}>
               Scene<span style={{ color: BLUE }}>Box</span>
             </span>
           </div>
 
           {/* 로고 국문 */}
           <div style={{ marginBottom: 10 }}>
-            <span style={{
-              fontSize: 28, fontWeight: 700, color: "#334155",
-              letterSpacing: "8px",
-            }}>
+            <span style={{ fontSize: 28, fontWeight: 700, color: "#334155", letterSpacing: "8px" }}>
               씬박스
             </span>
           </div>
@@ -125,10 +116,7 @@ export default function LandingPage() {
           </span>
 
           {/* Copy */}
-          <h1 style={{
-            fontSize: 16, fontWeight: 700, color: "#1E293B",
-            lineHeight: 1.75, letterSpacing: "-0.2px", margin: 0,
-          }}>
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: "#1E293B", lineHeight: 1.75, letterSpacing: "-0.2px", margin: 0 }}>
             촬영/프로모션/공연 미술팀의 영원한 숙제,<br />
             <span style={{
               background: "linear-gradient(135deg, #2563EB, #0EA5E9)",
@@ -167,28 +155,26 @@ export default function LandingPage() {
                 boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
                 padding: "18px 20px",
                 display: "flex",
-                flexDirection: "column",
-                gap: 10,
+                alignItems: "flex-start",
+                gap: 12,
               }}>
-                {/* 아이콘 + 제목 */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 46, height: 46, borderRadius: 14,
-                    background: bg, display: "flex",
-                    alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Icon size={21} color={color} strokeWidth={1.6} />
-                  </div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", lineHeight: 1.4 }}>
-                    {title}
-                  </p>
+                {/* 아이콘 */}
+                <div style={{
+                  width: 46, height: 46, borderRadius: 14,
+                  background: bg, display: "flex",
+                  alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <Icon size={21} color={color} strokeWidth={1.6} />
                 </div>
-                {/* 노트 + 설명 */}
-                <div style={{ paddingLeft: 58 }}>
-                  {note && (
-                    <p style={{ fontSize: 10, color: "#94A3B8", marginBottom: 3 }}>{note}</p>
-                  )}
-                  <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.5 }}>{desc}</p>
+                {/* 텍스트 */}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", lineHeight: 1.5, marginBottom: 0 }}>
+                    {title}
+                    {note && (
+                      <><br /><span style={{ fontSize: 10, fontWeight: 400, color: "#94A3B8" }}>{note}</span></>
+                    )}
+                  </p>
+                  <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.5, marginTop: 4 }}>{desc}</p>
                 </div>
               </div>
             ))}
