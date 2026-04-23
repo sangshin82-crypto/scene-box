@@ -93,7 +93,7 @@ function CheckoutInner() {
         status:         payMethod === "bank" ? "pending" : "active", // 무통장은 승인 대기 상태로
       }));
       const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
-      if (spacesError) throw new Error("계약 저장 실패");
+if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
 
       await supabase.from("grids").update({ status: "occupied" }).in("grid_number", gridList);
 
