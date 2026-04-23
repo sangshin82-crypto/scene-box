@@ -110,7 +110,10 @@ if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message)
         })
         .select()
         .single();
-      if (billError || !billData) throw new Error("청구서 생성 실패");
+      
+      // 에러의 진짜 얼굴을 화면에 띄웁니다!
+      if (billError) throw new Error("청구서 생성 실패: " + billError.message);
+      if (!billData) throw new Error("청구서 생성 실패: 데이터가 반환되지 않음");
 
       await supabase.from("bill_line_items").insert({
         bill_id:     billData.id,
