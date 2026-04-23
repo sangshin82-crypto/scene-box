@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft, X, CreditCard, Building2, Camera,
-  Copy, Check, FileText, ShieldCheck, ChevronDown,
+  Check, FileText, ShieldCheck, ChevronDown, Lock
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
@@ -47,7 +47,6 @@ function CheckoutInner() {
   endDate.setMonth(endDate.getMonth() + months);
 
   const [payMethod, setPayMethod]       = useState<"card" | "bank">("card");
-  const [copied, setCopied]             = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checks, setChecks]             = useState<Record<CheckKey, boolean>>({
     terms: false, liability: false, scope: false, checkout: false,
@@ -58,12 +57,6 @@ function CheckoutInner() {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
 
   const allChecked = checks.terms && checks.liability && checks.scope && checks.checkout;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText("123-4567-8901");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const toggleCheck = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
   const toggleExpand = (k: CheckKey) => setExpanded(p => ({ ...p, [k]: !p[k] }));
@@ -97,7 +90,7 @@ function CheckoutInner() {
         deposit_amount: deposit,
         start_date:     startDate.toISOString().split("T")[0],
         end_date:       endDate.toISOString().split("T")[0],
-        status:         "active",
+        status:         payMethod === "bank" ? "pending" : "active", // 무통장은 승인 대기 상태로
       }));
       const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
       if (spacesError) throw new Error("계약 저장 실패");
@@ -127,7 +120,7 @@ function CheckoutInner() {
       });
 
       await sendTelegramNotification(
-        `🎉 <b>그리드 예약 완료!</b>\n\n` +
+        `🎉 <b>그리드 예약 접수 (${payMethod === "bank" ? "무통장" : "카드"})</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📦 예약 공간: ${gridList.join(", ")} (${gridList.length} Grid)\n` +
         `📅 이용 기간: ${months}개월\n` +
@@ -135,7 +128,13 @@ function CheckoutInner() {
         `🗓 시작일: ${fmtDate(startDate)}`
       );
 
-      alert("예약이 완료되었습니다! 🎉\n대시보드에서 계약 현황을 확인하실 수 있습니다.");
+      // 결제 수단에 따른 안내 메시지 분기 처리
+      if (payMethod === "bank") {
+        alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n기업은행 123-4567-8901 (주)씬박스\n입금 금액: ${fmt(grandTotal)}\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
+      } else {
+        alert("결제 및 예약이 완료되었습니다! 🎉\n대시보드에서 계약 현황을 확인하실 수 있습니다.");
+      }
+      
       router.push("/dashboard");
     } catch (err: any) {
       console.error("결제 처리 실패:", err);
@@ -238,20 +237,15 @@ function CheckoutInner() {
 
             {payMethod === "bank" && (
               <div className="flex flex-col gap-3">
-                <div style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                  <p style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 10 }}>입금 계좌 정보</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 2 }}>기업은행</p>
-                      <p style={{ fontSize: 17, fontWeight: 800, color: "#111827", letterSpacing: "0.5px" }}>123-4567-8901</p>
-                      <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>(주)씬박스</p>
-                    </div>
-                    <button onClick={handleCopy}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${copied ? "#10B981" : "#D1D5DB"}`, background: copied ? "#ECFDF5" : "#F9FAFB", cursor: "pointer", color: copied ? "#10B981" : "#374151", fontSize: 12, fontWeight: 600, transition: "all 0.2s" }}>
-                      {copied ? <Check size={14} /> : <Copy size={14} />}
-                      {copied ? "복사됨" : "계좌 복사"}
-                    </button>
+                {/* 계좌번호 숨김 처리 영역 */}
+                <div style={{ background: "#F9FAFB", borderRadius: 14, padding: "18px", border: "1px dashed #D1D5DB" }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lock size={16} color="#6B7280" />
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>입금 계좌 안내</p>
                   </div>
+                  <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6 }}>
+                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [예약 확정] 버튼</strong>을 누르시면 안전하게 발급 및 안내됩니다.
+                  </p>
                 </div>
 
                 <div style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
@@ -297,7 +291,6 @@ function CheckoutInner() {
               </button>
               <div style={{ padding: "4px 0" }}>
 
-                {/* 1. B2B 전문성 강조 (옵션 1) - 파란색 강조 */}
                 <TermRow
                   checked={checks.terms}
                   onToggle={() => toggleCheck("terms")}
@@ -308,7 +301,6 @@ function CheckoutInner() {
                   detail="씬박스는 보관업이 아닌 물리적 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 자산 보험으로 커버해야 하며, 당사는 환경적 요인 및 불가항력적 사고로 인한 훼손에 대해 배상 책임을 지지 않습니다."
                 />
 
-                {/* 2. 보증금 차감 및 연체 처분 - 아이콘 제거 */}
                 <TermRow
                   checked={checks.liability}
                   onToggle={() => toggleCheck("liability")}
@@ -319,7 +311,6 @@ function CheckoutInner() {
                   detail="요금 연체 시 납부한 이행보증금에서 미납금이 우선 차감되며, 60일 이상 장기 연체 시 당사는 사전 통보 후 공간 확보를 위해 해당 화물을 임의로 반출, 매각, 또는 폐기 처분할 수 있습니다."
                 />
 
-                {/* 3. 출고 사전 예약 */}
                 <TermRow
                   checked={checks.checkout}
                   onToggle={() => toggleCheck("checkout")}
@@ -330,7 +321,6 @@ function CheckoutInner() {
                   detail="원활한 현장 작업 및 동선 확보를 위해 사전 예약 없는 당일 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다."
                 />
 
-                {/* 4. 보관 및 운송 전용 */}
                 <TermRow
                   checked={checks.scope}
                   onToggle={() => toggleCheck("scope")}
@@ -351,7 +341,7 @@ function CheckoutInner() {
             onClick={handlePayment}
             disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "16px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 16, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", boxShadow: allChecked ? `0 4px 16px ${BLUE}55` : "none", transition: "all 0.2s" }}>
-            {isSubmitting ? "처리 중..." : allChecked ? `${fmt(grandTotal)} 결제하기` : "약관에 동의해주세요"}
+            {isSubmitting ? "처리 중..." : !allChecked ? "약관에 동의해주세요" : (payMethod === "card" ? `${fmt(grandTotal)} 결제하기` : "예약 확정 및 입금 계좌 확인")}
           </button>
         </div>
 
