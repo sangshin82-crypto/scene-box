@@ -157,7 +157,7 @@ function CheckoutInner() {
       );
 
       if (payMethod === "bank") {
-        alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n기업은행 123-4567-8901 (주)씬박스\n입금 금액: ${fmt(grandTotal)}\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
+        alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotal)}\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
       } else {
         alert("결제 및 예약이 완료되었습니다! 🎉\n대시보드에서 계약 현황을 확인하실 수 있습니다.");
       }
@@ -241,7 +241,7 @@ function CheckoutInner() {
             <div style={{ display: "flex", background: "#E8F5F0", borderRadius: 14, padding: 4, marginBottom: 14 }}>
               {[
                 { id: "card" as const, icon: CreditCard, label: "카드 결제" },
-                { id: "bank" as const, icon: Building2,  label: "무통장 입금" },
+                { id: "bank" as const, icon: Building2,  label: "세금계산서 및 무통장 입금" },
               ].map(({ id, icon: Icon, label }) => {
                 const active = payMethod === id;
                 return (
@@ -276,7 +276,7 @@ function CheckoutInner() {
                     <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>입금 계좌 안내</p>
                   </div>
                   <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
-                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [예약 확정] 버튼</strong>을 누르시면 안전하게 발급 및 안내됩니다.
+                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [예약 확정] 버튼</strong>을 누르시면 안전하게 발급 및 안내됩니다.(국민은행 567001-04-101845 박민지)
                   </p>
                 </div>
 
