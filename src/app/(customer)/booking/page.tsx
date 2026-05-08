@@ -239,13 +239,13 @@ export default function BookingPage() {
 
           {/* 푸터 */}
           <div style={{ background: "#F0F7F4", borderTop: "0.5px solid #D1E8DF", padding: "20px 0 200px" }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>스타일링소다</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>씬박스(SceneBox)</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
               {[
                 { label: "대표",               value: "박민지" },
-                { label: "사업자등록번호",     value: "[추후 기재]" },
-                { label: "통신판매업 신고번호", value: "[추후 기재]" },
-                { label: "주소",               value: "[추후 기재]" },
+                { label: "사업자등록번호",     value: "806-36-01589" },
+                { label: "통신판매업 신고번호", value: "2026-용인처인-01107" },
+                { label: "주소",               value: "경기도 용인시 처인구 모현읍 곡현로 734" },
                 { label: "전화",               value: "070-8057-6783 / 010-2897-8524" },
                 { label: "이메일",             value: "easy.keep.kr@gmail.com" },
               ].map(({ label, value }) => (
@@ -261,7 +261,7 @@ export default function BookingPage() {
               <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline", fontWeight: 700 }}>개인정보처리방침</a>
             </div>
             <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 10 }}>
-              © 2026 스타일링소다. All rights reserved.
+              © 2026 씬박스(SceneBox). All rights reserved.
             </p>
           </div>
 
