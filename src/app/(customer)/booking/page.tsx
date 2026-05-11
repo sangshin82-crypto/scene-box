@@ -130,9 +130,8 @@ export default function BookingPage() {
               <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>공간(Grid) 선택</span>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, paddingLeft: 30, marginBottom: 14 }}>
-              <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요. (1 Grid = 약 1.2평)</p>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: BLUE, padding: "3px 8px", borderRadius: 99, whiteSpace: "nowrap" }}>
-                층고 10m 무제한 활용
+            <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요. (1 Grid = 1.2평 = 1.1x1.1 파레트 3개 사이즈)</p>
+            <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>기타 사이즈 협의는 전화로 문의주세요.</p> 
               </span>
             </div>
 
