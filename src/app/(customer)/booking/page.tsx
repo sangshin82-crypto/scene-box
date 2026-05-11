@@ -130,10 +130,9 @@ export default function BookingPage() {
               <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>공간(Grid) 선택</span>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, paddingLeft: 30, marginBottom: 14 }}>
-            <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요. (1 Grid = 1.2평 = 1.1x1.1 파레트 3개 사이즈)</p>
-            <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>기타 사이즈 협의는 전화로 문의주세요.</p> 
-              </span>
-            </div>
+  <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요. (1 Grid = 1.2평 = 1.1x1.1 파레트 3개 사이즈)</p>
+  <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>기타 사이즈 협의는 전화로 문의주세요.</p>
+</div>
 
             {/* 범례 */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, paddingLeft: 4, marginBottom: 12 }}>
