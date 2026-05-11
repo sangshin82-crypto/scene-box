@@ -81,7 +81,7 @@ export default function TransportPage() {
       .insert({
         client_id:      clientId,
         origin_address: origin,
-        destination:    "Scene Box 오포 창고",
+        destination: "경기도 용인시 처인구 모현읍 곡현로 734",
         scheduled_at:   scheduledAt,
         truck_type:     truck,
         helper_option:  extraOption ?? "none",
@@ -119,7 +119,7 @@ export default function TransportPage() {
   const destField = (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F0F7F4", borderRadius: 12, border: "1.5px solid #D1E8DF", padding: "13px 14px" }}>
       <Warehouse size={17} color="#94A3B8" strokeWidth={1.8} style={{ flexShrink: 0 }} />
-      <span style={{ fontSize: 14, color: "#94A3B8", fontWeight: 500 }}>Scene Box 오포 창고</span>
+      <span style={{ fontSize: 14, color: "#94A3B8", fontWeight: 500 }}>경기도 용인시 처인구 모현읍 곡현로 734</span>
     </div>
   );
 

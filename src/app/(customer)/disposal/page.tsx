@@ -116,7 +116,8 @@ export default function DisposalPage() {
                   <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>② 무게 측정 및 단가 확인</p>
                   <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
                     창고 내 계근대(저울)로 폐기물 무게를 정확히 측정합니다.<br />
-                    <span style={{ fontWeight: 600, color: "#7C3AED" }}>기본 단가: 1kg당 500원</span> (혼합 폐기물은 별도 협의)
+                    <span style={{ fontWeight: 600, color: "#7C3AED" }}>기본 단가: 1kg당 600원</span><br />
+<span style={{ fontSize: 11, color: "#94A3B8" }}>(부피가 현저히 큰 폐기물은 별도 협의)</span>
                   </p>
                 </div>
               </div>
