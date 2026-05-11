@@ -200,11 +200,7 @@ export default function DashboardPage() {
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
                     {gridCount > 0 ? `${zoneLabel} — ${gridCount} Grid` : "계약 없음"}
                   </span>
-                  {gridCount > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: `linear-gradient(90deg, ${BLUE}, #3B82F6)`, padding: "3px 8px", borderRadius: 99, whiteSpace: "nowrap" }}>
-                      최대 높이 10m
-                    </span>
-                  )}
+                  
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 10, padding: "10px 14px", border: "0.5px solid #D1E8DF" }}>
