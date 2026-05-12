@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "용인 모현읍 위치, 1.2평(1그리드) 월 12만 원. 파레트 상하차가 용이한 B2B 전문 창고 및 캠핑카/화물차 주차장 서비스.",
   verification: {
     other: {
-      "naver-site-verification": "195e96f1e8af3b3e6fb171f165b83db2f00c0359",
+      "naver-site-verification": "79a4ae246503103350b8a2d6580181b62b440955",
     },
   },
 };
