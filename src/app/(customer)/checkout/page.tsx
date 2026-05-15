@@ -57,6 +57,7 @@ function CheckoutInner() {
     terms: false, liability: false, scope: false, checkout: false,
   });
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  const [needsInvoice, setNeedsInvoice] = useState(false);
   
   // 토스페이먼츠 상태
   const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
@@ -369,61 +370,84 @@ function CheckoutInner() {
                   </p>
                 </div>
 
-                {/* 세금계산서 */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <FileText size={15} color={BLUE} strokeWidth={1.8} />
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>세금계산서 발행 정보</p>
+                {/* 세금계산서 토글 */}
+                <button
+                  onClick={() => setNeedsInvoice(p => !p)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: needsInvoice ? "#EFF6FF" : "#fff", borderRadius: 14, padding: "14px 18px", border: `1.5px solid ${needsInvoice ? "#BFDBFE" : "#D1E8DF"}`, cursor: "pointer", transition: "all 0.2s" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <FileText size={16} color={needsInvoice ? BLUE : "#94A3B8"} strokeWidth={1.8} />
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: needsInvoice ? BLUE : "#374151" }}>세금계산서 발행 필요</p>
+                      <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>사업자 거래 시 선택해주세요</p>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {[
-                      { key: "name"  as const, placeholder: "담당자 성함",                type: "text"  },
-                      { key: "phone" as const, placeholder: "연락처 (예: 010-1234-5678)", type: "tel"   },
-                      { key: "email" as const, placeholder: "이메일 (세금계산서 수신)",    type: "email" },
-                    ].map(({ key, placeholder, type }) => (
-                      <input key={key} type={type} placeholder={placeholder} value={form[key]}
-                        onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                        style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" }} />
-                    ))}
+                  {/* 토글 스위치 */}
+                  <div style={{ width: 44, height: 24, borderRadius: 99, background: needsInvoice ? BLUE : "#D1E8DF", position: "relative", transition: "all 0.2s", flexShrink: 0 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: needsInvoice ? 23 : 3, transition: "all 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
                   </div>
-                </div>
+                </button>
 
-                {/* 사업자등록증 업로드 */}
-                <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
-                  <div style={{ padding: "14px 18px", borderBottom: "0.5px solid #F0F7F4", display: "flex", alignItems: "center", gap: 8 }}>
-                    <Camera size={16} color={BLUE} strokeWidth={1.8} />
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>사업자등록증 사본 첨부</p>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#EF4444", background: "#FEF2F2", padding: "2px 6px", borderRadius: 99 }}>필수</span>
-                  </div>
-                  <label style={{ display: "block", padding: "16px 18px", cursor: "pointer" }}>
-                    <input
-                      type="file"
-                      accept="image/*, .pdf"
-                      onChange={e => setLicenseFile(e.target.files?.[0] || null)}
-                      style={{ display: "none" }}
-                    />
-                    {licenseFile ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#ECFDF5", borderRadius: 12, padding: "12px 14px" }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Check size={18} color="#10B981" strokeWidth={2} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>파일 선택 완료</p>
-                          <p style={{ fontSize: 11, color: "#6EE7B7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{licenseFile.name}</p>
-                        </div>
-                        <span style={{ fontSize: 11, color: "#10B981", fontWeight: 600, flexShrink: 0 }}>변경</span>
+                {/* 세금계산서 폼 - 토글 ON일 때만 표시 */}
+                {needsInvoice && (
+                  <>
+                    {/* 담당자 정보 */}
+                    <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                        <FileText size={15} color={BLUE} strokeWidth={1.8} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>세금계산서 발행 정보</p>
                       </div>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 0", border: "1.5px dashed #D1E8DF", borderRadius: 12 }}>
-                        <div style={{ width: 44, height: 44, borderRadius: 12, background: "#F0F7F4", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Camera size={22} color="#94A3B8" strokeWidth={1.5} />
-                        </div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>파일을 선택해주세요</p>
-                        <p style={{ fontSize: 11, color: "#94A3B8" }}>JPG, PNG, PDF 가능</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {[
+                          { key: "name"  as const, placeholder: "담당자 성함",                type: "text"  },
+                          { key: "phone" as const, placeholder: "연락처 (예: 010-1234-5678)", type: "tel"   },
+                          { key: "email" as const, placeholder: "이메일 (세금계산서 수신)",    type: "email" },
+                        ].map(({ key, placeholder, type }) => (
+                          <input key={key} type={type} placeholder={placeholder} value={form[key]}
+                            onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                            style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" }} />
+                        ))}
                       </div>
-                    )}
-                  </label>
-                </div>
+                    </div>
+
+                    {/* 사업자등록증 업로드 */}
+                    <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "0.5px solid #F0F7F4", display: "flex", alignItems: "center", gap: 8 }}>
+                        <Camera size={16} color={BLUE} strokeWidth={1.8} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>사업자등록증 사본 첨부</p>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#EF4444", background: "#FEF2F2", padding: "2px 6px", borderRadius: 99 }}>필수</span>
+                      </div>
+                      <label style={{ display: "block", padding: "16px 18px", cursor: "pointer" }}>
+                        <input
+                          type="file"
+                          accept="image/*, .pdf"
+                          onChange={e => setLicenseFile(e.target.files?.[0] || null)}
+                          style={{ display: "none" }}
+                        />
+                        {licenseFile ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#ECFDF5", borderRadius: 12, padding: "12px 14px" }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Check size={18} color="#10B981" strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>파일 선택 완료</p>
+                              <p style={{ fontSize: 11, color: "#6EE7B7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{licenseFile.name}</p>
+                            </div>
+                            <span style={{ fontSize: 11, color: "#10B981", fontWeight: 600, flexShrink: 0 }}>변경</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 0", border: "1.5px dashed #D1E8DF", borderRadius: 12 }}>
+                            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#F0F7F4", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Camera size={22} color="#94A3B8" strokeWidth={1.5} />
+                            </div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>파일을 선택해주세요</p>
+                            <p style={{ fontSize: 11, color: "#94A3B8" }}>JPG, PNG, PDF 가능</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </section>

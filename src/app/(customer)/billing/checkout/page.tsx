@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck } from "lucide-react";
+import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 
@@ -36,6 +36,7 @@ export default function BillingCheckoutPage() {
   const [checks, setChecks] = useState<Record<CheckKey, boolean>>({
     terms: false, liability: false, scope: false,
   });
+  const [needsInvoice, setNeedsInvoice] = useState(false);
 
   // 토스페이먼츠 상태
   const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
@@ -245,19 +246,59 @@ export default function BillingCheckoutPage() {
                     </div>
                   </div>
                 </div>
+                <div id="billing-payment-methods" ref={paymentMethodsRef} style={{ background: "#fff", borderRadius: 16, padding: "16px", border: "0.5px solid #D1E8DF", minHeight: "200px" }} />
+              </div>
+            )}
 
-                {/* 토스페이먼츠 결제 수단 렌더링 영역 */}
-                <div
-                  id="billing-payment-methods"
-                  ref={paymentMethodsRef}
-                  style={{
-                    background: "#fff",
-                    borderRadius: 16,
-                    padding: "16px",
-                    border: "0.5px solid #D1E8DF",
-                    minHeight: "200px"
-                  }}
-                />
+            {payMethod === "bank" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* 계좌 안내 */}
+                <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "16px 18px", border: "1px dashed #D1E8DF" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <Building2 size={15} color="#64748B" strokeWidth={1.8} />
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>입금 계좌 안내</p>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
+                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [결제하기] 버튼</strong>을 누르시면 안내됩니다.(국민은행 567001-04-101845 박민지)
+                  </p>
+                </div>
+
+                {/* 세금계산서 토글 */}
+                <button
+                  onClick={() => setNeedsInvoice(p => !p)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: needsInvoice ? "#EFF6FF" : "#fff", borderRadius: 14, padding: "14px 18px", border: `1.5px solid ${needsInvoice ? "#BFDBFE" : "#D1E8DF"}`, cursor: "pointer", transition: "all 0.2s" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <FileText size={16} color={needsInvoice ? BLUE : "#94A3B8"} strokeWidth={1.8} />
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: needsInvoice ? BLUE : "#374151" }}>세금계산서 발행 필요</p>
+                      <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>사업자 거래 시 선택해주세요</p>
+                    </div>
+                  </div>
+                  <div style={{ width: 44, height: 24, borderRadius: 99, background: needsInvoice ? BLUE : "#D1E8DF", position: "relative", transition: "all 0.2s", flexShrink: 0 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: needsInvoice ? 23 : 3, transition: "all 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
+                  </div>
+                </button>
+
+                {/* 세금계산서 폼 - 토글 ON일 때만 표시 */}
+                {needsInvoice && (
+                  <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <FileText size={15} color={BLUE} strokeWidth={1.8} />
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>세금계산서 발행 정보</p>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {[
+                        { key: "name",  placeholder: "담당자 성함",                type: "text"  },
+                        { key: "phone", placeholder: "연락처 (예: 010-1234-5678)", type: "tel"   },
+                        { key: "email", placeholder: "이메일 (세금계산서 수신)",    type: "email" },
+                      ].map(({ key, placeholder, type }) => (
+                        <input key={key} type={type} placeholder={placeholder}
+                          style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" as const }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>
