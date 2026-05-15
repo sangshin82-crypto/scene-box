@@ -92,6 +92,10 @@ export default function BillingCheckoutPage() {
     initializeWidget();
   }, [payMethod]);
 
+  const subtotal = lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
+  const vat      = bill?.vat_amount ?? Math.round(subtotal * 0.1);
+  const total    = bill?.total_amount ?? subtotal + vat;
+
   // 결제 수단 렌더링
   useEffect(() => {
     if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
@@ -106,10 +110,6 @@ export default function BillingCheckoutPage() {
       console.error("결제 수단 렌더링 실패:", error);
     }
   }, [paymentWidget, total, payMethod]);
-
-  const subtotal = lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
-  const vat      = bill?.vat_amount ?? Math.round(subtotal * 0.1);
-  const total    = bill?.total_amount ?? subtotal + vat;
 
   // 정산용 주문 ID
   const orderId = `BILL_${bill?.id ?? Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
