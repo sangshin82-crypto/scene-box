@@ -78,7 +78,8 @@ function CheckoutInner() {
     
     const initializeWidget = async () => {
       try {
-        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!;
+        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+        if (!clientKey) return; // 키 없으면 조용히 종료
         const widget = await loadPaymentWidget(clientKey, "GUEST");
         setPaymentWidget(widget);
       } catch (error) {
