@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft, X, CreditCard, Building2, Camera,
   Check, FileText, ShieldCheck, ChevronDown, Lock
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 
 const BLUE = "#2563EB";
 
@@ -56,11 +57,51 @@ function CheckoutInner() {
     terms: false, liability: false, scope: false, checkout: false,
   });
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  
+  // 토스페이먼츠 상태
+  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
+  const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
+  
+  // 주문 정보
+  const orderId = `SCENE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const orderName = `씬박스 그리드 예약 - ${gridList.join(", ")}`;
 
   const allChecked = checks.terms && checks.liability && checks.scope && checks.checkout;
 
   const toggleCheck  = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
   const toggleExpand = (k: CheckKey) => setExpanded(p => ({ ...p, [k]: !p[k] }));
+  
+  // 토스페이먼츠 위젯 초기화
+  useEffect(() => {
+    if (payMethod !== "card") return;
+    
+    const initializeWidget = async () => {
+      try {
+        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!;
+        const widget = await loadPaymentWidget(clientKey, "GUEST");
+        setPaymentWidget(widget);
+      } catch (error) {
+        console.error("토스 위젯 초기화 실패:", error);
+      }
+    };
+    
+    initializeWidget();
+  }, [payMethod]);
+  
+  // 결제 수단 렌더링
+  useEffect(() => {
+    if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
+    
+    try {
+      paymentWidget.renderPaymentMethods(
+        "#payment-methods",
+        { value: grandTotal },
+        { variantKey: "DEFAULT" }
+      );
+    } catch (error) {
+      console.error("결제 수단 렌더링 실패:", error);
+    }
+  }, [paymentWidget, grandTotal, payMethod]);
 
   const handlePayment = async () => {
     if (!allChecked || isSubmitting) return;
@@ -107,6 +148,42 @@ function CheckoutInner() {
         .in("grid_number", gridList);
       if (gridsError || !gridsData?.length) throw new Error("Grid 조회 실패");
 
+      // 카드 결제 - 토스페이먼츠
+      if (payMethod === "card") {
+        if (!paymentWidget) {
+          throw new Error("결제 위젯이 초기화되지 않았습니다.");
+        }
+        
+        // DB에 임시 주문 정보 저장 (pending 상태)
+        const spaceRows = gridsData.map(g => ({
+          client_id:      clientId,
+          grid_id:        g.id,
+          plan_type:      planId,
+          monthly_fee:    monthly,
+          deposit_amount: deposit,
+          start_date:     startDate.toISOString().split("T")[0],
+          end_date:       endDate.toISOString().split("T")[0],
+          status:         "pending", // 결제 완료 후 active로 변경
+        }));
+        
+        const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
+        if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
+        
+        // 토스페이먼츠 결제 요청
+        await paymentWidget.requestPayment({
+          orderId: orderId,
+          orderName: orderName,
+          successUrl: `${window.location.origin}/success?orderId=${orderId}&clientId=${clientId}&grids=${gridStr}&uploadedUrl=${uploadedUrl || ''}`,
+          failUrl: `${window.location.origin}/fail`,
+          customerName: form.name || clientName,
+          customerEmail: form.email || undefined,
+          customerMobilePhone: form.phone || undefined,
+        });
+        
+        return; // requestPayment이 리다이렉트하므로 여기서 종료
+      }
+      
+      // 무통장 입금 - 기존 로직
       const spaceRows = gridsData.map(g => ({
         client_id:      clientId,
         grid_id:        g.id,
@@ -147,7 +224,7 @@ function CheckoutInner() {
       });
 
       await sendTelegramNotification(
-        `🎉 <b>그리드 예약 접수 (${payMethod === "bank" ? "무통장" : "카드"})</b>\n\n` +
+        `🎉 <b>그리드 예약 접수 (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📦 예약 공간: ${gridList.join(", ")} (${gridList.length} Grid)\n` +
         `📅 이용 기간: ${months}개월\n` +
@@ -156,18 +233,15 @@ function CheckoutInner() {
         (uploadedUrl ? `\n📎 사업자등록증: 첨부됨` : "")
       );
 
-      if (payMethod === "bank") {
-        alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotal)}\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
-      } else {
-        alert("결제 및 예약이 완료되었습니다! 🎉\n대시보드에서 계약 현황을 확인하실 수 있습니다.");
-      }
-
+      alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotal)}\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
       router.push("/dashboard");
+      
     } catch (err: any) {
       console.error("결제 처리 실패 상세:", err);
       alert(`[데이터베이스 처리 오류]\n원인: ${err.message || "알 수 없는 오류"}\n\n※ 이 메시지를 자비스에게 알려주세요!`);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -254,16 +328,31 @@ function CheckoutInner() {
             </div>
 
             {payMethod === "card" && (
-              <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>안전한 외부 결제창으로 이동합니다</p>
-                    <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
-                      결제하기 버튼을 누르면 PG사의 보안 결제창으로 연결됩니다. 카드 정보는 당사 서버에 저장되지 않습니다.
-                    </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>토스페이먼츠 안전결제</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
+                        카드 정보는 당사 서버에 저장되지 않습니다. 안전하게 결제하세요.
+                      </p>
+                    </div>
                   </div>
                 </div>
+                
+                {/* 토스페이먼츠 결제 수단 렌더링 영역 */}
+                <div 
+                  id="payment-methods" 
+                  ref={paymentMethodsRef}
+                  style={{ 
+                    background: "#fff", 
+                    borderRadius: 16, 
+                    padding: "16px",
+                    border: "0.5px solid #D1E8DF",
+                    minHeight: "200px"
+                  }}
+                />
               </div>
             )}
 

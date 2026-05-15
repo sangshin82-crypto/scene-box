@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 
 const BLUE = "#2563EB";
 const fmtWon = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -31,9 +32,14 @@ export default function BillingCheckoutPage() {
   const [payMethod, setPayMethod] = useState<"card" | "bank">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientName, setClientName] = useState("");
+  const [clientId, setClientId] = useState("");
   const [checks, setChecks] = useState<Record<CheckKey, boolean>>({
     terms: false, liability: false, scope: false,
   });
+
+  // 토스페이먼츠 상태
+  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
+  const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
 
   const allChecked = checks.terms && checks.liability && checks.scope;
   const toggleCheck = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
@@ -41,16 +47,17 @@ export default function BillingCheckoutPage() {
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
-      const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
+      const id = user?.id ?? "00000000-0000-0000-0000-000000000001";
+      setClientId(id);
 
       const { data: clientData } = await supabase
-        .from("clients").select("name").eq("id", clientId).single();
+        .from("clients").select("name").eq("id", id).single();
       if (clientData) setClientName(clientData.name);
 
       const now = new Date();
       const { data: billData } = await supabase
         .from("monthly_bills").select("*")
-        .eq("client_id", clientId)
+        .eq("client_id", id)
         .eq("billing_year", now.getFullYear())
         .eq("billing_month", now.getMonth() + 1)
         .single();
@@ -66,14 +73,69 @@ export default function BillingCheckoutPage() {
     fetchData();
   }, []);
 
+  // 토스페이먼츠 위젯 초기화
+  useEffect(() => {
+    if (payMethod !== "card") return;
+
+    const initializeWidget = async () => {
+      try {
+        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!;
+        const widget = await loadPaymentWidget(clientKey, "GUEST");
+        setPaymentWidget(widget);
+      } catch (error) {
+        console.error("토스 위젯 초기화 실패:", error);
+      }
+    };
+
+    initializeWidget();
+  }, [payMethod]);
+
+  // 결제 수단 렌더링
+  useEffect(() => {
+    if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
+
+    try {
+      paymentWidget.renderPaymentMethods(
+        "#billing-payment-methods",
+        { value: total },
+        { variantKey: "DEFAULT" }
+      );
+    } catch (error) {
+      console.error("결제 수단 렌더링 실패:", error);
+    }
+  }, [paymentWidget, total, payMethod]);
+
   const subtotal = lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
   const vat      = bill?.vat_amount ?? Math.round(subtotal * 0.1);
   const total    = bill?.total_amount ?? subtotal + vat;
 
+  // 정산용 주문 ID
+  const orderId = `BILL_${bill?.id ?? Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  const orderName = `씬박스 월 정산 결제 (${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, "0")})`;
+
   const handlePayment = async () => {
     if (!allChecked || isSubmitting || !bill) return;
     setIsSubmitting(true);
+
     try {
+      // 카드 결제 - 토스페이먼츠
+      if (payMethod === "card") {
+        if (!paymentWidget) {
+          throw new Error("결제 위젯이 초기화되지 않았습니다.");
+        }
+
+        await paymentWidget.requestPayment({
+          orderId: orderId,
+          orderName: orderName,
+          successUrl: `${window.location.origin}/billing/success?orderId=${orderId}&billId=${bill.id}&clientId=${clientId}`,
+          failUrl: `${window.location.origin}/fail`,
+          customerName: clientName,
+        });
+
+        return; // requestPayment이 리다이렉트하므로 여기서 종료
+      }
+
+      // 무통장 입금 - 기존 로직
       const { error } = await supabase
         .from("monthly_bills")
         .update({ status: "paid", paid_at: new Date().toISOString() })
@@ -81,18 +143,21 @@ export default function BillingCheckoutPage() {
       if (error) throw new Error("결제 처리 실패");
 
       await sendTelegramNotification(
-        `💳 <b>정산 결제 완료!</b>\n\n` +
+        `💳 <b>정산 결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `💰 결제 금액: ${fmtWon(total)}\n` +
         `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}`
       );
 
-      alert("결제가 완료되었습니다! 🎉");
+      alert("예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(total) + "\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
       router.push("/dashboard");
-    } catch (err) {
+
+    } catch (err: any) {
+      console.error("결제 처리 실패:", err);
       alert("처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   if (isLoading) return (
@@ -170,14 +235,29 @@ export default function BillingCheckoutPage() {
               })}
             </div>
             {payMethod === "card" && (
-              <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>안전한 외부 결제창으로 이동합니다</p>
-                    <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>결제하기 버튼을 누르면 PG사의 보안 결제창으로 연결됩니다.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>토스페이먼츠 안전결제</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>카드 정보는 당사 서버에 저장되지 않습니다. 안전하게 결제하세요.</p>
+                    </div>
                   </div>
                 </div>
+
+                {/* 토스페이먼츠 결제 수단 렌더링 영역 */}
+                <div
+                  id="billing-payment-methods"
+                  ref={paymentMethodsRef}
+                  style={{
+                    background: "#fff",
+                    borderRadius: 16,
+                    padding: "16px",
+                    border: "0.5px solid #D1E8DF",
+                    minHeight: "200px"
+                  }}
+                />
               </div>
             )}
           </section>
