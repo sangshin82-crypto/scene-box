@@ -64,14 +64,17 @@ export default function BillingPage() {
           .from("bill_line_items")
           .select("*")
           .eq("bill_id", billData.id)
-          .neq("item_type", "deposit")           // 이행보증금 제외
-          .not("description", "like", "월 보관료%") // 예약 시 자동 생성 보관료 제외
+          .neq("item_type", "deposit")
           .order("created_at", { ascending: true });
 
         if (itemsError) {
           console.error("항목 로딩 실패:", itemsError);
         } else {
-          setLineItems(itemsData ?? []);
+          // 예약 시 자동 생성된 보관료 제외 (클라이언트 사이드 필터)
+          const filtered = (itemsData ?? []).filter(
+            item => !item.description.startsWith("월 보관료")
+          );
+          setLineItems(filtered);
         }
       }
 
