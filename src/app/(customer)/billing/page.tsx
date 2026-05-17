@@ -47,7 +47,9 @@ export default function BillingPage() {
         .eq("client_id", clientId)
         .eq("billing_year", now.getFullYear())
         .eq("billing_month", now.getMonth() + 1)
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (billError) {
         console.error("청구서 로딩 실패:", billError);

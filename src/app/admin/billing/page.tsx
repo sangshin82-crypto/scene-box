@@ -135,19 +135,19 @@ export default function AdminBilling() {
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원)</label>
-            <input type="number" placeholder="0" value={transportFee} onChange={e => setTransportFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500" />
+            <input type="number" placeholder="0" value={transportFee} onChange={e => setTransportFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원)</label>
-            <input type="number" placeholder="0" value={disposalFee} onChange={e => setDisposalFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500" />
+            <input type="number" placeholder="0" value={disposalFee} onChange={e => setDisposalFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원)</label>
-            <input type="number" placeholder="0" value={storageFee} onChange={e => setStorageFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500" />
+            <input type="number" placeholder="0" value={storageFee} onChange={e => setStorageFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">비고 / 메모</label>
-            <textarea rows={3} placeholder="청구 사유나 특이사항을 메모해 주세요." value={memo} onChange={e => setMemo(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500" />
+            <textarea rows={3} placeholder="청구 사유나 특이사항을 메모해 주세요." value={memo} onChange={e => setMemo(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
         </div>
 

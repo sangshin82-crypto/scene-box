@@ -61,7 +61,9 @@ export default function BillingCheckoutPage() {
         .eq("client_id", id)
         .eq("billing_year", now.getFullYear())
         .eq("billing_month", now.getMonth() + 1)
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (billData) {
         setBill(billData);
