@@ -249,6 +249,16 @@ function CheckoutInner() {
         amount:      totalAmt,
       });
 
+      // 이행보증금도 bill_line_items에 추가
+      if (deposit > 0) {
+        await supabase.from("bill_line_items").insert({
+          bill_id:     billId,
+          item_type:   "deposit",
+          description: "이행보증금",
+          amount:      deposit,
+        });
+      }
+
       await sendTelegramNotification(
         `🎉 <b>그리드 예약 접수 (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +

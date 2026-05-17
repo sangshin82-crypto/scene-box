@@ -110,12 +110,32 @@ export async function POST(req: NextRequest) {
     }
 
     if (billId) {
+      // 보관료 line_item 추가
       await supabase.from('bill_line_items').insert({
         bill_id:     billId,
         item_type:   'storage',
         description: `월 보관료 (${gridList.join(', ')})`,
         amount:      storageAmount,
       });
+
+      // 이행보증금 line_item 추가 (spaces에서 deposit_amount 조회)
+      const { data: spacesData } = await supabase
+        .from('spaces')
+        .select('deposit_amount')
+        .eq('client_id', clientId)
+        .in('grid_id',
+          (await supabase.from('grids').select('id').in('grid_number', gridList)).data?.map(g => g.id) || []
+        );
+
+      const totalDeposit = (spacesData ?? []).reduce((sum: number, s: any) => sum + (s.deposit_amount ?? 0), 0);
+      if (totalDeposit > 0) {
+        await supabase.from('bill_line_items').insert({
+          bill_id:     billId,
+          item_type:   'deposit',
+          description: '이행보증금',
+          amount:      totalDeposit,
+        });
+      }
     }
 
     // 고객 정보 조회
