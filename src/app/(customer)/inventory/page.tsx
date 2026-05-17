@@ -123,13 +123,13 @@ export default function InventoryPage() {
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }}
       className="relative w-full pb-[80px]">
 
-      {/* 헤더 — 전화번호띠(top:57, h:32) 바로 아래 */}
+      {/* 헤더 — sticky top:0, 전화번호띠는 fixed top:57로 그 아래 위치 */}
       <header style={{
         background: "#fff",
         borderBottom: "0.5px solid #D1E8DF",
         position: "sticky",
-        top: 89,
-        zIndex: 40,
+        top: 0,
+        zIndex: 50,
       }}>
         <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
           <button type="button" onClick={() => router.back()}
@@ -171,8 +171,8 @@ export default function InventoryPage() {
         </div>
       </header>
 
-      {/* 콘텐츠 — paddingTop으로 헤더 뒤에 숨지 않게 */}
-      <div style={{ padding: "16px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* 콘텐츠 — 전화번호띠(32px) + 여백(16px) = 48px */}
+      <div style={{ padding: "48px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* 요약 카드 */}
         <div style={{ background: `linear-gradient(120deg, ${BLUE} 0%, #3B82F6 100%)`, borderRadius: 20, padding: "20px", boxShadow: `0 4px 20px ${BLUE}33` }}>
