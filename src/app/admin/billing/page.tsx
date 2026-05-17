@@ -39,7 +39,9 @@ export default function AdminBilling() {
         .eq('client_id', selectedClientId)
         .eq('billing_year', now.getFullYear())
         .eq('billing_month', now.getMonth() + 1)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       if (data) {
         setBill(data);
         setTransportFee(String(data.transport_fee ?? ''));

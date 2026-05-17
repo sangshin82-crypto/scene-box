@@ -185,7 +185,7 @@ function CheckoutInner() {
         return;
       }
       
-      // 무통장 입금 - 기존 로직
+      // 무통장 입금 - 기존 청구서가 있으면 업데이트, 없으면 생성
       const spaceRows = gridsData.map(g => ({
         client_id:      clientId,
         grid_id:        g.id,
@@ -201,25 +201,49 @@ function CheckoutInner() {
 
       await supabase.from("grids").update({ status: "occupied" }).in("grid_number", gridList);
 
-      const { data: billData, error: billError } = await supabase
+      // 이번 달 청구서가 이미 있는지 확인
+      const { data: existingBill } = await supabase
         .from("monthly_bills")
-        .insert({
-          client_id:     clientId,
-          billing_year:  startDate.getFullYear(),
-          billing_month: startDate.getMonth() + 1,
-          storage_fee:   totalAmt,
-          transport_fee: 0,
-          disposal_fee:  0,
-          status:        "pending",
-        })
-        .select()
-        .single();
+        .select("id, storage_fee")
+        .eq("client_id", clientId)
+        .eq("billing_year", startDate.getFullYear())
+        .eq("billing_month", startDate.getMonth() + 1)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (billError) throw new Error("청구서 생성 실패: " + billError.message);
-      if (!billData) throw new Error("청구서 생성 실패: 데이터가 반환되지 않음");
+      let billId: string;
+
+      if (existingBill) {
+        // 기존 청구서에 보관료 추가
+        await supabase
+          .from("monthly_bills")
+          .update({ storage_fee: (existingBill.storage_fee ?? 0) + totalAmt })
+          .eq("id", existingBill.id);
+        billId = existingBill.id;
+      } else {
+        // 새 청구서 생성
+        const { data: billData, error: billError } = await supabase
+          .from("monthly_bills")
+          .insert({
+            client_id:     clientId,
+            billing_year:  startDate.getFullYear(),
+            billing_month: startDate.getMonth() + 1,
+            storage_fee:   totalAmt,
+            transport_fee: 0,
+            disposal_fee:  0,
+            status:        "pending",
+          })
+          .select()
+          .single();
+
+        if (billError) throw new Error("청구서 생성 실패: " + billError.message);
+        if (!billData) throw new Error("청구서 생성 실패: 데이터가 반환되지 않음");
+        billId = billData.id;
+      }
 
       await supabase.from("bill_line_items").insert({
-        bill_id:     billData.id,
+        bill_id:     billId,
         item_type:   "storage",
         description: `월 보관료 (${gridList.join(", ")})`,
         amount:      totalAmt,

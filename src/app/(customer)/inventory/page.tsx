@@ -3,70 +3,100 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Search, Camera, Package, Box, Layers,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, CreditCard, CheckCircle2, Clock, Building2,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
 const BLUE  = "#2563EB";
 const GREEN = "#10B981";
 
-const ICON_MAP = [Package, Box, Layers, Package, Box];
-
-type InventoryItem = {
+type Space = {
   id: string;
-  name: string;
-  description: string | null;
-  size_type: string | null;
-  stored_at: string;
+  plan_type: string;
+  monthly_fee: number;
+  start_date: string;
+  end_date: string;
   status: string;
   grids: { grid_number: string; zone: string } | null;
 };
 
+type PaymentItem = {
+  id: string;
+  description: string;
+  amount: number;
+  item_type: string;
+  bill_status: string;
+  bill_month: number;
+  bill_year: number;
+  paid_at: string | null;
+  created_at: string;
+};
+
+const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
 const fmtDate = (d: string) => {
   const date = new Date(d);
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
 };
 
+type Tab = "contracts" | "payments";
+
 export default function InventoryPage() {
   const router = useRouter();
-
-  const [items, setItems]           = useState<InventoryItem[]>([]);
-  const [isLoading, setIsLoading]   = useState(true);
-  const [query, setQuery]           = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [tab, setTab]           = useState<Tab>("contracts");
+  const [spaces, setSpaces]     = useState<Space[]>([]);
+  const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchItems() {
+    async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser();
       const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
 
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .select("id, name, description, size_type, stored_at, status, grids(grid_number, zone)")
+      // 1. 계약 현황
+      const { data: spacesData } = await supabase
+        .from("spaces")
+        .select("id, plan_type, monthly_fee, start_date, end_date, status, grids(grid_number, zone)")
         .eq("client_id", clientId)
-        .eq("status", "stored")
-        .order("stored_at", { ascending: false });
+        .order("start_date", { ascending: false });
 
-      if (error) {
-        console.error("보관함 로딩 실패:", error);
-      } else {
-        setItems((data ?? []) as unknown as InventoryItem[]);
+      setSpaces((spacesData ?? []) as unknown as Space[]);
+
+      // 2. 결제 내역 (월별 청구서 + 항목)
+      const { data: billsData } = await supabase
+        .from("monthly_bills")
+        .select("id, billing_year, billing_month, status, paid_at, created_at, bill_line_items(id, description, amount, item_type, created_at)")
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false });
+
+      if (billsData) {
+        const items: PaymentItem[] = [];
+        billsData.forEach((bill: any) => {
+          ((bill.bill_line_items ?? []) as any[]).forEach((item: any) => {
+            if (item.amount > 0) {
+              items.push({
+                id:          item.id,
+                description: item.description,
+                amount:      item.amount,
+                item_type:   item.item_type,
+                bill_status: bill.status,
+                bill_month:  bill.billing_month,
+                bill_year:   bill.billing_year,
+                paid_at:     bill.paid_at,
+                created_at:  item.created_at,
+              });
+            }
+          });
+        });
+        setPayments(items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       }
+
       setIsLoading(false);
     }
-    fetchItems();
+    fetchData();
   }, []);
 
-  const filtered = items.filter(it =>
-    it.name.includes(query) ||
-    (it.grids?.grid_number ?? "").includes(query) ||
-    (it.description ?? "").includes(query)
-  );
-
-  const gridLabels = [...new Set(
-    items.map(it => it.grids ? `${it.grids.zone}존 ${it.grids.grid_number}` : null).filter(Boolean)
-  )] as string[];
+  const activeSpaces = spaces.filter(s => s.status === "active");
+  const totalPaid    = payments.filter(p => p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0);
 
   if (isLoading) {
     return (
@@ -83,103 +113,202 @@ export default function InventoryPage() {
       {/* 헤더 */}
       <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }}
         className="sticky top-0 z-50">
-        <div style={{ padding: "14px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <button type="button" onClick={() => router.back()}
-              style={{ background: "none", border: "none", cursor: "pointer", flexShrink: 0, padding: 4 }}>
-              <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
-            </button>
-            <span style={{ flex: 1, textAlign: "center", fontSize: 19, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-              내 보관함
-            </span>
-            <button type="button" onClick={() => setSearchOpen(p => !p)}
-              style={{ padding: 6, background: searchOpen ? "#EFF6FF" : "none", border: "none", borderRadius: 10, cursor: "pointer", flexShrink: 0 }}>
-              <Search size={21} color={searchOpen ? BLUE : "#374151"} strokeWidth={1.8} />
-            </button>
-          </div>
+        <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+          <button type="button" onClick={() => router.back()}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+            <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
+          </button>
+          <span style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
+            내 보관함
+          </span>
+        </div>
 
-          {searchOpen && (
-            <div style={{ paddingTop: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F0F7F4", borderRadius: 12, padding: "10px 14px", border: "1.5px solid #D1E8DF" }}>
-                <Search size={14} color="#94A3B8" strokeWidth={1.8} />
-                <input autoFocus value={query} onChange={e => setQuery(e.target.value)}
-                  placeholder="물품명, 보관 위치로 검색"
-                  style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14, color: "#0F172A" }} />
-              </div>
-            </div>
-          )}
+        {/* 탭 */}
+        <div style={{ display: "flex", borderTop: "0.5px solid #F0F7F4" }}>
+          {([
+            { key: "contracts" as Tab, label: "📦 계약 현황", count: activeSpaces.length },
+            { key: "payments"  as Tab, label: "💳 결제 내역", count: payments.length     },
+          ]).map(({ key, label, count }) => (
+            <button key={key} onClick={() => setTab(key)}
+              style={{
+                flex: 1, padding: "12px 0", border: "none", background: "none", cursor: "pointer",
+                fontSize: 13, fontWeight: tab === key ? 700 : 500,
+                color: tab === key ? BLUE : "#94A3B8",
+                borderBottom: tab === key ? `2px solid ${BLUE}` : "2px solid transparent",
+                transition: "all 0.15s",
+              }}>
+              {label}
+              {count > 0 && (
+                <span style={{
+                  marginLeft: 6, fontSize: 11, fontWeight: 700,
+                  color: tab === key ? "#fff" : "#94A3B8",
+                  background: tab === key ? BLUE : "#E5E7EB",
+                  padding: "1px 6px", borderRadius: 99,
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* 전화번호 띠(32px) + 기존 패딩(16px) */}
-      <div style={{ padding: "48px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ padding: "16px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* 요약 카드 */}
-        <div style={{ background: `linear-gradient(120deg, ${BLUE} 0%, #3B82F6 100%)`, borderRadius: 20, padding: "20px 20px", boxShadow: `0 4px 20px ${BLUE}33` }}>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4, fontWeight: 500 }}>현재 보관 현황</p>
-          <p style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 12, letterSpacing: "-0.5px", lineHeight: 1.4 }}>
-            {filtered.length}개의 물품이 안전하게<br />보관 중입니다 🔒
-          </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {gridLabels.length > 0 ? gridLabels.map(g => (
-              <span key={g} style={{ fontSize: 12, fontWeight: 700, color: BLUE, background: "#fff", padding: "4px 12px", borderRadius: 99 }}>
-                {g}
-              </span>
-            )) : (
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>보관 중인 물품 없음</span>
-            )}
-          </div>
+        <div style={{ background: `linear-gradient(120deg, ${BLUE} 0%, #3B82F6 100%)`, borderRadius: 20, padding: "20px", boxShadow: `0 4px 20px ${BLUE}33` }}>
+          {tab === "contracts" ? (
+            <>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>현재 계약 현황</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8, letterSpacing: "-0.5px" }}>
+                {activeSpaces.length > 0 ? `${activeSpaces.length}개 공간 계약 중 🔒` : "계약 중인 공간 없음"}
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {activeSpaces.map(s => (
+                  <span key={s.id} style={{ fontSize: 12, fontWeight: 700, color: BLUE, background: "#fff", padding: "4px 12px", borderRadius: 99 }}>
+                    {s.grids ? `${s.grids.zone}존 ${s.grids.grid_number}` : "—"}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>누적 결제 금액</p>
+              <p style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 4, letterSpacing: "-0.5px" }}>
+                {fmt(totalPaid)}
+              </p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+                총 {payments.length}건의 결제 내역
+              </p>
+            </>
+          )}
         </div>
 
-        {/* 필터 */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 2 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8" }}>
-            {query ? `"${query}" 검색 결과 ${filtered.length}건` : `전체 ${items.length}건`}
-          </p>
-          <span style={{ fontSize: 12, color: "#94A3B8" }}>입고일 최신순</span>
-        </div>
-
-        {/* 목록 */}
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px 0", color: "#94A3B8" }}>
-            <Search size={36} color="#D1E8DF" style={{ margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, fontWeight: 600 }}>
-              {query ? "검색 결과가 없습니다" : "보관 중인 물품이 없습니다"}
-            </p>
-          </div>
-        ) : (
+        {/* 계약 현황 탭 */}
+        {tab === "contracts" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {filtered.map((item, i) => {
-              const gridLabel = item.grids ? `${item.grids.zone}존 ${item.grids.grid_number}` : "—";
-              return (
-                <button key={item.id}
-                  style={{ background: "#fff", borderRadius: 18, boxShadow: "0 1px 10px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left", width: "100%" }}>
-                  <div style={{ width: 68, height: 68, borderRadius: 14, background: "#F0F7F4", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, border: "1px dashed #D1E8DF" }}>
-                    <Camera size={18} color="#94A3B8" strokeWidth={1.5} />
-                    <span style={{ fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>사진 없음</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>{item.name}</p>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: GREEN, background: "#ECFDF5", padding: "3px 8px", borderRadius: 99, whiteSpace: "nowrap", marginLeft: 8, flexShrink: 0 }}>
-                        보관 중
+            {spaces.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#94A3B8" }}>
+                <Building2 size={36} color="#D1E8DF" style={{ margin: "0 auto 12px" }} />
+                <p style={{ fontSize: 14, fontWeight: 600 }}>계약 내역이 없습니다</p>
+              </div>
+            ) : (
+              spaces.map(space => {
+                const isActive  = space.status === "active";
+                const gridLabel = space.grids ? `${space.grids.zone}존 ${space.grids.grid_number}` : "—";
+                const dday      = Math.ceil((new Date(space.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                return (
+                  <div key={space.id} style={{
+                    background: "#fff", borderRadius: 18,
+                    border: `0.5px solid ${isActive ? "#BFDBFE" : "#E5E7EB"}`,
+                    padding: "16px 18px", boxShadow: "0 1px 10px rgba(0,0,0,0.05)",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: isActive ? BLUE : "#94A3B8" }}>
+                        {gridLabel}
+                      </span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 99,
+                        color: isActive ? "#fff" : "#9CA3AF",
+                        background: isActive ? GREEN : "#E5E7EB",
+                      }}>
+                        {isActive ? "계약중" : "종료"}
                       </span>
                     </div>
-                    <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 8 }}>{item.description ?? "—"}</p>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: BLUE, background: "#EFF6FF", padding: "3px 8px", borderRadius: 99 }}>{gridLabel}</span>
-                      <span style={{ fontSize: 11, color: "#94A3B8", background: "#F0F7F4", padding: "3px 8px", borderRadius: 99 }}>입고 {fmtDate(item.stored_at)}</span>
-                      {item.size_type && (
-                        <span style={{ fontSize: 11, color: "#94A3B8", background: "#F0F7F4", padding: "3px 8px", borderRadius: 99 }}>{item.size_type}</span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 12, color: "#94A3B8" }}>이용 기간</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>
+                          {fmtDate(space.start_date)} ~ {fmtDate(space.end_date)}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 12, color: "#94A3B8" }}>월 보관료</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>
+                          {fmt(space.monthly_fee)} (VAT 별도)
+                        </span>
+                      </div>
+                      {isActive && (
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 12, color: "#94A3B8" }}>계약 만료</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: dday <= 7 ? "#F97316" : "#374151" }}>
+                            D-{dday}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
-                  <ChevronRight size={15} color="#CBD5E1" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                </button>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         )}
+
+        {/* 결제 내역 탭 */}
+        {tab === "payments" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {payments.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#94A3B8" }}>
+                <CreditCard size={36} color="#D1E8DF" style={{ margin: "0 auto 12px" }} />
+                <p style={{ fontSize: 14, fontWeight: 600 }}>결제 내역이 없습니다</p>
+              </div>
+            ) : (
+              payments.map(payment => {
+                const isPaid = payment.bill_status === "paid";
+                const typeLabel: Record<string, string> = {
+                  storage:   "보관료",
+                  transport: "운송비",
+                  disposal:  "폐기물 처리비",
+                };
+                return (
+                  <div key={payment.id} style={{
+                    background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF",
+                    padding: "14px 16px", boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+                    display: "flex", alignItems: "center", gap: 14,
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                      background: isPaid ? "#ECFDF5" : "#FFF7ED",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {isPaid
+                        ? <CheckCircle2 size={20} color={GREEN} strokeWidth={2} />
+                        : <Clock size={20} color="#F97316" strokeWidth={2} />
+                      }
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{payment.description}</p>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 99,
+                          color: isPaid ? GREEN : "#F97316",
+                          background: isPaid ? "#ECFDF5" : "#FFF7ED",
+                          flexShrink: 0,
+                        }}>
+                          {isPaid ? "결제완료" : "미결제"}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 11, color: "#94A3B8" }}>
+                        {payment.bill_year}년 {payment.bill_month}월 · {typeLabel[payment.item_type] ?? payment.item_type}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: isPaid ? "#0F172A" : "#F97316" }}>
+                        {fmt(payment.amount)}
+                      </p>
+                      {isPaid && payment.paid_at && (
+                        <p style={{ fontSize: 10, color: "#94A3B8", marginTop: 2 }}>
+                          {fmtDate(payment.paid_at)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
