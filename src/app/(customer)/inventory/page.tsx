@@ -70,15 +70,17 @@ export default function InventoryPage() {
         billsData.forEach((bill: any) => {
           ((bill.bill_line_items ?? []) as any[]).forEach((item: any) => {
             if (item.amount > 0) {
+              // 예약 시 자동 생성된 보관료와 이행보증금은 paid로 간주
+              const isBookingItem = item.description.startsWith("월 보관료") || item.item_type === "deposit";
               items.push({
                 id:          item.id,
                 description: item.description,
                 amount:      item.amount,
                 item_type:   item.item_type,
-                bill_status: bill.status,
+                bill_status: isBookingItem ? "paid" : bill.status,
                 bill_month:  bill.billing_month,
                 bill_year:   bill.billing_year,
-                paid_at:     bill.paid_at,
+                paid_at:     bill.paid_at ?? item.created_at,
                 created_at:  item.created_at,
               });
             }
