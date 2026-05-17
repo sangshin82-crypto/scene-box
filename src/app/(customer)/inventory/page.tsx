@@ -51,7 +51,6 @@ export default function InventoryPage() {
       const { data: { user } } = await supabase.auth.getUser();
       const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
 
-      // 1. 계약 현황
       const { data: spacesData } = await supabase
         .from("spaces")
         .select("id, plan_type, monthly_fee, deposit_amount, start_date, end_date, status, grids(grid_number, zone)")
@@ -60,7 +59,6 @@ export default function InventoryPage() {
 
       setSpaces((spacesData ?? []) as unknown as Space[]);
 
-      // 2. 결제 내역
       const { data: billsData } = await supabase
         .from("monthly_bills")
         .select("id, billing_year, billing_month, status, paid_at, created_at, bill_line_items(id, description, amount, item_type, created_at)")
@@ -94,9 +92,9 @@ export default function InventoryPage() {
     fetchData();
   }, []);
 
-  const activeSpaces  = spaces.filter(s => s.status === "active");
-  const totalDeposit  = activeSpaces.reduce((sum, s) => sum + (s.deposit_amount ?? 0), 0);
-  const totalPaid     = payments.filter(p => p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0);
+  const activeSpaces = spaces.filter(s => s.status === "active");
+  const totalDeposit = activeSpaces.reduce((sum, s) => sum + (s.deposit_amount ?? 0), 0);
+  const totalPaid    = payments.filter(p => p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0);
 
   // 월별 그룹핑
   const grouped = payments.reduce((acc, p) => {
@@ -118,12 +116,21 @@ export default function InventoryPage() {
     );
   }
 
+  // 헤더 높이: 메인헤더(57) + 전화번호띠(32) + 내보관함헤더(약 90) = 179px
+  const HEADER_OFFSET = 179;
+
   return (
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }}
       className="relative w-full pb-[80px]">
 
-      {/* 헤더 — 메인헤더(57px) + 전화번호띠(32px) 아래에 sticky */}
-      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 89, zIndex: 40 }}>
+      {/* 헤더 — 전화번호띠(top:57, h:32) 바로 아래 */}
+      <header style={{
+        background: "#fff",
+        borderBottom: "0.5px solid #D1E8DF",
+        position: "sticky",
+        top: 89,
+        zIndex: 40,
+      }}>
         <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
           <button type="button" onClick={() => router.back()}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
@@ -164,6 +171,7 @@ export default function InventoryPage() {
         </div>
       </header>
 
+      {/* 콘텐츠 — paddingTop으로 헤더 뒤에 숨지 않게 */}
       <div style={{ padding: "16px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* 요약 카드 */}
@@ -185,12 +193,16 @@ export default function InventoryPage() {
           ) : (
             <>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>누적 결제 금액 (VAT 포함)</p>
-              <p style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 4, letterSpacing: "-0.5px" }}>
+              <p style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 8, letterSpacing: "-0.5px" }}>
                 {fmt(totalPaid)}
               </p>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
-                총 {payments.length}건 · 이행보증금 {fmt(totalDeposit)} 별도
-              </p>
+              {/* 이행보증금 별도 표기 */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "8px 12px" }}>
+                <Lock size={12} color="rgba(255,255,255,0.8)" />
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
+                  이행보증금 <span style={{ fontWeight: 800, color: "#fff" }}>{fmt(totalDeposit)}</span> (VAT 없음 · 퇴실 시 환불)
+                </p>
+              </div>
             </>
           )}
         </div>
@@ -259,24 +271,6 @@ export default function InventoryPage() {
         {tab === "payments" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* 이행보증금 섹션 */}
-            {totalDeposit > 0 && (
-              <div style={{ background: "#fff", borderRadius: 16, border: "1px dashed #BFDBFE", padding: "14px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <Lock size={14} color={BLUE} strokeWidth={2} />
-                  <p style={{ fontSize: 13, fontWeight: 700, color: BLUE }}>이행보증금</p>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#60A5FA", background: "#EFF6FF", padding: "2px 6px", borderRadius: 99 }}>VAT 없음</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.6 }}>
-                    정상 퇴실 시 100% 환불
-                  </p>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: BLUE }}>{fmt(totalDeposit)}</p>
-                </div>
-              </div>
-            )}
-
-            {/* 월별 결제 내역 */}
             {groupedList.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 0", color: "#94A3B8" }}>
                 <CreditCard size={36} color="#D1E8DF" style={{ margin: "0 auto 12px" }} />
@@ -284,8 +278,23 @@ export default function InventoryPage() {
               </div>
             ) : (
               groupedList.map(group => {
-                const groupTotal = group.items.reduce((sum, p) => sum + p.amount, 0);
-                const allPaid    = group.items.every(p => p.bill_status === "paid");
+                const groupTotal    = group.items.reduce((sum, p) => sum + p.amount, 0);
+                const allPaid       = group.items.every(p => p.bill_status === "paid");
+
+                // 이 달의 이행보증금 (spaces에서 해당 월에 시작한 계약의 보증금)
+                const monthDeposit = spaces
+                  .filter(s => {
+                    const start = new Date(s.start_date);
+                    return start.getFullYear() === group.year && start.getMonth() + 1 === group.month;
+                  })
+                  .reduce((sum, s) => sum + (s.deposit_amount ?? 0), 0);
+
+                const typeLabel: Record<string, string> = {
+                  storage:   "보관료",
+                  transport: "운송비",
+                  disposal:  "폐기물 처리비",
+                };
+
                 return (
                   <div key={`${group.year}-${group.month}`}>
                     {/* 월 헤더 */}
@@ -302,19 +311,16 @@ export default function InventoryPage() {
                       </span>
                     </div>
 
-                    {/* 항목들 */}
+                    {/* 항목 + 소계 카드 */}
                     <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+
+                      {/* 항목들 */}
                       {group.items.map((payment, idx) => {
                         const isPaid = payment.bill_status === "paid";
-                        const typeLabel: Record<string, string> = {
-                          storage:   "보관료",
-                          transport: "운송비",
-                          disposal:  "폐기물 처리비",
-                        };
                         return (
                           <div key={payment.id} style={{
                             padding: "14px 16px",
-                            borderBottom: idx < group.items.length - 1 ? "0.5px solid #F0F7F4" : "none",
+                            borderBottom: "0.5px solid #F0F7F4",
                             display: "flex", alignItems: "center", gap: 12,
                           }}>
                             <div style={{
@@ -349,40 +355,32 @@ export default function InventoryPage() {
                         );
                       })}
 
-                      {/* 월 소계 */}
-                      <div style={{
-                        padding: "12px 16px", background: "#F0F7F4",
-                        borderTop: "1px dashed #D1E8DF",
-                        display: "flex", justifyContent: "space-between", alignItems: "center",
-                      }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>
-                          {group.month}월 소계 (VAT 포함)
-                        </span>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: BLUE }}>
-                          {fmt(groupTotal)}
-                        </span>
+                      {/* 소계 */}
+                      <div style={{ padding: "12px 16px", background: "#F0F7F4", borderTop: "1px dashed #D1E8DF" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: monthDeposit > 0 ? 6 : 0 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>
+                            {group.month}월 소계 (VAT 포함)
+                          </span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: BLUE }}>
+                            {fmt(groupTotal)}
+                          </span>
+                        </div>
+                        {/* 이행보증금 - 해당 월에 있으면 표시, 없으면 없음 */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <Lock size={11} color="#94A3B8" />
+                            <span style={{ fontSize: 11, color: "#94A3B8" }}>이행보증금 (VAT 없음)</span>
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: monthDeposit > 0 ? "#374151" : "#CBD5E1" }}>
+                            {monthDeposit > 0 ? fmt(monthDeposit) : "없음"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 );
               })
             )}
-
-            {/* 누적 합계 */}
-            {payments.length > 0 && (
-              <div style={{ background: `linear-gradient(135deg, ${BLUE}, #3B82F6)`, borderRadius: 16, padding: "16px 18px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginBottom: 4 }}>누적 결제 합계 (VAT 포함)</p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>이행보증금 {fmt(totalDeposit)} 제외</p>
-                  </div>
-                  <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
-                    {fmt(totalPaid)}
-                  </p>
-                </div>
-              </div>
-            )}
-
           </div>
         )}
       </div>
