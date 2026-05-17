@@ -73,6 +73,8 @@ export default function AdminBilling() {
       disposal_fee: disposal,
       storage_fee: storage,
       admin_memo: memo || null,
+      status: 'pending',  // 추가 금액 입력 시 결제 버튼 다시 활성화
+      paid_at: null,      // 결제 완료 시각 초기화
     };
 
     let billId = bill?.id;

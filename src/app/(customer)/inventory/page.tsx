@@ -111,8 +111,8 @@ export default function InventoryPage() {
       className="relative w-full pb-[80px]">
 
       {/* 헤더 */}
-      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }}
-        className="sticky top-0 z-50">
+      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", top: 57 }}
+        className="sticky z-50">
         <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
           <button type="button" onClick={() => router.back()}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
@@ -153,7 +153,7 @@ export default function InventoryPage() {
         </div>
       </header>
 
-      <div style={{ padding: "16px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ padding: "48px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
 
         {/* 요약 카드 */}
         <div style={{ background: `linear-gradient(120deg, ${BLUE} 0%, #3B82F6 100%)`, borderRadius: 20, padding: "20px", boxShadow: `0 4px 20px ${BLUE}33` }}>
