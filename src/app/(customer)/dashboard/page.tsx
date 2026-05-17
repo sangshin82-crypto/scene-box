@@ -226,8 +226,11 @@ export default function DashboardPage() {
               <div style={{ textAlign: "right" }}>
                 <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>예상 청구액</p>
                 <p style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>
-                  {monthlyBill > 0 ? `${monthlyBill.toLocaleString()}원` : "—"}
+                  {monthlyBill > 0 ? `${Math.round(monthlyBill * 1.1).toLocaleString()}원` : "—"}
                 </p>
+                {monthlyBill > 0 && (
+                  <p style={{ fontSize: 10, color: "#94A3B8" }}>(VAT 포함)</p>
+                )}
               </div>
             </div>
           </div>

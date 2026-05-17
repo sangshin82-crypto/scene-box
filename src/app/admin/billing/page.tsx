@@ -135,10 +135,11 @@ export default function AdminBilling() {
       .in('item_type', ['storage', 'transport', 'disposal'])
       .not('description', 'like', '월 보관료%');
 
+    // VAT 포함 금액으로 저장 (입력값 × 1.1)
     const lineItems = [
-      { bill_id: billId, item_type: 'storage',  description: '보관료',        amount: storage   },
-      { bill_id: billId, item_type: 'transport', description: '운송비',        amount: transport },
-      { bill_id: billId, item_type: 'disposal',  description: '폐기물 처리비', amount: disposal  },
+      { bill_id: billId, item_type: 'storage',  description: '보관료',        amount: Math.round(storage * 1.1)   },
+      { bill_id: billId, item_type: 'transport', description: '운송비',        amount: Math.round(transport * 1.1) },
+      { bill_id: billId, item_type: 'disposal',  description: '폐기물 처리비', amount: Math.round(disposal * 1.1)  },
     ].filter(item => item.amount > 0);
 
     if (lineItems.length > 0) {
@@ -213,19 +214,19 @@ export default function AdminBilling() {
         {/* 금액 입력 */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-            <p className="text-xs text-yellow-700 font-bold">⚠️ VAT 포함 금액으로 입력해주세요</p>
-            <p className="text-xs text-yellow-600 mt-1">예: 보관료 120,000원 → 132,000원 입력 (×1.1)</p>
+            <p className="text-xs text-yellow-700 font-bold">⚠️ VAT 별도 금액으로 입력해주세요</p>
+            <p className="text-xs text-yellow-600 mt-1">예: 운송비 50,000원 → 50,000 입력 (VAT 10% 자동 계산)</p>
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원, VAT 포함)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원, VAT 별도)</label>
             <input type="number" placeholder="0" value={storageFee} onChange={e => setStorageFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원, VAT 포함)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원, VAT 별도)</label>
             <input type="number" placeholder="0" value={transportFee} onChange={e => setTransportFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원, VAT 포함)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원, VAT 별도)</label>
             <input type="number" placeholder="0" value={disposalFee} onChange={e => setDisposalFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
@@ -236,11 +237,12 @@ export default function AdminBilling() {
 
         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
           <p className="text-sm text-blue-700 font-bold">
-            총 청구액: {((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)).toLocaleString()}원
+            총 청구액 (VAT 포함): {Math.round(((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)) * 1.1).toLocaleString()}원
           </p>
           <p className="text-xs text-blue-500 mt-1">
-            청구 대상: {billingYear}년 {billingMonth}월
+            공급가 {((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)).toLocaleString()}원 + VAT {Math.round(((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)) * 0.1).toLocaleString()}원
           </p>
+          <p className="text-xs text-blue-400 mt-1">청구 대상: {billingYear}년 {billingMonth}월</p>
         </div>
 
         <button onClick={handleSave} disabled={isSaving} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-sm active:bg-blue-700 transition-colors">

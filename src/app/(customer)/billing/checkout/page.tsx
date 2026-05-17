@@ -115,8 +115,7 @@ function BillingCheckoutInner() {
   }, [payMethod]);
 
   const subtotal = lineItems.filter(it => it.item_type !== "deposit").reduce((sum, it) => sum + (it.amount ?? 0), 0);
-  const vat      = bill?.vat_amount ?? Math.round(subtotal * 0.1);
-  const total    = bill?.total_amount ?? subtotal + vat;
+  const total    = subtotal; // lineItems에 이미 VAT 포함 금액으로 저장됨
 
   useEffect(() => {
     if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
@@ -162,11 +161,11 @@ function BillingCheckoutInner() {
         `💳 <b>정산 결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📅 청구 월: ${bill.billing_year}년 ${bill.billing_month}월\n` +
-        `💰 결제 금액: ${fmtWon(subtotal)} (VAT 별도)\n` +
+        `💰 결제 금액: ${fmtWon(total)} (VAT 포함)\n` +
         `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}`
       );
 
-      alert("정산이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(subtotal) + " (VAT 별도)\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
+      alert("정산이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(total) + " (VAT 포함)\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
       router.push("/billing");
 
     } catch (err: any) {
@@ -209,10 +208,10 @@ function BillingCheckoutInner() {
             <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", overflow: "hidden", border: "0.5px solid #D1E8DF" }}>
               <div style={{ background: `linear-gradient(135deg, ${BLUE}, #3B82F6)`, padding: "16px 20px" }}>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginBottom: 4 }}>
-                  최종 결제 금액 {payMethod === "card" ? "(VAT 포함)" : "(VAT 별도)"}
+                  최종 결제 금액 (VAT 포함)
                 </p>
                 <p style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
-                  {payMethod === "card" ? fmtWon(total) : fmtWon(subtotal)}
+                  {fmtWon(total)}
                 </p>
               </div>
               <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -222,28 +221,11 @@ function BillingCheckoutInner() {
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(it.amount)}</span>
                   </div>
                 ))}
-                <div style={{ borderTop: "1px dashed #D1E8DF", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ borderTop: "1px dashed #D1E8DF", paddingTop: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: "#94A3B8" }}>소계</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(subtotal)}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계 (VAT 포함)</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
                   </div>
-                  {payMethod === "card" ? (
-                    <>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: 13, color: "#94A3B8" }}>부가세 (VAT 10%)</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(vat)}</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계</span>
-                        <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계 (VAT 별도)</span>
-                      <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(subtotal)}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -359,7 +341,7 @@ function BillingCheckoutInner() {
         <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 20px", zIndex: 90, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
           <button onClick={handlePayment} disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", transition: "all 0.2s", boxShadow: allChecked ? `0 4px 16px ${BLUE}44` : "none" }}>
-            {isSubmitting ? "처리 중..." : allChecked ? `${payMethod === "card" ? fmtWon(total) : fmtWon(subtotal) + " (VAT 별도)"} 결제하기` : "약관에 동의해주세요"}
+            {isSubmitting ? "처리 중..." : allChecked ? `${fmtWon(total)} 결제하기` : "약관에 동의해주세요"}
           </button>
         </div>
       </div>

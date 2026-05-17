@@ -42,8 +42,8 @@ function CheckoutInner() {
   const gridList   = gridStr ? gridStr.split(",") : [];
   const deposit    = monthly * 2;
   const vat        = Math.round(totalAmt * 0.1); // 보관료에만 VAT 10%
-  const grandTotalCard = totalAmt + vat + deposit; // 카드: 보관료 VAT 포함 + 보증금
-  const grandTotalBank = totalAmt + deposit;        // 무통장: VAT 별도
+  const grandTotalCard = totalAmt + vat + deposit;
+  const grandTotalBank = totalAmt + vat + deposit; // 무통장도 VAT 포함으로 통일
 
   const startDate = new Date();
   const endDate   = new Date();
@@ -267,12 +267,12 @@ function CheckoutInner() {
         `👤 고객명: ${clientName}\n` +
         `📦 예약 공간: ${gridList.join(", ")} (${gridList.length} Grid)\n` +
         `📅 이용 기간: ${months}개월\n` +
-        `💰 결제 금액: ${fmt(grandTotalBank)} (VAT 별도)\n` +
+        `💰 결제 금액: ${fmt(grandTotalCard)} (VAT 포함)\n` +
         `🗓 시작일: ${fmtDate(startDate)}` +
         (uploadedUrl ? `\n📎 사업자등록증: 첨부됨` : "")
       );
 
-      alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotalBank)} (VAT 별도)\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
+      alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotalCard)} (VAT 포함)\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
       router.push("/dashboard");
       
     } catch (err: any) {
@@ -308,16 +308,13 @@ function CheckoutInner() {
             <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", overflow: "hidden", border: "0.5px solid #D1E8DF" }}>
               <div style={{ background: `linear-gradient(135deg, ${BLUE}, #3B82F6)`, padding: "16px 20px" }}>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginBottom: 4 }}>
-                  최종 결제 금액
+                  최종 결제 금액 (VAT 포함)
                 </p>
                 <p style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
-                  {payMethod === "card" ? fmt(grandTotalCard) : fmt(grandTotalBank)}
+                  {fmt(grandTotalCard)}
                 </p>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
-                  {payMethod === "card"
-                    ? `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)} + 보증금 ${fmt(deposit)}`
-                    : `보관료 ${fmt(totalAmt)} + 보증금 ${fmt(deposit)} (VAT 별도)`
-                  }
+                  보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 보증금 {fmt(deposit)}
                 </p>
               </div>
               <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -326,7 +323,7 @@ function CheckoutInner() {
                   { label: "이용 기간",                value: `${months}개월 (${fmtDate(startDate)} ~ ${fmtDate(endDate)})` },
                   { label: "월 보관료",                value: `${fmt(monthly)} (VAT 별도)` },
                   { label: `${months}개월 보관료 총액`, value: `${fmt(totalAmt)} (VAT 별도)` },
-                  ...(payMethod === "card" ? [{ label: "부가세 (VAT 10%)", value: fmt(vat) }] : []),
+                  { label: "부가세 (VAT 10%)",          value: fmt(vat) },
                 ].map(({ label, value }) => (
                   <div key={label} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 13, color: "#94A3B8", flexShrink: 0, marginRight: 12 }}>{label}</span>
@@ -535,7 +532,7 @@ function CheckoutInner() {
             onClick={handlePayment}
             disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", boxShadow: allChecked ? `0 4px 16px ${BLUE}55` : "none", transition: "all 0.2s" }}>
-            {isSubmitting ? "처리 중..." : !allChecked ? "약관에 동의해주세요" : (payMethod === "card" ? `${fmt(grandTotalCard)} 결제하기` : "예약 확정 및 입금 계좌 확인")}
+            {isSubmitting ? "처리 중..." : !allChecked ? "약관에 동의해주세요" : `${fmt(grandTotalCard)} 결제하기`}
           </button>
         </div>
 
