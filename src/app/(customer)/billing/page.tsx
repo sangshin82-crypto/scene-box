@@ -40,14 +40,14 @@ export default function BillingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
 
-      const now = new Date();
+      // 미결제(pending) 청구서 중 가장 최신 것 조회
       const { data: billData, error: billError } = await supabase
         .from("monthly_bills")
         .select("*")
         .eq("client_id", clientId)
-        .eq("billing_year", now.getFullYear())
-        .eq("billing_month", now.getMonth() + 1)
-        .order("created_at", { ascending: false })
+        .eq("status", "pending")
+        .order("billing_year", { ascending: false })
+        .order("billing_month", { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -59,17 +59,20 @@ export default function BillingPage() {
 
       setBill(billData);
 
-      const { data: itemsData, error: itemsError } = await supabase
-        .from("bill_line_items")
-        .select("*")
-        .eq("bill_id", billData.id)
-        .neq("item_type", "deposit")  // 이행보증금 제외
-        .order("created_at", { ascending: true });
+      if (billData) {
+        const { data: itemsData, error: itemsError } = await supabase
+          .from("bill_line_items")
+          .select("*")
+          .eq("bill_id", billData.id)
+          .neq("item_type", "deposit")           // 이행보증금 제외
+          .not("description", "like", "월 보관료%") // 예약 시 자동 생성 보관료 제외
+          .order("created_at", { ascending: true });
 
-      if (itemsError) {
-        console.error("항목 로딩 실패:", itemsError);
-      } else {
-        setLineItems(itemsData ?? []);
+        if (itemsError) {
+          console.error("항목 로딩 실패:", itemsError);
+        } else {
+          setLineItems(itemsData ?? []);
+        }
       }
 
       setIsLoading(false);
@@ -113,7 +116,9 @@ export default function BillingPage() {
         <section>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
             <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>결제 예정 내역</h2>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8" }}>관리자 확정 항목</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8" }}>
+              {bill ? `${(bill as any).billing_year}년 ${(bill as any).billing_month}월 청구` : "관리자 확정 항목"}
+            </span>
           </div>
 
           <div style={{ background: "#fff", borderRadius: 20, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 12px rgba(0,0,0,0.05)" }}>
