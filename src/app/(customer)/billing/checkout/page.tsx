@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText, ChevronDown } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
@@ -23,8 +23,10 @@ const sendTelegramNotification = async (message: string) => {
   }
 };
 
-export default function BillingCheckoutPage() {
+function BillingCheckoutInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const billIdFromQuery = searchParams.get("billId"); // 정산탭에서 넘겨준 billId
 
   const [bill, setBill]           = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
@@ -41,7 +43,6 @@ export default function BillingCheckoutPage() {
   });
   const [needsInvoice, setNeedsInvoice] = useState(false);
 
-  // 토스페이먼츠 상태
   const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
   const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,53 +60,66 @@ export default function BillingCheckoutPage() {
         .from("clients").select("name").eq("id", id).single();
       if (clientData) setClientName(clientData.name);
 
-      const now = new Date();
-      const { data: billData } = await supabase
-        .from("monthly_bills").select("*")
-        .eq("client_id", id)
-        .eq("billing_year", now.getFullYear())
-        .eq("billing_month", now.getMonth() + 1)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // billId가 있으면 해당 청구서 조회, 없으면 이번 달 청구서
+      let billData: any = null;
+      if (billIdFromQuery) {
+        const { data } = await supabase
+          .from("monthly_bills").select("*")
+          .eq("id", billIdFromQuery)
+          .single();
+        billData = data;
+      } else {
+        const now = new Date();
+        const { data } = await supabase
+          .from("monthly_bills").select("*")
+          .eq("client_id", id)
+          .eq("status", "pending")
+          .order("billing_year", { ascending: false })
+          .order("billing_month", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        billData = data;
+      }
 
       if (billData) {
         setBill(billData);
         const { data: items } = await supabase
-          .from("bill_line_items").select("*").eq("bill_id", billData.id);
-        setLineItems(items ?? []);
+          .from("bill_line_items").select("*")
+          .eq("bill_id", billData.id)
+          .neq("item_type", "deposit")
+          .order("created_at", { ascending: true });
+
+        const filtered = (items ?? []).filter(
+          (item: any) => !item.description.startsWith("월 보관료")
+        );
+        setLineItems(filtered);
       }
       setIsLoading(false);
     }
     fetchData();
-  }, []);
+  }, [billIdFromQuery]);
 
-  // 토스페이먼츠 위젯 초기화
   useEffect(() => {
     if (payMethod !== "card") return;
-
     const initializeWidget = async () => {
       try {
         const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-        if (!clientKey) return; // 키 없으면 조용히 종료
+        if (!clientKey) return;
         const widget = await loadPaymentWidget(clientKey, "GUEST");
         setPaymentWidget(widget);
       } catch (error) {
         console.error("토스 위젯 초기화 실패:", error);
       }
     };
-
     initializeWidget();
   }, [payMethod]);
 
-  const subtotal = lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
+  const subtotal = lineItems.filter(it => it.item_type !== "deposit").reduce((sum, it) => sum + (it.amount ?? 0), 0);
   const vat      = bill?.vat_amount ?? Math.round(subtotal * 0.1);
   const total    = bill?.total_amount ?? subtotal + vat;
 
-  // 결제 수단 렌더링
   useEffect(() => {
     if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
-
     try {
       paymentWidget.renderPaymentMethods(
         "#billing-payment-methods",
@@ -117,33 +131,27 @@ export default function BillingCheckoutPage() {
     }
   }, [paymentWidget, total, payMethod]);
 
-  // 정산용 주문 ID
-  const orderId = `BILL_${bill?.id ?? Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-  const orderName = `씬박스 월 정산 결제 (${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, "0")})`;
+  const orderId  = `BILL_${bill?.id ?? Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  const orderName = `씬박스 ${bill?.billing_year}년 ${bill?.billing_month}월 정산`;
 
   const handlePayment = async () => {
     if (!allChecked || isSubmitting || !bill) return;
     setIsSubmitting(true);
 
     try {
-      // 카드 결제 - 토스페이먼츠
       if (payMethod === "card") {
-        if (!paymentWidget) {
-          throw new Error("결제 위젯이 초기화되지 않았습니다.");
-        }
-
+        if (!paymentWidget) throw new Error("결제 위젯이 초기화되지 않았습니다.");
         await paymentWidget.requestPayment({
-          orderId: orderId,
-          orderName: orderName,
+          orderId,
+          orderName,
           successUrl: `${window.location.origin}/billing/success?orderId=${orderId}&billId=${bill.id}&clientId=${clientId}`,
           failUrl: `${window.location.origin}/fail`,
           customerName: clientName,
         });
-
-        return; // requestPayment이 리다이렉트하므로 여기서 종료
+        return;
       }
 
-      // 무통장 입금 - 기존 로직
+      // 무통장 — 해당 billId만 paid 처리
       const { error } = await supabase
         .from("monthly_bills")
         .update({ status: "paid", paid_at: new Date().toISOString() })
@@ -153,12 +161,13 @@ export default function BillingCheckoutPage() {
       await sendTelegramNotification(
         `💳 <b>정산 결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
+        `📅 청구 월: ${bill.billing_year}년 ${bill.billing_month}월\n` +
         `💰 결제 금액: ${fmtWon(subtotal)} (VAT 별도)\n` +
         `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}`
       );
 
       alert("정산이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(subtotal) + " (VAT 별도)\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
-      router.push("/dashboard");
+      router.push("/billing");
 
     } catch (err: any) {
       console.error("결제 처리 실패:", err);
@@ -179,13 +188,15 @@ export default function BillingCheckoutPage() {
       className="flex justify-center">
       <div style={{ width: "100%", maxWidth: 430, minHeight: "100vh", paddingBottom: 140 }}>
 
-        {/* 헤더 — billing은 전화번호 띠 없어서 top:0 */}
+        {/* 헤더 */}
         <div style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }}
           className="sticky top-0 z-50 flex items-center justify-between px-4 py-4">
           <button type="button" className="p-1" onClick={() => router.back()}>
             <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
           </button>
-          <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>정산 결제</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
+            {bill ? `${bill.billing_year}년 ${bill.billing_month}월 정산 결제` : "정산 결제"}
+          </span>
           <button className="p-1" onClick={() => router.back()}>
             <X size={21} color="#374151" strokeWidth={1.8} />
           </button>
@@ -255,6 +266,7 @@ export default function BillingCheckoutPage() {
                 );
               })}
             </div>
+
             {payMethod === "card" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
@@ -262,7 +274,7 @@ export default function BillingCheckoutPage() {
                     <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>토스페이먼츠 안전결제</p>
-                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>카드 정보는 당사 서버에 저장되지 않습니다. 안전하게 결제하세요.</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>카드 정보는 당사 서버에 저장되지 않습니다.</p>
                     </div>
                   </div>
                 </div>
@@ -272,22 +284,17 @@ export default function BillingCheckoutPage() {
 
             {payMethod === "bank" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {/* 계좌 안내 */}
                 <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "16px 18px", border: "1px dashed #D1E8DF" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <Building2 size={15} color="#64748B" strokeWidth={1.8} />
                     <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>입금 계좌 안내</p>
                   </div>
                   <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
-                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [결제하기] 버튼</strong>을 누르시면 안내됩니다.(국민은행 567001-04-101845 박민지)
+                    국민은행 567001-04-101845 박민지
                   </p>
                 </div>
-
-                {/* 세금계산서 토글 */}
-                <button
-                  onClick={() => setNeedsInvoice(p => !p)}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: needsInvoice ? "#EFF6FF" : "#fff", borderRadius: 14, padding: "14px 18px", border: `1.5px solid ${needsInvoice ? "#BFDBFE" : "#D1E8DF"}`, cursor: "pointer", transition: "all 0.2s" }}
-                >
+                <button onClick={() => setNeedsInvoice(p => !p)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: needsInvoice ? "#EFF6FF" : "#fff", borderRadius: 14, padding: "14px 18px", border: `1.5px solid ${needsInvoice ? "#BFDBFE" : "#D1E8DF"}`, cursor: "pointer", transition: "all 0.2s" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <FileText size={16} color={needsInvoice ? BLUE : "#94A3B8"} strokeWidth={1.8} />
                     <div style={{ textAlign: "left" }}>
@@ -299,19 +306,13 @@ export default function BillingCheckoutPage() {
                     <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: needsInvoice ? 23 : 3, transition: "all 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
                   </div>
                 </button>
-
-                {/* 세금계산서 폼 - 토글 ON일 때만 표시 */}
                 {needsInvoice && (
-                  <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                      <FileText size={15} color={BLUE} strokeWidth={1.8} />
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>세금계산서 발행 정보</p>
-                    </div>
+                  <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                       {[
-                        { key: "name",  placeholder: "담당자 성함",                type: "text"  },
-                        { key: "phone", placeholder: "연락처 (예: 010-1234-5678)", type: "tel"   },
-                        { key: "email", placeholder: "이메일 (세금계산서 수신)",    type: "email" },
+                        { key: "name", placeholder: "담당자 성함", type: "text" },
+                        { key: "phone", placeholder: "연락처", type: "tel" },
+                        { key: "email", placeholder: "이메일 (세금계산서 수신)", type: "email" },
                       ].map(({ key, placeholder, type }) => (
                         <input key={key} type={type} placeholder={placeholder}
                           style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" as const }} />
@@ -338,39 +339,43 @@ export default function BillingCheckoutPage() {
               </button>
               <div style={{ padding: "4px 0" }}>
                 <TermRow checked={checks.terms}     onToggle={() => toggleCheck("terms")}     onExpand={() => toggleExpand("terms")}     expanded={expanded.terms}
-                  label="[필수] 본 서비스는 B2B 전용 '물리적 공간(Grid) 대여 서비스'이며, 보관 물품에 대한 훼손/파손 면책 조항에 동의합니다."
-                  color={BLUE}
+                  label="[필수] 본 서비스는 B2B 전용 '물리적 공간(Grid) 대여 서비스'이며, 보관 물품에 대한 훼손/파손 면책 조항에 동의합니다." color={BLUE}
                   detail="씬박스는 보관업이 아닌 물리적 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 자산 보험으로 커버해야 하며, 당사는 환경적 요인 및 불가항력적 사고로 인한 훼손에 대해 배상 책임을 지지 않습니다." />
                 <TermRow checked={checks.liability} onToggle={() => toggleCheck("liability")} onExpand={() => toggleExpand("liability")} expanded={expanded.liability}
-                  label="[필수] 보관료 연체 시 이행보증금 우선 차감 및 장기 연체 화물의 임의 처분에 동의합니다."
-                  color="#0F172A"
+                  label="[필수] 보관료 연체 시 이행보증금 우선 차감 및 장기 연체 화물의 임의 처분에 동의합니다." color="#0F172A"
                   detail="요금 연체 시 납부한 이행보증금에서 미납금이 우선 차감되며, 60일 이상 장기 연체 시 당사는 사전 통보 후 공간 확보를 위해 해당 화물을 임의로 반출, 매각, 또는 폐기 처분할 수 있습니다." />
                 <TermRow checked={checks.checkout}  onToggle={() => toggleCheck("checkout")}  onExpand={() => toggleExpand("checkout")}  expanded={expanded.checkout}
-                  label="[필수] 화물 출고(부분 반환 포함) 시, 최소 1영업일(24시간) 전 사전 예약 필수 원칙에 동의합니다."
-                  color="#0F172A"
+                  label="[필수] 화물 출고(부분 반환 포함) 시, 최소 1영업일(24시간) 전 사전 예약 필수 원칙에 동의합니다." color="#0F172A"
                   detail="원활한 현장 작업 및 동선 확보를 위해 사전 예약 없는 당일 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다." />
                 <TermRow checked={checks.scope}     onToggle={() => toggleCheck("scope")}     onExpand={() => toggleExpand("scope")}     expanded={expanded.scope}
-                  label="[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다."
-                  color="#0F172A"
+                  label="[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다." color="#0F172A"
                   detail="씬박스는 보관 및 운송 전용 서비스입니다. 미술 세트나 구조물의 현장 해체, 철거, 분해 작업은 서비스 범위에 포함되지 않습니다." />
               </div>
             </div>
           </section>
-
         </div>
 
         {/* 하단 버튼 */}
         <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 20px", zIndex: 90, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
-          <button
-            onClick={handlePayment}
-            disabled={!allChecked || isSubmitting}
+          <button onClick={handlePayment} disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", transition: "all 0.2s", boxShadow: allChecked ? `0 4px 16px ${BLUE}44` : "none" }}>
             {isSubmitting ? "처리 중..." : allChecked ? `${payMethod === "card" ? fmtWon(total) : fmtWon(subtotal) + " (VAT 별도)"} 결제하기` : "약관에 동의해주세요"}
           </button>
         </div>
-
       </div>
     </div>
+  );
+}
+
+export default function BillingCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen w-full items-center justify-center" style={{ background: "#F0F7F4" }}>
+        <p className="animate-pulse text-[14px] font-bold" style={{ color: "#94A3B8" }}>불러오는 중...</p>
+      </div>
+    }>
+      <BillingCheckoutInner />
+    </Suspense>
   );
 }
 
@@ -383,13 +388,8 @@ function CheckBox({ checked }: { checked: boolean }) {
 }
 
 function TermRow({ checked, onToggle, onExpand, expanded, label, color, detail }: {
-  checked: boolean;
-  onToggle: () => void;
-  onExpand: () => void;
-  expanded: boolean;
-  label: string;
-  color: string;
-  detail: string;
+  checked: boolean; onToggle: () => void; onExpand: () => void;
+  expanded: boolean; label: string; color: string; detail: string;
 }) {
   return (
     <div style={{ borderBottom: "0.5px solid #F0F7F4" }}>
