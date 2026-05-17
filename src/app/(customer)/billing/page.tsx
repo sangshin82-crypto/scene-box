@@ -138,6 +138,7 @@ export default function BillingPage() {
                 <div style={{ background: "#fff", borderRadius: 20, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 12px rgba(0,0,0,0.05)" }}>
                   {bill.lineItems.map((it, idx) => {
                     const confirmed = it.amount > 0;
+                    const amountExVat = Math.round(it.amount / 1.1); // VAT 별도 금액
                     return (
                       <div key={it.id} style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -157,13 +158,25 @@ export default function BillingPage() {
                           </div>
                         </div>
                         <p style={{ flexShrink: 0, fontSize: 13, fontWeight: 800, color: confirmed ? "#0F172A" : "#CBD5E1" }}>
-                          {confirmed ? fmtWon(it.amount) : "—"}
+                          {confirmed ? fmtWon(amountExVat) : "—"}
                         </p>
                       </div>
                     );
                   })}
 
-                  {/* 합계 - lineItems가 이미 VAT 포함 */}
+                  {/* 소계 (VAT 별도) */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px dashed #D1E8DF", background: "#F0F7F4", padding: "12px 18px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>소계</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{fmtWon(Math.round(subtotal / 1.1))}</p>
+                  </div>
+
+                  {/* VAT */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px dashed #D1E8DF", background: "#F0F7F4", padding: "12px 18px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>부가세 (VAT 10%)</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{fmtWon(subtotal - Math.round(subtotal / 1.1))}</p>
+                  </div>
+
+                  {/* 최종 합계 */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1.5px solid #D1E8DF", background: "#F0F7F4", padding: "14px 18px" }}>
                     <p style={{ fontSize: 13, fontWeight: 800, color: "#374151" }}>최종 합계 (VAT 포함)</p>
                     <p style={{ fontSize: 16, fontWeight: 900, color: BLUE, letterSpacing: "-0.4px" }}>
