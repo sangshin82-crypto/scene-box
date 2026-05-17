@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
         <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 
-          <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 05월 11일</p>
+          <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 05월11일</p>
 
           <Section title="1. 개인정보의 수집 및 이용 목적">
             <p style={{ marginBottom: 10 }}>씬박스(이하 "회사")는 서비스 제공을 위해 아래와 같은 목적으로 개인정보를 수집하고 이용합니다.</p>
