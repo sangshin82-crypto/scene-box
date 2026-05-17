@@ -122,8 +122,8 @@ export default function InventoryPage() {
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }}
       className="relative w-full pb-[80px]">
 
-      {/* 헤더 — 전화번호 띠(57px) 아래에 sticky */}
-      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 57, zIndex: 40 }}>
+      {/* 헤더 — 메인헤더(57px) + 전화번호띠(32px) 아래에 sticky */}
+      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", position: "sticky", top: 89, zIndex: 40 }}>
         <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
           <button type="button" onClick={() => router.back()}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
