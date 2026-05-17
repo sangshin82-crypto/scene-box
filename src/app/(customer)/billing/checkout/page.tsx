@@ -147,11 +147,11 @@ export default function BillingCheckoutPage() {
       await sendTelegramNotification(
         `💳 <b>정산 결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
-        `💰 결제 금액: ${fmtWon(total)}\n` +
+        `💰 결제 금액: ${fmtWon(subtotal)} (VAT 별도)\n` +
         `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}`
       );
 
-      alert("예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(total) + "\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
+      alert("정산이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(subtotal) + " (VAT 별도)\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
       router.push("/dashboard");
 
     } catch (err: any) {
@@ -191,8 +191,12 @@ export default function BillingCheckoutPage() {
           <section>
             <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", overflow: "hidden", border: "0.5px solid #D1E8DF" }}>
               <div style={{ background: `linear-gradient(135deg, ${BLUE}, #3B82F6)`, padding: "16px 20px" }}>
-                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginBottom: 4 }}>최종 결제 금액 (VAT 포함)</p>
-                <p style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>{fmtWon(total)}</p>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginBottom: 4 }}>
+                  최종 결제 금액 {payMethod === "card" ? "(VAT 포함)" : "(VAT 별도)"}
+                </p>
+                <p style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
+                  {payMethod === "card" ? fmtWon(total) : fmtWon(subtotal)}
+                </p>
               </div>
               <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
                 {lineItems.map(it => (
@@ -206,14 +210,23 @@ export default function BillingCheckoutPage() {
                     <span style={{ fontSize: 13, color: "#94A3B8" }}>소계</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(subtotal)}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: "#94A3B8" }}>부가세 (VAT 10%)</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(vat)}</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계</span>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
-                  </div>
+                  {payMethod === "card" ? (
+                    <>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 13, color: "#94A3B8" }}>부가세 (VAT 10%)</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{fmtWon(vat)}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>최종 합계 (VAT 별도)</span>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{fmtWon(subtotal)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -339,7 +352,7 @@ export default function BillingCheckoutPage() {
             onClick={handlePayment}
             disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", transition: "all 0.2s", boxShadow: allChecked ? `0 4px 16px ${BLUE}44` : "none" }}>
-            {isSubmitting ? "처리 중..." : allChecked ? `${fmtWon(total)} 결제하기` : "약관에 동의해주세요"}
+            {isSubmitting ? "처리 중..." : allChecked ? `${payMethod === "card" ? fmtWon(total) : fmtWon(subtotal) + " (VAT 별도)"} 결제하기` : "약관에 동의해주세요"}
           </button>
         </div>
 
