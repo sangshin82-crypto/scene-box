@@ -128,7 +128,12 @@ export default function AdminBilling() {
       billId = data.id;
     }
 
-    await supabase.from('bill_line_items').delete().eq('bill_id', billId);
+    // 관리자 입력 항목만 삭제 (예약 보관료, 이행보증금은 보존)
+    await supabase.from('bill_line_items')
+      .delete()
+      .eq('bill_id', billId)
+      .in('item_type', ['storage', 'transport', 'disposal'])
+      .not('description', 'like', '월 보관료%');
 
     const lineItems = [
       { bill_id: billId, item_type: 'storage',  description: '보관료',        amount: storage   },
