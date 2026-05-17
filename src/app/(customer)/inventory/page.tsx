@@ -207,8 +207,8 @@ export default function InventoryPage() {
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>
                 1차 합계 (보관료/운송료/폐기료)
               </p>
-              <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 12, letterSpacing: "-0.5px" }}>
-                {fmt(payments.filter(p => p.item_type !== "deposit" && p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0))} <span style={{ fontSize: 12, fontWeight: 500 }}>(VAT 포함)</span>
+              <p style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 12, letterSpacing: "-0.5px" }}>
+                {fmt(payments.filter(p => p.item_type !== "deposit" && p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0))} <span style={{ fontSize: 11, fontWeight: 500 }}>(VAT 포함)</span>
               </p>
               {/* 2차 합계 */}
               <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "10px 14px", marginBottom: 10 }}>
@@ -222,7 +222,7 @@ export default function InventoryPage() {
               {/* 총 합계 */}
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.3)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>총 합계</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
+                <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
                   {fmt(payments.filter(p => p.bill_status === "paid").reduce((sum, p) => sum + p.amount, 0))}
                 </p>
               </div>

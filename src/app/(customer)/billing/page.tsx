@@ -118,9 +118,8 @@ export default function BillingPage() {
           </div>
         ) : (
           bills.map(bill => {
-            const subtotal  = bill.lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
-            const vat       = bill.vat_amount ?? Math.round(subtotal * 0.1);
-            const total     = bill.total_amount ?? subtotal + vat;
+            const subtotal    = bill.lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
+            const total       = subtotal; // lineItems에 이미 VAT 포함 금액으로 저장됨
             const canCheckout = bill.lineItems.length > 0;
 
             return (
@@ -164,19 +163,7 @@ export default function BillingPage() {
                     );
                   })}
 
-                  {/* 소계 */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px dashed #D1E8DF", background: "#F0F7F4", padding: "12px 18px" }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>소계</p>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{fmtWon(subtotal)}</p>
-                  </div>
-
-                  {/* VAT */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px dashed #D1E8DF", background: "#F0F7F4", padding: "12px 18px" }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>부가세 (VAT 10%)</p>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{fmtWon(vat)}</p>
-                  </div>
-
-                  {/* 합계 */}
+                  {/* 합계 - lineItems가 이미 VAT 포함 */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1.5px solid #D1E8DF", background: "#F0F7F4", padding: "14px 18px" }}>
                     <p style={{ fontSize: 13, fontWeight: 800, color: "#374151" }}>최종 합계 (VAT 포함)</p>
                     <p style={{ fontSize: 16, fontWeight: 900, color: BLUE, letterSpacing: "-0.4px" }}>

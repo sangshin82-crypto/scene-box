@@ -15,6 +15,13 @@ export default function AdminBilling() {
   const [transportFee, setTransportFee] = useState('');
   const [disposalFee, setDisposalFee] = useState('');
   const [storageFee, setStorageFee] = useState('');
+
+  // 천원단위 콤마 포맷
+  const fmtInput = (val: string) => {
+    const num = val.replace(/[^0-9]/g, '');
+    return num ? Number(num).toLocaleString('ko-KR') : '';
+  };
+  const parseInput = (val: string) => Number(val.replace(/[^0-9]/g, '')) || 0;
   const [memo, setMemo] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,9 +68,9 @@ export default function AdminBilling() {
         .maybeSingle();
       if (data) {
         setBill(data);
-        setTransportFee(String(data.transport_fee ?? ''));
-        setDisposalFee(String(data.disposal_fee ?? ''));
-        setStorageFee(String(data.storage_fee ?? ''));
+        setTransportFee(data.transport_fee ? Number(data.transport_fee).toLocaleString('ko-KR') : '');
+        setDisposalFee(data.disposal_fee ? Number(data.disposal_fee).toLocaleString('ko-KR') : '');
+        setStorageFee(data.storage_fee ? Number(data.storage_fee).toLocaleString('ko-KR') : '');
         setMemo(data.admin_memo ?? '');
       }
     }
@@ -84,7 +91,7 @@ export default function AdminBilling() {
     // 금액이 동일한 경우 중복 경고
     if (bill && bill.status === 'pending') {
       const prevTotal = (bill.transport_fee ?? 0) + (bill.disposal_fee ?? 0) + (bill.storage_fee ?? 0);
-      const newTotal  = (Number(transportFee) || 0) + (Number(disposalFee) || 0) + (Number(storageFee) || 0);
+      const newTotal  = parseInput(transportFee) + parseInput(disposalFee) + parseInput(storageFee);
       if (prevTotal === newTotal && prevTotal > 0) {
         const confirmed = window.confirm(
           '⚠️ 이전 청구와 동일한 금액입니다.\n\n중복 청구입니까, 신규 청구입니까?\n[확인] = 저장 진행  [취소] = 돌아가기'
@@ -95,9 +102,9 @@ export default function AdminBilling() {
 
     setIsSaving(true);
 
-    const transport = Number(transportFee) || 0;
-    const disposal  = Number(disposalFee)  || 0;
-    const storage   = Number(storageFee)   || 0;
+    const transport = parseInput(transportFee);
+    const disposal  = parseInput(disposalFee);
+    const storage   = parseInput(storageFee);
 
     const updateData = {
       transport_fee: transport,
@@ -219,15 +226,21 @@ export default function AdminBilling() {
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원, VAT 별도)</label>
-            <input type="number" placeholder="0" value={storageFee} onChange={e => setStorageFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
+            <input type="text" inputMode="numeric" placeholder="0" value={storageFee}
+              onChange={e => setStorageFee(fmtInput(e.target.value))}
+              className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원, VAT 별도)</label>
-            <input type="number" placeholder="0" value={transportFee} onChange={e => setTransportFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
+            <input type="text" inputMode="numeric" placeholder="0" value={transportFee}
+              onChange={e => setTransportFee(fmtInput(e.target.value))}
+              className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원, VAT 별도)</label>
-            <input type="number" placeholder="0" value={disposalFee} onChange={e => setDisposalFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
+            <input type="text" inputMode="numeric" placeholder="0" value={disposalFee}
+              onChange={e => setDisposalFee(fmtInput(e.target.value))}
+              className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">비고 / 메모</label>
@@ -237,10 +250,10 @@ export default function AdminBilling() {
 
         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
           <p className="text-sm text-blue-700 font-bold">
-            총 청구액 (VAT 포함): {Math.round(((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)) * 1.1).toLocaleString()}원
+            총 청구액 (VAT 포함): {Math.round((parseInput(storageFee)+parseInput(transportFee)+parseInput(disposalFee)) * 1.1).toLocaleString()}원
           </p>
           <p className="text-xs text-blue-500 mt-1">
-            공급가 {((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)).toLocaleString()}원 + VAT {Math.round(((Number(storageFee)||0)+(Number(transportFee)||0)+(Number(disposalFee)||0)) * 0.1).toLocaleString()}원
+            공급가 {(parseInput(storageFee)+parseInput(transportFee)+parseInput(disposalFee)).toLocaleString()}원 + VAT {Math.round((parseInput(storageFee)+parseInput(transportFee)+parseInput(disposalFee)) * 0.1).toLocaleString()}원
           </p>
           <p className="text-xs text-blue-400 mt-1">청구 대상: {billingYear}년 {billingMonth}월</p>
         </div>
