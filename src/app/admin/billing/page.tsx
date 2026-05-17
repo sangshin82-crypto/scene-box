@@ -43,6 +43,12 @@ export default function AdminBilling() {
 
   useEffect(() => {
     if (!selectedClientId) return;
+    setBill(null);
+    setTransportFee('');
+    setDisposalFee('');
+    setStorageFee('');
+    setMemo('');
+
     async function fetchBill() {
       const { data } = await supabase
         .from('monthly_bills')
@@ -59,12 +65,6 @@ export default function AdminBilling() {
         setDisposalFee(String(data.disposal_fee ?? ''));
         setStorageFee(String(data.storage_fee ?? ''));
         setMemo(data.admin_memo ?? '');
-      } else {
-        setBill(null);
-        setTransportFee('');
-        setDisposalFee('');
-        setStorageFee('');
-        setMemo('');
       }
     }
     fetchBill();
