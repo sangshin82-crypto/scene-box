@@ -123,53 +123,62 @@ export default function InventoryPage() {
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }}
       className="relative w-full pb-[80px]">
 
-      {/* 헤더 — sticky top:0, 전화번호띠는 fixed top:57로 그 아래 위치 */}
-      <header style={{
+      {/* 제목 바 — sticky top:0 (다른 페이지와 동일) */}
+      <div style={{
         background: "#fff",
-        borderBottom: "0.5px solid #D1E8DF",
+        borderBottom: "0.5px solid #F0F7F4",
         position: "sticky",
         top: 0,
         zIndex: 50,
+        padding: "14px 16px",
+        display: "flex",
+        alignItems: "center",
       }}>
-        <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 8 }}>
-          <button type="button" onClick={() => router.back()}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-            <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
-          </button>
-          <span style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-            내 보관함
-          </span>
-        </div>
+        <button type="button" onClick={() => router.back()}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0 }}>
+          <ChevronLeft size={23} color="#374151" strokeWidth={1.8} />
+        </button>
+        <span style={{ flex: 1, textAlign: "center", fontSize: 19, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
+          내 보관함
+        </span>
+        <div style={{ width: 31, flexShrink: 0 }} />
+      </div>
 
-        {/* 탭 */}
-        <div style={{ display: "flex", borderTop: "0.5px solid #F0F7F4" }}>
-          {([
-            { key: "contracts" as Tab, label: "📦 계약 현황", count: activeSpaces.length },
-            { key: "payments"  as Tab, label: "💳 결제 내역", count: payments.length     },
-          ]).map(({ key, label, count }) => (
-            <button key={key} onClick={() => setTab(key)}
-              style={{
-                flex: 1, padding: "12px 0", border: "none", background: "none", cursor: "pointer",
-                fontSize: 13, fontWeight: tab === key ? 700 : 500,
-                color: tab === key ? BLUE : "#94A3B8",
-                borderBottom: tab === key ? `2px solid ${BLUE}` : "2px solid transparent",
-                transition: "all 0.15s",
+      {/* 탭 바 — sticky top:89 (전화번호 띠 아래) */}
+      <div style={{
+        background: "#fff",
+        borderBottom: "0.5px solid #D1E8DF",
+        position: "sticky",
+        top: 89,
+        zIndex: 45,
+        display: "flex",
+      }}>
+        {([
+          { key: "contracts" as Tab, label: "📦 계약 현황", count: activeSpaces.length },
+          { key: "payments"  as Tab, label: "💳 결제 내역", count: payments.length     },
+        ]).map(({ key, label, count }) => (
+          <button key={key} onClick={() => setTab(key)}
+            style={{
+              flex: 1, padding: "12px 0", border: "none", background: "none", cursor: "pointer",
+              fontSize: 13, fontWeight: tab === key ? 700 : 500,
+              color: tab === key ? BLUE : "#94A3B8",
+              borderBottom: tab === key ? `2px solid ${BLUE}` : "2px solid transparent",
+              transition: "all 0.15s",
+            }}>
+            {label}
+            {count > 0 && (
+              <span style={{
+                marginLeft: 6, fontSize: 11, fontWeight: 700,
+                color: tab === key ? "#fff" : "#94A3B8",
+                background: tab === key ? BLUE : "#E5E7EB",
+                padding: "1px 6px", borderRadius: 99,
               }}>
-              {label}
-              {count > 0 && (
-                <span style={{
-                  marginLeft: 6, fontSize: 11, fontWeight: 700,
-                  color: tab === key ? "#fff" : "#94A3B8",
-                  background: tab === key ? BLUE : "#E5E7EB",
-                  padding: "1px 6px", borderRadius: 99,
-                }}>
-                  {count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </header>
+                {count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
 
       {/* 콘텐츠 — 전화번호띠(32px) + 여백(16px) = 48px */}
       <div style={{ padding: "48px 16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
