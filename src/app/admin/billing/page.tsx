@@ -61,20 +61,41 @@ export default function AdminBilling() {
 
   const handleSave = async () => {
     if (!selectedClientId || isSaving) return;
+
+    // 결제 완료 상태인 경우 경고
+    if (bill?.status === 'paid') {
+      const confirmed = window.confirm(
+        '⚠️ 이 고객은 이번 달 이미 결제를 완료했습니다.\n\n저장 시 재결제가 요청됩니다. 신규 청구가 맞습니까?'
+      );
+      if (!confirmed) return;
+    }
+
+    // 금액이 동일한 경우 중복 경고
+    if (bill && bill.status === 'pending') {
+      const prevTotal = (bill.transport_fee ?? 0) + (bill.disposal_fee ?? 0) + (bill.storage_fee ?? 0);
+      const newTotal  = (Number(transportFee) || 0) + (Number(disposalFee) || 0) + (Number(storageFee) || 0);
+      if (prevTotal === newTotal && prevTotal > 0) {
+        const confirmed = window.confirm(
+          '⚠️ 이전 청구와 동일한 금액입니다.\n\n중복 청구입니까, 신규 청구입니까?\n[확인] = 저장 진행  [취소] = 돌아가기'
+        );
+        if (!confirmed) return;
+      }
+    }
+
     setIsSaving(true);
 
     const now = new Date();
     const transport = Number(transportFee) || 0;
-    const disposal = Number(disposalFee) || 0;
-    const storage = Number(storageFee) || 0;
+    const disposal  = Number(disposalFee)  || 0;
+    const storage   = Number(storageFee)   || 0;
 
     const updateData = {
       transport_fee: transport,
-      disposal_fee: disposal,
-      storage_fee: storage,
-      admin_memo: memo || null,
-      status: 'pending',  // 추가 금액 입력 시 결제 버튼 다시 활성화
-      paid_at: null,      // 결제 완료 시각 초기화
+      disposal_fee:  disposal,
+      storage_fee:   storage,
+      admin_memo:    memo || null,
+      status:        'pending' as const,
+      paid_at:       null,
     };
 
     let billId = bill?.id;
@@ -85,7 +106,12 @@ export default function AdminBilling() {
     } else {
       const { data, error } = await supabase
         .from('monthly_bills')
-        .insert({ client_id: selectedClientId, billing_year: now.getFullYear(), billing_month: now.getMonth() + 1, status: 'pending', ...updateData })
+        .insert({
+          client_id:     selectedClientId,
+          billing_year:  now.getFullYear(),
+          billing_month: now.getMonth() + 1,
+          ...updateData,
+        })
         .select()
         .single();
       if (error) { alert('생성 오류: ' + error.message); setIsSaving(false); return; }
@@ -95,9 +121,9 @@ export default function AdminBilling() {
     await supabase.from('bill_line_items').delete().eq('bill_id', billId);
 
     const lineItems = [
-      { bill_id: billId, item_type: 'storage', description: '보관료', amount: storage },
-      { bill_id: billId, item_type: 'transport', description: '운송비', amount: transport },
-      { bill_id: billId, item_type: 'disposal', description: '폐기물 처리비', amount: disposal },
+      { bill_id: billId, item_type: 'storage',  description: '보관료',        amount: storage   },
+      { bill_id: billId, item_type: 'transport', description: '운송비',        amount: transport },
+      { bill_id: billId, item_type: 'disposal',  description: '폐기물 처리비', amount: disposal  },
     ].filter(item => item.amount > 0);
 
     if (lineItems.length > 0) {
@@ -105,6 +131,8 @@ export default function AdminBilling() {
       if (error) { alert('항목 저장 오류: ' + error.message); setIsSaving(false); return; }
     }
 
+    // 저장 후 청구서 상태 갱신
+    setBill(prev => prev ? { ...prev, ...updateData } : null);
     alert('청구서가 저장되었습니다! ✅');
     setIsSaving(false);
   };
