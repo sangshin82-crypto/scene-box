@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 14, color: '#ffffff', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
           <div style={{ marginBottom: 24 }}>
@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 14, color: '#ffffff', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
