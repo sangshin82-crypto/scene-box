@@ -63,6 +63,7 @@ export default function BillingPage() {
         .from("bill_line_items")
         .select("*")
         .eq("bill_id", billData.id)
+        .neq("item_type", "deposit")  // 이행보증금 제외
         .order("created_at", { ascending: true });
 
       if (itemsError) {
@@ -102,7 +103,7 @@ export default function BillingPage() {
       {/* 헤더 — billing은 전화번호 띠 없어서 top:0 */}
       <div style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }}
         className="sticky top-0 z-50 px-4 py-4">
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.3px" }}>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.3px", textAlign: "center" }}>
           정산·청구 내역
         </h1>
       </div>
