@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText } from "lucide-react";
+import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText, ChevronDown } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 
 const BLUE = "#2563EB";
 const fmtWon = (n: number) => n.toLocaleString("ko-KR") + "원";
 
-type CheckKey = "terms" | "liability" | "scope";
+type CheckKey = "terms" | "liability" | "scope" | "checkout";
 
 const sendTelegramNotification = async (message: string) => {
   try {
@@ -34,7 +34,10 @@ export default function BillingCheckoutPage() {
   const [clientName, setClientName] = useState("");
   const [clientId, setClientId] = useState("");
   const [checks, setChecks] = useState<Record<CheckKey, boolean>>({
-    terms: false, liability: false, scope: false,
+    terms: false, liability: false, scope: false, checkout: false,
+  });
+  const [expanded, setExpanded] = useState<Record<CheckKey, boolean>>({
+    terms: false, liability: false, scope: false, checkout: false,
   });
   const [needsInvoice, setNeedsInvoice] = useState(false);
 
@@ -42,8 +45,9 @@ export default function BillingCheckoutPage() {
   const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
   const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
 
-  const allChecked = checks.terms && checks.liability && checks.scope;
-  const toggleCheck = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
+  const allChecked   = checks.terms && checks.liability && checks.scope && checks.checkout;
+  const toggleCheck  = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
+  const toggleExpand = (k: CheckKey) => setExpanded(p => ({ ...p, [k]: !p[k] }));
 
   useEffect(() => {
     async function fetchData() {
@@ -325,24 +329,31 @@ export default function BillingCheckoutPage() {
             <div style={{ background: "#fff", borderRadius: 18, boxShadow: "0 1px 10px rgba(0,0,0,0.05)", overflow: "hidden", border: "0.5px solid #D1E8DF" }}>
               <button
                 onClick={() => setChecks(allChecked
-                  ? { terms: false, liability: false, scope: false }
-                  : { terms: true, liability: true, scope: true }
+                  ? { terms: false, liability: false, scope: false, checkout: false }
+                  : { terms: true, liability: true, scope: true, checkout: true }
                 )}
                 style={{ width: "100%", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, background: allChecked ? "#EFF6FF" : "#F0F7F4", border: "none", borderBottom: "0.5px solid #D1E8DF", cursor: "pointer", textAlign: "left" }}>
                 <CheckBox checked={allChecked} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: allChecked ? BLUE : "#374151" }}>전체 동의</span>
               </button>
-              {[
-                { key: "terms" as CheckKey,     label: "[필수] 서비스 이용 약관 및 개인정보 처리방침 동의",                                                              color: "#374151" },
-                { key: "liability" as CheckKey, label: "[필수] 보관료 2개월 이상 연체 시, 적재물 직권 폐기 및 소유권 포기 동의",                                          color: "#DC2626" },
-                { key: "scope" as CheckKey,     label: "[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다.",             color: "#374151" },
-              ].map(({ key, label, color }) => (
-                <button key={key} onClick={() => toggleCheck(key)}
-                  style={{ width: "100%", padding: "13px 18px", display: "flex", alignItems: "flex-start", gap: 12, background: "none", border: "none", borderBottom: "0.5px solid #F0F7F4", cursor: "pointer", textAlign: "left" }}>
-                  <CheckBox checked={checks[key]} />
-                  <span style={{ fontSize: 12, color, lineHeight: 1.6 }}>{label}</span>
-                </button>
-              ))}
+              <div style={{ padding: "4px 0" }}>
+                <TermRow checked={checks.terms}     onToggle={() => toggleCheck("terms")}     onExpand={() => toggleExpand("terms")}     expanded={expanded.terms}
+                  label="[필수] 본 서비스는 B2B 전용 '물리적 공간(Grid) 대여 서비스'이며, 보관 물품에 대한 훼손/파손 면책 조항에 동의합니다."
+                  color={BLUE}
+                  detail="씬박스는 보관업이 아닌 물리적 공간(Grid) 임대 서비스입니다. 화물의 보존은 고객의 자체 자산 보험으로 커버해야 하며, 당사는 환경적 요인 및 불가항력적 사고로 인한 훼손에 대해 배상 책임을 지지 않습니다." />
+                <TermRow checked={checks.liability} onToggle={() => toggleCheck("liability")} onExpand={() => toggleExpand("liability")} expanded={expanded.liability}
+                  label="[필수] 보관료 연체 시 이행보증금 우선 차감 및 장기 연체 화물의 임의 처분에 동의합니다."
+                  color="#0F172A"
+                  detail="요금 연체 시 납부한 이행보증금에서 미납금이 우선 차감되며, 60일 이상 장기 연체 시 당사는 사전 통보 후 공간 확보를 위해 해당 화물을 임의로 반출, 매각, 또는 폐기 처분할 수 있습니다." />
+                <TermRow checked={checks.checkout}  onToggle={() => toggleCheck("checkout")}  onExpand={() => toggleExpand("checkout")}  expanded={expanded.checkout}
+                  label="[필수] 화물 출고(부분 반환 포함) 시, 최소 1영업일(24시간) 전 사전 예약 필수 원칙에 동의합니다."
+                  color="#0F172A"
+                  detail="원활한 현장 작업 및 동선 확보를 위해 사전 예약 없는 당일 즉시 출고 요구는 원칙적으로 거절되며, 이로 인한 고객의 업무 지연에 대해 회사는 책임지지 않습니다." />
+                <TermRow checked={checks.scope}     onToggle={() => toggleCheck("scope")}     onExpand={() => toggleExpand("scope")}     expanded={expanded.scope}
+                  label="[필수] 당사는 '보관 및 운송' 전용 서비스로, 현장 구조물 해체/철거 작업은 제공하지 않음에 동의합니다."
+                  color="#0F172A"
+                  detail="씬박스는 보관 및 운송 전용 서비스입니다. 미술 세트나 구조물의 현장 해체, 철거, 분해 작업은 서비스 범위에 포함되지 않습니다." />
+              </div>
             </div>
           </section>
 
@@ -367,6 +378,37 @@ function CheckBox({ checked }: { checked: boolean }) {
   return (
     <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? BLUE : "#D1E8DF"}`, background: checked ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
       {checked && <Check size={12} color="#fff" strokeWidth={3} />}
+    </div>
+  );
+}
+
+function TermRow({ checked, onToggle, onExpand, expanded, label, color, detail }: {
+  checked: boolean;
+  onToggle: () => void;
+  onExpand: () => void;
+  expanded: boolean;
+  label: string;
+  color: string;
+  detail: string;
+}) {
+  return (
+    <div style={{ borderBottom: "0.5px solid #F0F7F4" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", padding: "13px 18px", gap: 12 }}>
+        <button onClick={onToggle} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0, marginTop: 1 }}>
+          <CheckBox checked={checked} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 12, color, lineHeight: 1.6, fontWeight: 600 }}>{label}</span>
+          {expanded && (
+            <div style={{ marginTop: 8, padding: "10px 12px", background: "#F0F7F4", borderRadius: 10, fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
+              {detail}
+            </div>
+          )}
+        </div>
+        <button onClick={onExpand} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+          <ChevronDown size={14} color="#94A3B8" style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+        </button>
+      </div>
     </div>
   );
 }

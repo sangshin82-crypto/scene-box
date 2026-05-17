@@ -52,6 +52,21 @@ export async function POST(req: NextRequest) {
       console.error('청구서 상태 업데이트 실패:', billError);
     }
 
+    // bill_line_items에 결제 완료 기록 (없는 경우만 추가)
+    const { data: existingItems } = await supabase
+      .from('bill_line_items')
+      .select('id')
+      .eq('bill_id', billId);
+
+    if (!existingItems || existingItems.length === 0) {
+      await supabase.from('bill_line_items').insert({
+        bill_id:     billId,
+        item_type:   'storage',
+        description: '정산 결제',
+        amount:      Number(amount),
+      });
+    }
+
     // 고객 정보 조회
     const { data: clientData } = await supabase
       .from('clients')

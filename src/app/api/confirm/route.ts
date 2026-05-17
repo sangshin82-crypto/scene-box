@@ -65,28 +65,56 @@ export async function POST(req: NextRequest) {
       .update({ status: 'occupied' })
       .in('grid_number', gridList);
 
-    // 청구서 생성
+    // 청구서 생성 (기존 청구서 있으면 업데이트, 없으면 생성)
     const now = new Date();
-    const { data: billData } = await supabase
-      .from('monthly_bills')
-      .insert({
-        client_id: clientId,
-        billing_year: now.getFullYear(),
-        billing_month: now.getMonth() + 1,
-        storage_fee: Number(amount),
-        transport_fee: 0,
-        disposal_fee: 0,
-        status: 'paid',
-      })
-      .select()
-      .single();
+    const storageAmount = Number(amount);
 
-    if (billData) {
+    const { data: existingBill } = await supabase
+      .from('monthly_bills')
+      .select('id, storage_fee')
+      .eq('client_id', clientId)
+      .eq('billing_year', now.getFullYear())
+      .eq('billing_month', now.getMonth() + 1)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let billId: string;
+
+    if (existingBill) {
+      // 기존 청구서에 보관료 추가
+      await supabase
+        .from('monthly_bills')
+        .update({
+          storage_fee: (existingBill.storage_fee ?? 0) + storageAmount,
+          status: 'paid',
+        })
+        .eq('id', existingBill.id);
+      billId = existingBill.id;
+    } else {
+      // 새 청구서 생성
+      const { data: billData } = await supabase
+        .from('monthly_bills')
+        .insert({
+          client_id:     clientId,
+          billing_year:  now.getFullYear(),
+          billing_month: now.getMonth() + 1,
+          storage_fee:   storageAmount,
+          transport_fee: 0,
+          disposal_fee:  0,
+          status:        'paid',
+        })
+        .select()
+        .single();
+      billId = billData?.id;
+    }
+
+    if (billId) {
       await supabase.from('bill_line_items').insert({
-        bill_id: billData.id,
-        item_type: 'storage',
+        bill_id:     billId,
+        item_type:   'storage',
         description: `월 보관료 (${gridList.join(', ')})`,
-        amount: Number(amount),
+        amount:      storageAmount,
       });
     }
 
