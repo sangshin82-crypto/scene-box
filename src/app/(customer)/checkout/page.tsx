@@ -242,14 +242,17 @@ function CheckoutInner() {
         billId = billData.id;
       }
 
+      // VAT 포함 금액으로 저장
+      const storageAmountWithVat = totalAmt + vat;
+
       await supabase.from("bill_line_items").insert({
         bill_id:     billId,
         item_type:   "storage",
         description: `월 보관료 (${gridList.join(", ")})`,
-        amount:      totalAmt,
+        amount:      storageAmountWithVat,
       });
 
-      // 이행보증금도 bill_line_items에 추가
+      // 이행보증금도 bill_line_items에 추가 (VAT 없음)
       if (deposit > 0) {
         await supabase.from("bill_line_items").insert({
           bill_id:     billId,

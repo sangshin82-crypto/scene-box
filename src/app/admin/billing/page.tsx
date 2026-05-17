@@ -212,16 +212,20 @@ export default function AdminBilling() {
 
         {/* 금액 입력 */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
+          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <p className="text-xs text-yellow-700 font-bold">⚠️ VAT 포함 금액으로 입력해주세요</p>
+            <p className="text-xs text-yellow-600 mt-1">예: 보관료 120,000원 → 132,000원 입력 (×1.1)</p>
+          </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">보관료 (원, VAT 포함)</label>
             <input type="number" placeholder="0" value={storageFee} onChange={e => setStorageFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">운송료 (원, VAT 포함)</label>
             <input type="number" placeholder="0" value={transportFee} onChange={e => setTransportFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">폐기물 처리비 (원, VAT 포함)</label>
             <input type="number" placeholder="0" value={disposalFee} onChange={e => setDisposalFee(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 text-gray-900" />
           </div>
           <div>
