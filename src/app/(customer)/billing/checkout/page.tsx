@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText, ChevronDown } from "lucide-react";
+import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText, ChevronDown, Camera } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 
@@ -42,6 +42,9 @@ function BillingCheckoutInner() {
     terms: false, liability: false, scope: false, checkout: false,
   });
   const [needsInvoice, setNeedsInvoice] = useState(false);
+  const [licenseFile, setLicenseFile] = useState<File | null>(null);
+  const [existingLicenseUrl, setExistingLicenseUrl] = useState<string>("");
+  const [form, setForm] = useState({ name: "", phone: "", email: "" });
 
   const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
   const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
@@ -57,8 +60,19 @@ function BillingCheckoutInner() {
       setClientId(id);
 
       const { data: clientData } = await supabase
-        .from("clients").select("name").eq("id", id).single();
-      if (clientData) setClientName(clientData.name);
+        .from("clients").select("name, email, phone, last_business_license_url").eq("id", id).single();
+      if (clientData) {
+        setClientName(clientData.name);
+        // 기존 사업자등록증 및 담당자 정보 자동 입력
+        if (clientData.last_business_license_url) {
+          setExistingLicenseUrl(clientData.last_business_license_url);
+        }
+        setForm({
+          name: clientData.name || "",
+          phone: clientData.phone || "",
+          email: clientData.email || "",
+        });
+      }
 
       // billId가 있으면 해당 청구서 조회, 없으면 이번 달 청구서
       let billData: any = null;
@@ -151,18 +165,64 @@ function BillingCheckoutInner() {
       }
 
       // 무통장 — 해당 billId만 paid 처리
-      const { error } = await supabase
-        .from("monthly_bills")
-        .update({ status: "paid", paid_at: new Date().toISOString() })
-        .eq("id", bill.id);
-      if (error) throw new Error("결제 처리 실패");
+      let uploadedUrl = existingLicenseUrl || "";
+
+      // 세금계산서 필요 시 처리
+      if (needsInvoice) {
+        // 새 파일 업로드
+        if (licenseFile) {
+          const fileExt = licenseFile.name.split('.').pop();
+          const fileName = `bill_${bill.id}_license_${Date.now()}.${fileExt}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("tax-docs")
+            .upload(fileName, licenseFile);
+
+          if (uploadError) throw new Error("사업자등록증 업로드 실패: " + uploadError.message);
+
+          const { data: { publicUrl } } = supabase.storage
+            .from("tax-docs")
+            .getPublicUrl(fileName);
+          uploadedUrl = publicUrl;
+        }
+
+        // monthly_bills에 세금계산서 정보 저장
+        const { error: billUpdateError } = await supabase
+          .from("monthly_bills")
+          .update({
+            status: "paid",
+            paid_at: new Date().toISOString(),
+            needs_invoice: true,
+            business_license_url: uploadedUrl,
+            invoice_contact_name: form.name,
+            invoice_contact_phone: form.phone,
+            invoice_contact_email: form.email,
+          })
+          .eq("id", bill.id);
+        if (billUpdateError) throw new Error("청구서 업데이트 실패");
+
+        // clients 테이블에 캐시 업데이트 (다음번 자동 입력용)
+        if (uploadedUrl) {
+          await supabase
+            .from("clients")
+            .update({ last_business_license_url: uploadedUrl })
+            .eq("id", clientId);
+        }
+      } else {
+        // 세금계산서 불필요 시 기본 처리
+        const { error } = await supabase
+          .from("monthly_bills")
+          .update({ status: "paid", paid_at: new Date().toISOString() })
+          .eq("id", bill.id);
+        if (error) throw new Error("결제 처리 실패");
+      }
 
       await sendTelegramNotification(
         `💳 <b>정산 결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📅 청구 월: ${bill.billing_year}년 ${bill.billing_month}월\n` +
         `💰 결제 금액: ${fmtWon(total)} (VAT 포함)\n` +
-        `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}`
+        `📅 결제일: ${new Date().toLocaleDateString("ko-KR")}` +
+        (needsInvoice ? `\n📎 세금계산서: 발행 필요` : "")
       );
 
       alert("정산이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: " + fmtWon(total) + " (VAT 포함)\n\n입금 확인이 완료되면 정산이 최종 확정됩니다.");
@@ -237,7 +297,7 @@ function BillingCheckoutInner() {
             <div style={{ display: "flex", background: "#E8F5F0", borderRadius: 14, padding: 4, marginBottom: 14 }}>
               {[
                 { id: "card" as const, icon: CreditCard, label: "카드 결제" },
-                { id: "bank" as const, icon: Building2, label: "무통장 입금" },
+                { id: "bank" as const, icon: Building2, label: "세금계산서 및 무통장입금" },
               ].map(({ id, icon: Icon, label }) => {
                 const active = payMethod === id;
                 return (
@@ -289,18 +349,79 @@ function BillingCheckoutInner() {
                   </div>
                 </button>
                 {needsInvoice && (
-                  <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {[
-                        { key: "name", placeholder: "담당자 성함", type: "text" },
-                        { key: "phone", placeholder: "연락처", type: "tel" },
-                        { key: "email", placeholder: "이메일 (세금계산서 수신)", type: "email" },
-                      ].map(({ key, placeholder, type }) => (
-                        <input key={key} type={type} placeholder={placeholder}
-                          style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" as const }} />
-                      ))}
+                  <>
+                    {/* 담당자 정보 */}
+                    <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "0.5px solid #D1E8DF" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                        <FileText size={15} color={BLUE} strokeWidth={1.8} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>세금계산서 발행 정보</p>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {[
+                          { key: "name" as const, placeholder: "담당자 성함", type: "text" },
+                          { key: "phone" as const, placeholder: "연락처 (예: 010-1234-5678)", type: "tel" },
+                          { key: "email" as const, placeholder: "이메일 (세금계산서 수신)", type: "email" },
+                        ].map(({ key, placeholder, type }) => (
+                          <input key={key} type={type} placeholder={placeholder} value={form[key]}
+                            onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                            style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", background: "#F0F7F4", outline: "none", boxSizing: "border-box" as const }} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+
+                    {/* 사업자등록증 업로드 */}
+                    <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid #D1E8DF", overflow: "hidden", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "0.5px solid #F0F7F4", display: "flex", alignItems: "center", gap: 8 }}>
+                        <Camera size={16} color={BLUE} strokeWidth={1.8} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>사업자등록증 사본 첨부</p>
+                        {!existingLicenseUrl && !licenseFile && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "#EF4444", background: "#FEF2F2", padding: "2px 6px", borderRadius: 99 }}>필수</span>
+                        )}
+                      </div>
+                      <label style={{ display: "block", padding: "16px 18px", cursor: "pointer" }}>
+                        <input
+                          type="file"
+                          accept="image/*, .pdf"
+                          onChange={e => setLicenseFile(e.target.files?.[0] || null)}
+                          style={{ display: "none" }}
+                        />
+                        {licenseFile ? (
+                          // 새로 업로드한 파일
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#ECFDF5", borderRadius: 12, padding: "12px 14px" }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#D1FAE5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Check size={18} color="#10B981" strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>새 파일 선택 완료</p>
+                              <p style={{ fontSize: 11, color: "#6EE7B7", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{licenseFile.name}</p>
+                            </div>
+                            <span style={{ fontSize: 11, color: "#10B981", fontWeight: 600, flexShrink: 0 }}>변경</span>
+                          </div>
+                        ) : existingLicenseUrl ? (
+                          // 기존 파일 사용
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#EFF6FF", borderRadius: 12, padding: "12px 14px" }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Check size={18} color={BLUE} strokeWidth={2} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: BLUE }}>기존 파일 사용</p>
+                              <p style={{ fontSize: 11, color: "#60A5FA" }}>이전에 업로드한 사업자등록증</p>
+                            </div>
+                            <span style={{ fontSize: 11, color: BLUE, fontWeight: 600, flexShrink: 0 }}>변경</span>
+                          </div>
+                        ) : (
+                          // 파일 선택 전
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 0", border: "1.5px dashed #D1E8DF", borderRadius: 12 }}>
+                            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#F0F7F4", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Camera size={22} color="#94A3B8" strokeWidth={1.5} />
+                            </div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>파일을 선택해주세요</p>
+                            <p style={{ fontSize: 11, color: "#94A3B8" }}>JPG, PNG, PDF 가능</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </>
                 )}
               </div>
             )}
