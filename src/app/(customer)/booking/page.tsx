@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, X, Check } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
-const BLUE  = "#2563EB";
-const GREEN = "#10B981";
+const BLUE   = "#2563EB";
+const GREEN  = "#10B981";
+const ORANGE = "#F97316";
 
 const ZONES: Record<string, string[][]> = {
   A: [
@@ -19,6 +20,12 @@ const ZONES: Record<string, string[][]> = {
     ["B6","B7","B8","B9","B10"],
     ["B11","B12","B13","B14","B15"],
   ],
+  P: [
+    ["P1","P2","P3","P4","P5"],
+    ["P6","P7","P8","P9","P10"],
+    ["P11","P12","P13","P14","P15"],
+    ["P16","P17","P18","P19","P20"],
+  ],
 };
 
 const PLANS = [
@@ -29,6 +36,12 @@ const PLANS = [
 ];
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
+
+// 그리드별 가격 반환
+const getPricePerGrid = (gridId: string): number => {
+  if (gridId.startsWith('P')) return 50000;  // 파레트
+  return 120000;  // 그리드 (A, B존)
+};
 
 export default function BookingPage() {
   const router = useRouter();
@@ -67,12 +80,16 @@ export default function BookingPage() {
     });
   };
 
-  const chosenPlan     = PLANS.find(p => p.id === plan) ?? PLANS[0];
-  const gridCount      = selected.size;
-  const monthlyPerGrid = 120000;
-  const monthly        = monthlyPerGrid * gridCount;
-  const discounted     = Math.round(monthly * (1 - chosenPlan.discount));
-  const total          = discounted * chosenPlan.months;
+  const chosenPlan = PLANS.find(p => p.id === plan) ?? PLANS[0];
+  const gridCount  = selected.size;
+  
+  // 선택된 그리드들의 월 보관료 합계 (그리드별 가격 다름!)
+  const monthly = Array.from(selected).reduce((sum, gridId) => {
+    return sum + getPricePerGrid(gridId);
+  }, 0);
+  
+  const discounted = Math.round(monthly * (1 - chosenPlan.discount));
+  const total      = discounted * chosenPlan.months;
 
   const selList = [...selected].sort();
   const zones: Record<string, string[]> = {};
@@ -80,8 +97,13 @@ export default function BookingPage() {
     const z = id[0];
     (zones[z] = zones[z] || []).push(id);
   });
+  
+  // 존별 요약 + 개수 표시
   const selSummary = Object.entries(zones)
-    .map(([z, ids]) => `${z}존 - ${ids.join(", ")}`)
+    .map(([z, ids]) => {
+      const zoneLabel = z === 'P' ? 'P존(파레트)' : `${z}존`;
+      return `${zoneLabel} ${ids.length}개`;
+    })
     .join(" / ");
 
   const handleCheckout = () => {
@@ -128,13 +150,13 @@ export default function BookingPage() {
           <section>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <span style={{ width: 22, height: 22, borderRadius: "50%", background: BLUE, color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>1</span>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>공간(Grid) 선택</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>공간 선택</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, paddingLeft: 30, marginBottom: 14 }}>
-  <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요.</p>
-  <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>(1 Grid = 1.2평 = 1.1x1.1 파레트 3개 사이즈)</p>
-  <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>※ 기타 사이즈 협의는 전화로 문의주세요.</p>
-</div>
+              <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요.</p>
+              <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>(1 Grid = 1.2평 / 1 Pallet = 1.1m×1.1m)</p>
+              <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>※ 비규격 화물은 전화 문의: 070-8057-6783</p>
+            </div>
 
             {/* 범례 */}
             <div style={{ display: "flex", alignItems: "center", gap: 16, paddingLeft: 4, marginBottom: 12 }}>
@@ -151,48 +173,55 @@ export default function BookingPage() {
             </div>
 
             <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "18px 14px" }}>
-              {Object.entries(ZONES).map(([zone, rows]) => (
-                <div key={zone} style={{ marginBottom: zone === "A" ? 20 : 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", background: zone === "A" ? BLUE : GREEN, padding: "2px 10px", borderRadius: 99 }}>
-                      {zone}존
-                    </span>
-                    <div style={{ flex: 1, height: 1, background: "#F0F7F4" }} />
+              {Object.entries(ZONES).map(([zone, rows], zoneIdx) => {
+                const zoneColor = zone === "A" ? BLUE : zone === "B" ? GREEN : ORANGE;
+                const zoneName = zone === "P" ? "파레트존" : `${zone}존 (그리드)`;
+                const zonePrice = zone === "P" ? "50,000원/월" : "120,000원/월";
+                
+                return (
+                  <div key={zone} style={{ marginBottom: zoneIdx < Object.keys(ZONES).length - 1 ? 20 : 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", background: zoneColor, padding: "2px 10px", borderRadius: 99 }}>
+                        {zoneName}
+                      </span>
+                      <span style={{ fontSize: 11, color: "#94A3B8" }}>{zonePrice}</span>
+                      <div style={{ flex: 1, height: 1, background: "#F0F7F4" }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {rows.map((row, ri) => (
+                        <div key={ri} style={{ display: "flex", gap: 6 }}>
+                          {row.map(id => {
+                            const unavail = unavailable.has(id);
+                            const sel     = selected.has(id);
+                            return (
+                              <button key={id} onClick={() => toggle(id)}
+                                style={{
+                                  flex: 1, height: 50, borderRadius: 10,
+                                  border: sel ? `2px solid ${BLUE}` : unavail ? `1.5px solid #D1E8DF` : "1.5px solid #CBD5E1",
+                                  background: sel ? BLUE : unavail ? "#F0F7F4" : "#fff",
+                                  cursor: unavail ? "not-allowed" : "pointer",
+                                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                                  gap: 2, transition: "all 0.15s",
+                                  boxShadow: sel ? `0 2px 8px ${BLUE}33` : "none",
+                                }}>
+                                {sel
+                                  ? <Check size={17} color="#fff" strokeWidth={2.5} />
+                                  : <span style={{ fontSize: 11, fontWeight: 600, color: unavail ? "#CBD5E1" : "#374151" }}>{id}</span>
+                                }
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {rows.map((row, ri) => (
-                      <div key={ri} style={{ display: "flex", gap: 6 }}>
-                        {row.map(id => {
-                          const unavail = unavailable.has(id);
-                          const sel     = selected.has(id);
-                          return (
-                            <button key={id} onClick={() => toggle(id)}
-                              style={{
-                                flex: 1, height: 50, borderRadius: 10,
-                                border: sel ? `2px solid ${BLUE}` : unavail ? `1.5px solid #D1E8DF` : "1.5px solid #CBD5E1",
-                                background: sel ? BLUE : unavail ? "#F0F7F4" : "#fff",
-                                cursor: unavail ? "not-allowed" : "pointer",
-                                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                                gap: 2, transition: "all 0.15s",
-                                boxShadow: sel ? `0 2px 8px ${BLUE}33` : "none",
-                              }}>
-                              {sel
-                                ? <Check size={17} color="#fff" strokeWidth={2.5} />
-                                : <span style={{ fontSize: 11, fontWeight: 600, color: unavail ? "#CBD5E1" : "#374151" }}>{id}</span>
-                              }
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               <div style={{ marginTop: 16, padding: "10px 14px", background: "#F0F7F4", borderRadius: 12, border: "0.5px solid #D1E8DF" }}>
                 <span style={{ fontSize: 12, color: "#64748B" }}>현재 선택: </span>
                 {gridCount > 0
-                  ? <span style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{selSummary} (총 {gridCount} Grid)</span>
+                  ? <span style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{selSummary}</span>
                   : <span style={{ fontSize: 12, color: "#CBD5E1" }}>선택된 공간 없음</span>
                 }
               </div>
@@ -209,7 +238,7 @@ export default function BookingPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {PLANS.map(p => {
                 const active = plan === p.id;
-                const m = Math.round(monthlyPerGrid * gridCount * (1 - p.discount));
+                const m = Math.round(monthly * (1 - p.discount));
                 const t = m * p.months;
                 return (
                   <button key={p.id} onClick={() => setPlan(p.id)}
@@ -270,7 +299,7 @@ export default function BookingPage() {
         {/* 하단 고정 바 */}
         <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 16px", zIndex: 90, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingLeft: 4 }}>
-            <span style={{ fontSize: 13, color: "#64748B" }}>총 {gridCount} Grid / {chosenPlan.months}개월</span>
+            <span style={{ fontSize: 13, color: "#64748B" }}>총 {gridCount}개 / {chosenPlan.months}개월</span>
             <div style={{ textAlign: "right" }}>
               {chosenPlan.discount > 0 && (
                 <p style={{ fontSize: 12, color: "#94A3B8", textDecoration: "line-through" }}>월 {fmt(monthly)}</p>
