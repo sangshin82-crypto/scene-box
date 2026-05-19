@@ -60,7 +60,7 @@ export default function LandingPage() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        paddingBottom: 320,
+        paddingBottom: 0,
       }}>
 
         {/* ── HERO ── */}
@@ -217,12 +217,9 @@ export default function LandingPage() {
 
       {/* ── BOTTOM CTA ── */}
       <div style={{
-        position: "fixed",
-        bottom: 56,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "min(100%, 430px)",
-        zIndex: 100,
+        width: "100%",
+        marginTop: 24,
+        paddingBottom: 40,
       }}>
         <div style={{
           background: "rgba(240,247,244,0.95)",
