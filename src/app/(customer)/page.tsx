@@ -166,6 +166,49 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* ── PRICING ── */}
+        <div style={{ padding: "24px 16px 0" }}>
+          <p style={{
+            fontSize: 11, fontWeight: 600, color: "#94A3B8",
+            textAlign: "center", letterSpacing: "2px",
+            textTransform: "uppercase", marginBottom: 16,
+          }}>
+            Pricing
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{
+              background: "#fff",
+              borderRadius: 20,
+              boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
+              padding: "18px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#2563EB", marginBottom: 4 }}>그리드존</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>1그리드 (1.2평) 보관</p>
+              </div>
+              <p style={{ fontSize: 17, fontWeight: 800, color: "#1E293B" }}>120,000<span style={{ fontSize: 11, fontWeight: 500, color: "#94A3B8" }}>원/월</span></p>
+            </div>
+            <div style={{
+              background: "#fff",
+              borderRadius: 20,
+              boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
+              padding: "18px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#F97316", marginBottom: 4 }}>파레트존</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>표준 파레트 1개 보관</p>
+              </div>
+              <p style={{ fontSize: 17, fontWeight: 800, color: "#1E293B" }}>50,000<span style={{ fontSize: 11, fontWeight: 500, color: "#94A3B8" }}>원/월</span></p>
+            </div>
+          </div>
+        </div>
+
         {/* ── BOTTOM CTA ── */}
         <div style={{ padding: "24px 20px 0" }}>
           <button
@@ -221,9 +264,11 @@ export default function LandingPage() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 12, borderTop: "0.5px solid #D1E8DF", paddingTop: 14 }}>
-            <a href="/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
+          <a href="/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
             <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
-            <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline", fontWeight: 700 }}>개인정보처리방침</a>
+            <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>개인정보처리방침</a>
+            <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
+            <a href="/refund" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline", fontWeight: 700 }}>취소 및 환불 규정</a>
           </div>
           <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 10 }}>
             © 2026 씬박스(SceneBox). All rights reserved.
