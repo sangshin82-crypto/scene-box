@@ -60,7 +60,6 @@ export default function LandingPage() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        paddingBottom: 280,
       }}>
 
         {/* ── HERO ── */}
@@ -75,8 +74,6 @@ export default function LandingPage() {
           position: "relative",
           overflow: "hidden",
         }}>
-
-          {/* Badge */}
           <div style={{
             display: "inline-flex",
             alignItems: "center",
@@ -93,29 +90,22 @@ export default function LandingPage() {
               B2B 특수화물 전문 공유창고
             </span>
           </div>
-
-          {/* 로고 영문 */}
           <div style={{ marginBottom: 6 }}>
             <span style={{ fontSize: 44, fontWeight: 900, color: "#0F172A", letterSpacing: "-2px", lineHeight: 1 }}>
               Scene<span style={{ color: BLUE }}>Box</span>
             </span>
           </div>
-
-          {/* 로고 국문 */}
           <div style={{ marginBottom: 10 }}>
             <span style={{ fontSize: 28, fontWeight: 700, color: "#334155", letterSpacing: "8px" }}>
               씬박스
             </span>
           </div>
-
           <span style={{
             fontSize: 11, fontWeight: 600, color: "#94A3B8",
             letterSpacing: "3px", textTransform: "uppercase", marginBottom: 24,
           }}>
             Move &amp; Keep
           </span>
-
-          {/* Copy */}
           <h1 style={{ fontSize: 16, fontWeight: 700, color: "#1E293B", lineHeight: 1.75, letterSpacing: "-0.2px", margin: 0 }}>
             촬영/프로모션/공연 미술팀의 영원한 숙제,<br />
             <span style={{
@@ -128,8 +118,6 @@ export default function LandingPage() {
             </span><br />
             한 번에 해결하세요.
           </h1>
-
-          {/* Dots */}
           <div style={{ display: "flex", gap: 5, marginTop: 20 }}>
             {[{ w: 22, c: BLUE }, { w: 6, c: "#BFDBFE" }, { w: 6, c: "#D1FAE5" }].map((d, i) => (
               <div key={i} style={{ width: d.w, height: 5, borderRadius: 99, background: d.c }} />
@@ -146,7 +134,6 @@ export default function LandingPage() {
           }}>
             Why Scene Box?
           </p>
-
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {benefits.map(({ icon: Icon, color, bg, title, note, desc }) => (
               <div key={title} style={{
@@ -158,7 +145,6 @@ export default function LandingPage() {
                 alignItems: "flex-start",
                 gap: 12,
               }}>
-                {/* 아이콘 */}
                 <div style={{
                   width: 46, height: 46, borderRadius: 14,
                   background: bg, display: "flex",
@@ -166,7 +152,6 @@ export default function LandingPage() {
                 }}>
                   <Icon size={21} color={color} strokeWidth={1.6} />
                 </div>
-                {/* 텍스트 */}
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", lineHeight: 1.5, marginBottom: 0 }}>
                     {title}
@@ -181,56 +166,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ── FOOTER INFO ── */}
-        <div style={{ 
-          background: "#F0F7F4", 
-          borderTop: "0.5px solid #D1E8DF", 
-          padding: "32px 20px 20px",
-          marginTop: 28,
-        }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>씬박스(SceneBox)</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
-            {[
-              { label: "대표", value: "박민지" },
-              { label: "사업자등록번호", value: "806-36-01589" },
-              { label: "통신판매업 신고번호", value: "2026-용인처인-01107" },
-              { label: "주소", value: "경기도 용인시 처인구 모현읍 곡현로 734" },
-              { label: "전화", value: "070-8057-6783 / 010-2897-8524" },
-              { label: "이메일", value: "easy.keep.kr@gmail.com" },
-            ].map(({ label, value }) => (
-              <div key={label} style={{ display: "flex", gap: 6 }}>
-                <span style={{ fontSize: 11, color: "#9CA3AF", flexShrink: 0, minWidth: 90 }}>{label}</span>
-                <span style={{ fontSize: 11, color: "#6B7280" }}>{value}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 12, borderTop: "0.5px solid #D1E8DF", paddingTop: 14 }}>
-            <a href="/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
-            <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
-            <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline", fontWeight: 700 }}>개인정보처리방침</a>
-          </div>
-          <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 10 }}>
-            © 2026 씬박스(SceneBox). All rights reserved.
-          </p>
-        </div>
-        </div>
-
-{/* ── BOTTOM CTA ── */}
-<div style={{
-  position: "fixed",
-  bottom: 0,
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: "min(100%, 430px)",
-  zIndex: 100,
-}}>
-        <div style={{
-          background: "rgba(240,247,244,0.95)",
-          backdropFilter: "blur(16px)",
-          borderTop: "1px solid rgba(16,185,129,0.12)",
-          padding: "14px 20px 20px",
-          boxShadow: "0 -8px 32px rgba(0,0,0,0.06)",
-        }}>
+        {/* ── BOTTOM CTA ── */}
+        <div style={{ padding: "24px 20px 0" }}>
           <button
             onClick={handleKakaoLogin}
             style={{
@@ -259,6 +196,40 @@ export default function LandingPage() {
             복잡한 정보 입력 없이 1초 만에 가입됩니다.
           </p>
         </div>
+
+        {/* ── FOOTER INFO ── */}
+        <div style={{
+          background: "#F0F7F4",
+          borderTop: "0.5px solid #D1E8DF",
+          padding: "32px 20px 40px",
+          marginTop: 28,
+        }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>씬박스(SceneBox)</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
+            {[
+              { label: "대표", value: "박민지" },
+              { label: "사업자등록번호", value: "806-36-01589" },
+              { label: "통신판매업 신고번호", value: "2026-용인처인-01107" },
+              { label: "주소", value: "경기도 용인시 처인구 모현읍 곡현로 734" },
+              { label: "전화", value: "070-8057-6783 / 010-2897-8524" },
+              { label: "이메일", value: "easy.keep.kr@gmail.com" },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: "flex", gap: 6 }}>
+                <span style={{ fontSize: 11, color: "#9CA3AF", flexShrink: 0, minWidth: 90 }}>{label}</span>
+                <span style={{ fontSize: 11, color: "#6B7280" }}>{value}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 12, borderTop: "0.5px solid #D1E8DF", paddingTop: 14 }}>
+            <a href="/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
+            <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
+            <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline", fontWeight: 700 }}>개인정보처리방침</a>
+          </div>
+          <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 10 }}>
+            © 2026 씬박스(SceneBox). All rights reserved.
+          </p>
+        </div>
+
       </div>
     </div>
   );
