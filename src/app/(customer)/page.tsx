@@ -60,7 +60,7 @@ export default function LandingPage() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        paddingBottom: 152,
+        paddingBottom: 320,
       }}>
 
         {/* ── HERO ── */}
