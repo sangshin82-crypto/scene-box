@@ -60,7 +60,7 @@ export default function LandingPage() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        paddingBottom: 0,
+        paddingBottom: 280,
       }}>
 
         {/* ── HERO ── */}
@@ -213,14 +213,17 @@ export default function LandingPage() {
             © 2026 씬박스(SceneBox). All rights reserved.
           </p>
         </div>
-      </div>
+        </div>
 
-      {/* ── BOTTOM CTA ── */}
-      <div style={{
-        width: "100%",
-        marginTop: 24,
-        paddingBottom: 40,
-      }}>
+{/* ── BOTTOM CTA ── */}
+<div style={{
+  position: "fixed",
+  bottom: 0,
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "min(100%, 430px)",
+  zIndex: 100,
+}}>
         <div style={{
           background: "rgba(240,247,244,0.95)",
           backdropFilter: "blur(16px)",
