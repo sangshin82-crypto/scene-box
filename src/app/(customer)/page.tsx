@@ -211,6 +211,59 @@ export default function LandingPage() {
 
         {/* ── BOTTOM CTA ── */}
         <div style={{ padding: "24px 20px 0" }}>
+          {/* 임시 심사용 이메일 로그인 - 심사 완료 후 제거 */}
+          <div style={{ marginBottom: 12 }}>
+            <input
+              id="email"
+              type="email"
+              placeholder="이메일"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: 12,
+                border: "1px solid #E5E7EB",
+                fontSize: 14,
+                marginBottom: 8,
+                boxSizing: "border-box",
+              }}
+            />
+            <input
+              id="password"
+              type="password"
+              placeholder="비밀번호"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: 12,
+                border: "1px solid #E5E7EB",
+                fontSize: 14,
+                marginBottom: 8,
+                boxSizing: "border-box",
+              }}
+            />
+            <button
+              onClick={async () => {
+                const email = (document.getElementById("email") as HTMLInputElement).value;
+                const password = (document.getElementById("password") as HTMLInputElement).value;
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) alert("로그인 실패: " + error.message);
+                else window.location.href = "/dashboard";
+              }}
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                border: "none",
+                background: "#E5E7EB",
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#374151",
+                cursor: "pointer",
+              }}
+            >
+              이메일로 로그인 (심사용)
+            </button>
+          </div>
           <button
             onClick={handleKakaoLogin}
             style={{
