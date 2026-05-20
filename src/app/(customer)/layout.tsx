@@ -88,8 +88,13 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             </button>
             <span style={{ fontSize: 11, color: '#D1D5DB' }}>|</span>
             <button onClick={() => router.push('/privacy')}
-              style={{ fontSize: 11, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontWeight: 700 }}>
+              style={{ fontSize: 11, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
               개인정보처리방침
+            </button>
+            <span style={{ fontSize: 11, color: '#D1D5DB' }}>|</span>
+            <button onClick={() => router.push('/refund')}
+              style={{ fontSize: 11, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontWeight: 700 }}>
+              취소 및 환불 규정
             </button>
           </div>
           <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 10 }}>
