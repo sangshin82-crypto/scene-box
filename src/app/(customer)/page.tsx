@@ -213,6 +213,7 @@ export default function LandingPage() {
         <div style={{ padding: "24px 20px 0" }}>
           {/* 임시 심사용 이메일 로그인 - 심사 완료 후 제거 */}
           <div style={{ marginBottom: 12 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>로그인 하기</p>
             <input
               id="email"
               type="email"
@@ -225,6 +226,8 @@ export default function LandingPage() {
                 fontSize: 14,
                 marginBottom: 8,
                 boxSizing: "border-box",
+                color: "#111827",
+                background: "#fff",
               }}
             />
             <input
@@ -239,6 +242,8 @@ export default function LandingPage() {
                 fontSize: 14,
                 marginBottom: 8,
                 boxSizing: "border-box",
+                color: "#111827",
+                background: "#fff",
               }}
             />
             <button
@@ -261,7 +266,7 @@ export default function LandingPage() {
                 cursor: "pointer",
               }}
             >
-              이메일로 로그인 (심사용)
+              로그인
             </button>
           </div>
           <button
