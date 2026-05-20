@@ -32,7 +32,6 @@ const PLANS = [
   { id: "1m", label: "1개월 단기", badge: null,       monthly: 120000, months: 1, discount: 0   },
   { id: "2m", label: "2개월 단기", badge: null,       monthly: 120000, months: 2, discount: 0   },
   { id: "3m", label: "3개월 장기", badge: "10% 할인", monthly: 120000, months: 3, discount: 0.1 },
-  { id: "6m", label: "6개월 장기", badge: "20% 할인", monthly: 120000, months: 6, discount: 0.2 },
 ];
 
 const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
