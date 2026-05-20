@@ -466,7 +466,7 @@ function BillingCheckoutInner() {
         <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 20px", zIndex: 90, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
           <button onClick={handlePayment} disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", transition: "all 0.2s", boxShadow: allChecked ? `0 4px 16px ${BLUE}44` : "none" }}>
-            {isSubmitting ? "처리 중..." : allChecked ? `${fmtWon(total)} 결제하기` : "약관에 동의해주세요"}
+            {isSubmitting ? "결제 요청 중..." : allChecked ? `${fmtWon(total)} 결제하기` : "약관에 동의해주세요"}
           </button>
         </div>
       </div>
