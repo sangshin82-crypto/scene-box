@@ -153,14 +153,16 @@ function BillingCheckoutInner() {
 
     try {
       if (payMethod === "card") {
-        if (!paymentWidget) throw new Error("결제 위젯이 초기화되지 않았습니다.");
-        await paymentWidget.requestPayment({
-          orderId,
-          orderName,
-          successUrl: `${window.location.origin}/billing/success?orderId=${orderId}&billId=${bill.id}&clientId=${clientId}`,
-          failUrl: `${window.location.origin}/fail`,
-          customerName: clientName,
-        });
+        await sendTelegramNotification(
+          `💳 <b>카드 결제 링크 요청!</b>\n\n` +
+          `👤 고객명: ${clientName}\n` +
+          `📅 청구 월: ${bill.billing_year}년 ${bill.billing_month}월\n` +
+          `💰 결제 금액: ${fmtWon(total)} (VAT 포함)\n` +
+          `📅 요청일: ${new Date().toLocaleDateString("ko-KR")}\n\n` +
+          `⚡ 페이앱으로 카드 결제 링크 발송 필요!`
+        );
+        alert("카드 결제 요청이 접수되었습니다.\n관리자가 카드 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.");
+        router.push("/billing");
         return;
       }
 
@@ -311,16 +313,18 @@ function BillingCheckoutInner() {
 
             {payMethod === "card" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "20px 18px", border: "0.5px solid #BFDBFE" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <CreditCard size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>토스페이먼츠 안전결제</p>
-                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>카드 정보는 당사 서버에 저장되지 않습니다.</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 8 }}>카드 결제 안내</p>
+                      <p style={{ fontSize: 12, color: "#374151", lineHeight: 1.8 }}>
+                        결제하기 버튼을 누르시면 카드 결제 요청이 접수됩니다.<br />
+                        관리자가 카드 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div id="billing-payment-methods" ref={paymentMethodsRef} style={{ background: "#fff", borderRadius: 16, padding: "16px", border: "0.5px solid #D1E8DF", minHeight: "200px" }} />
               </div>
             )}
 
