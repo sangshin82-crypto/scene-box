@@ -46,7 +46,7 @@ export default function BillingPage() {
         .from("monthly_bills")
         .select("*")
         .eq("client_id", clientId)
-        .eq("status", "pending")
+        .in("status", ["pending", "processing"])
         .order("billing_year", { ascending: true })
         .order("billing_month", { ascending: true });
 
@@ -129,8 +129,11 @@ export default function BillingPage() {
                   <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>
                     {bill.billing_year}년 {bill.billing_month}월 청구
                   </h2>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#F97316", background: "#FFF7ED", padding: "2px 8px", borderRadius: 99 }}>
-                    미결제
+                  <span style={{ fontSize: 11, fontWeight: 600, 
+                    color: bill.status === "processing" ? "#2563EB" : "#F97316", 
+                    background: bill.status === "processing" ? "#EFF6FF" : "#FFF7ED", 
+                    padding: "2px 8px", borderRadius: 99 }}>
+                    {bill.status === "processing" ? "결제 진행 중" : "미결제"}
                   </span>
                 </div>
 
@@ -196,8 +199,8 @@ export default function BillingPage() {
                 {/* 결제 버튼 */}
                 <button
                   type="button"
-                  disabled={!canCheckout}
-                  onClick={() => router.push(`/billing/checkout?billId=${bill.id}`)}
+                  disabled={!canCheckout || bill.status === "processing"}
+                  onClick={() => bill.status !== "processing" && router.push(`/billing/checkout?billId=${bill.id}`)}
                   style={{
                     width: "100%", marginTop: 12, padding: "15px 0", borderRadius: 14, border: "none",
                     background: canCheckout ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB",
@@ -208,7 +211,7 @@ export default function BillingPage() {
                     transition: "all 0.2s",
                   }}
                 >
-                  {fmtWon(total)} 결제하기
+                  {bill.status === "processing" ? "결제 진행 중..." : `${fmtWon(total)} 결제하기`}
                 </button>
               </section>
             );

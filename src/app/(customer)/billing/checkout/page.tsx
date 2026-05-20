@@ -153,6 +153,10 @@ function BillingCheckoutInner() {
 
     try {
       if (payMethod === "card") {
+        await supabase
+          .from("monthly_bills")
+          .update({ status: "processing" })
+          .eq("id", bill.id);
         await sendTelegramNotification(
           `💳 <b>카드 결제 링크 요청!</b>\n\n` +
           `👤 고객명: ${clientName}\n` +
