@@ -167,6 +167,7 @@ function BillingCheckoutInner() {
         );
         alert("카드 결제 요청이 접수되었습니다.\n관리자가 카드 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.");
         router.push("/billing");
+        router.refresh();
         return;
       }
 
