@@ -138,7 +138,22 @@ export default function AdminBilling() {
 
     let billId = bill?.id;
 
-    if (bill) {
+    if (bill && (bill.status === 'processing' || bill.status === 'paid')) {
+      // processing/paid 상태면 새 청구서 생성
+      const { data, error } = await supabase
+        .from('monthly_bills')
+        .insert({
+          client_id:     selectedClientId,
+          billing_year:  billingYear,
+          billing_month: billingMonth,
+          ...updateData,
+        })
+        .select()
+        .single();
+      if (error) { alert('생성 오류: ' + error.message); setIsSaving(false); return; }
+      billId = data.id;
+      setBill(data);
+    } else if (bill) {
       const { error } = await supabase.from('monthly_bills').update(updateData).eq('id', bill.id);
       if (error) { alert('업데이트 오류: ' + error.message); setIsSaving(false); return; }
     } else {
