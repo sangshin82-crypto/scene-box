@@ -12,9 +12,9 @@ const benefits = [
     icon: Ruler,
     color: BLUE,
     bg: "#EFF6FF",
-    title: "규격화된 전용 Grid, 단일 품목 기준 최대 높이 10m",
-    note: "*박스 적재는 높이 3m 기준",
-    desc: "불규칙한 대형 소품과 세트장도 수직 공간을 100% 활용",
+    title: "규격화된 전용 Grid, 공간 효율 극대화",
+    note: "",
+    desc: "박스 적재부터 대형 세트장·비정형 화물까지 모두 수납 가능",
   },
   {
     icon: Truck,

@@ -157,7 +157,6 @@ export default function InventoryPage() {
       }}>
         {([
           { key: "contracts" as Tab, label: "📦 계약 현황", count: activeSpaces.length },
-          { key: "payments"  as Tab, label: "💳 결제 내역", count: payments.length     },
         ]).map(({ key, label, count }) => (
           <button key={key} onClick={() => setTab(key)}
             style={{
