@@ -47,8 +47,10 @@ export default function BillingPage() {
         .select("*")
         .eq("client_id", clientId)
         .in("status", ["pending", "processing", "paid"])
+        .order("status", { ascending: true })
         .order("billing_year", { ascending: false })
-        .order("billing_month", { ascending: false });
+        .order("billing_month", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (billsError) {
         console.error("청구서 로딩 실패:", billsError);
@@ -82,14 +84,17 @@ export default function BillingPage() {
 
       // lineItems가 있는 청구서만 표시
       const now = new Date();
-      setBills(billsWithItems.filter(b => {
+      const sorted = billsWithItems.sort((a, b) => {
+        const order = { pending: 0, processing: 1, paid: 2 };
+        return (order[a.status as keyof typeof order] ?? 9) - (order[b.status as keyof typeof order] ?? 9);
+      });
+      setBills(sorted.filter(b => {
         if (b.lineItems.length === 0) return false;
         if (b.status !== "paid") return true;
         const billDate = new Date(b.billing_year, b.billing_month - 1);
         const diffMonths = (now.getFullYear() - billDate.getFullYear()) * 12 + (now.getMonth() - billDate.getMonth());
         return diffMonths <= 3;
       }));
-      setIsLoading(false);
     }
     fetchBillingData();
   }, []);

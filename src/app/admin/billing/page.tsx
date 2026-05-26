@@ -65,7 +65,8 @@ export default function AdminBilling() {
         .select('*')
         .eq('client_id', selectedClientId)
         .order('billing_year', { ascending: false })
-        .order('billing_month', { ascending: false });
+        .order('billing_month', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (billsData) {
         const withItems = await Promise.all(
@@ -82,7 +83,11 @@ export default function AdminBilling() {
             return { ...b, lineItems: filtered };
           })
         );
-        setAllBills(withItems.filter(b => b.lineItems.length > 0));
+        const sortedAll = withItems.sort((a, b) => {
+          const order = { pending: 0, processing: 1, paid: 2 };
+          return (order[a.status as keyof typeof order] ?? 9) - (order[b.status as keyof typeof order] ?? 9);
+        });
+        setAllBills(sortedAll.filter(b => b.lineItems.length > 0));
       }
     }
     fetchAllBills();
