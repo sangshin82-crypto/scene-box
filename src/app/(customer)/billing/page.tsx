@@ -46,7 +46,7 @@ export default function BillingPage() {
         .from("monthly_bills")
         .select("*")
         .eq("client_id", clientId)
-        .in("status", ["pending", "processing"])
+        .in("status", ["pending", "processing", "paid"])
         .order("billing_year", { ascending: true })
         .order("billing_month", { ascending: true });
 
@@ -130,10 +130,10 @@ export default function BillingPage() {
                     {bill.billing_year}년 {bill.billing_month}월 청구
                   </h2>
                   <span style={{ fontSize: 11, fontWeight: 600, 
-                    color: bill.status === "processing" ? "#2563EB" : "#F97316", 
-                    background: bill.status === "processing" ? "#EFF6FF" : "#FFF7ED", 
+                    color: bill.status === "paid" ? "#10B981" : bill.status === "processing" ? "#2563EB" : "#F97316", 
+                    background: bill.status === "paid" ? "#ECFDF5" : bill.status === "processing" ? "#EFF6FF" : "#FFF7ED", 
                     padding: "2px 8px", borderRadius: 99 }}>
-                    {bill.status === "processing" ? "결제 진행 중" : "미결제"}
+                    {bill.status === "paid" ? "✅ 결제 완료" : bill.status === "processing" ? "결제 진행 중" : "미결제"}
                   </span>
                 </div>
 
@@ -199,19 +199,19 @@ export default function BillingPage() {
                 {/* 결제 버튼 */}
                 <button
                   type="button"
-                  disabled={!canCheckout || bill.status === "processing"}
-                  onClick={() => bill.status !== "processing" && router.push(`/billing/checkout?billId=${bill.id}`)}
+                  disabled={!canCheckout || bill.status === "processing" || bill.status === "paid"}
+                  onClick={() => bill.status !== "processing" && bill.status !== "paid" && router.push(`/billing/checkout?billId=${bill.id}`)}
                   style={{
                     width: "100%", marginTop: 12, padding: "15px 0", borderRadius: 14, border: "none",
-                    background: canCheckout ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB",
-                    color: canCheckout ? "#fff" : "#9CA3AF",
+                    background: bill.status === "paid" ? "#ECFDF5" : canCheckout ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB",
+                    color: bill.status === "paid" ? "#10B981" : canCheckout ? "#fff" : "#9CA3AF",
                     fontSize: 15, fontWeight: 700,
                     cursor: canCheckout ? "pointer" : "not-allowed",
                     boxShadow: canCheckout ? `0 4px 16px ${BLUE}44` : "none",
                     transition: "all 0.2s",
                   }}
                 >
-                  {bill.status === "processing" ? "결제 진행 중..." : `${fmtWon(total)} 결제하기`}
+                  {bill.status === "paid" ? "✅ 결제 완료" : bill.status === "processing" ? "결제 진행 중..." : `${fmtWon(total)} 결제하기`}
                 </button>
               </section>
             );

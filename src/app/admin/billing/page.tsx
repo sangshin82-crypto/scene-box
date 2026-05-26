@@ -261,6 +261,31 @@ export default function AdminBilling() {
         <button onClick={handleSave} disabled={isSaving} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-sm active:bg-blue-700 transition-colors">
           {isSaving ? '저장 중...' : `${billingYear}년 ${billingMonth}월 청구서 저장`}
         </button>
+
+        {/* 결제 완료 처리 버튼 */}
+        {bill && bill.status === "processing" && (
+          <button
+            onClick={async () => {
+              const confirmed = window.confirm(
+                `⚠️ ${billingYear}년 ${billingMonth}월 청구서를 결제 완료 처리하시겠습니까?\n\n고객 화면에 즉시 반영됩니다.`
+              );
+              if (!confirmed) return;
+              const { error } = await supabase
+                .from("monthly_bills")
+                .update({ status: "paid", paid_at: new Date().toISOString() })
+                .eq("id", bill.id);
+              if (error) {
+                alert("처리 실패: " + error.message);
+              } else {
+                setBill(prev => prev ? { ...prev, status: "paid" } : null);
+                alert("✅ 결제 완료 처리되었습니다!");
+              }
+            }}
+            className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-sm active:bg-green-700 transition-colors"
+          >
+            ✅ 결제 완료 처리
+          </button>
+        )}
       </div>
     </div>
   );
