@@ -119,17 +119,7 @@ export default function AdminBilling() {
       if (!confirmed) return;
     }
 
-    // 금액이 동일한 경우 중복 경고
-    if (bill && bill.status === 'pending') {
-      const prevTotal = (bill.transport_fee ?? 0) + (bill.disposal_fee ?? 0) + (bill.storage_fee ?? 0);
-      const newTotal  = parseInput(transportFee) + parseInput(disposalFee) + parseInput(storageFee);
-      if (prevTotal === newTotal && prevTotal > 0) {
-        const confirmed = window.confirm(
-          '⚠️ 이전 청구와 동일한 금액입니다.\n\n중복 청구입니까, 신규 청구입니까?\n[확인] = 저장 진행  [취소] = 돌아가기'
-        );
-        if (!confirmed) return;
-      }
-    }
+    
 
     setIsSaving(true);
 
@@ -166,12 +156,7 @@ export default function AdminBilling() {
       billId = data.id;
     }
 
-    // 관리자 입력 항목만 삭제 (예약 보관료, 이행보증금은 보존)
-    await supabase.from('bill_line_items')
-      .delete()
-      .eq('bill_id', billId)
-      .in('item_type', ['storage', 'transport', 'disposal'])
-      .not('description', 'like', '월 보관료%');
+    
 
     // VAT 포함 금액으로 저장 (입력값 × 1.1)
     const lineItems = [
