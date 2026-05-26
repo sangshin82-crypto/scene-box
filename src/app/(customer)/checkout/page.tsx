@@ -62,7 +62,7 @@ function CheckoutInner() {
   const endDate   = new Date();
   endDate.setMonth(endDate.getMonth() + months);
 
-  const [payMethod, setPayMethod]       = useState<"card" | "bank">("card");
+  const [payMethod, setPayMethod]       = useState<"card" | "cash" | "bank">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [licenseFile, setLicenseFile]   = useState<File | null>(null);
   const [checks, setChecks]             = useState<Record<CheckKey, boolean>>({
@@ -247,6 +247,72 @@ function CheckoutInner() {
       }
       // ────────────────────────────────────────────────────────────────────────
 
+      // ─── 현금영수증·사업자지출증빙 (KCP 계좌이체) ────────────────────────────
+      if (payMethod === "cash") {
+        const storeId    = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+        const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
+
+        if (!storeId || !channelKey) {
+          throw new Error("포트원 환경변수(storeId / channelKey)가 설정되지 않았습니다.");
+        }
+
+        const spaceRows = gridsData.map(g => ({
+          client_id:      clientId,
+          grid_id:        g.id,
+          plan_type:      planId,
+          monthly_fee:    monthly,
+          deposit_amount: deposit,
+          start_date:     startDate.toISOString().split("T")[0],
+          end_date:       endDate.toISOString().split("T")[0],
+          status:         "pending",
+        }));
+
+        const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
+        if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
+
+        const PortOne = portoneRef.current;
+        if (!PortOne) {
+          throw new Error("결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        const portoneResponse = await PortOne.requestPayment({
+          storeId,
+          channelKey,
+          paymentId:   paymentIdRef.current,
+          orderName,
+          totalAmount: grandTotalBank,
+          currency:    "KRW",
+          payMethod:   "TRANSFER",
+        });
+
+        const errRes = portoneResponse as PortOneErrorResponse | null;
+        if (errRes?.code !== undefined) {
+          throw new Error(errRes.message || "결제에 실패했습니다.");
+        }
+
+        const confirmRes = await fetch("/api/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentId:   paymentIdRef.current,
+            amount:      grandTotalBank,
+            clientId,
+            grids:       gridStr,
+            uploadedUrl: uploadedUrl ?? "",
+          }),
+        });
+
+        if (!confirmRes.ok) {
+          const errData = await confirmRes.json();
+          throw new Error(errData.error || "결제 검증 실패");
+        }
+
+        alert(`결제가 완료되었습니다! 🎉\n\n총 결제 금액: ${fmt(grandTotalBank)}\n\n예약 확정을 위해 관리자 확인 후 안내드립니다.`);
+        router.push("/dashboard");
+        return;
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       // ─── 홈택스 세금계산서 / 무통장 입금 ────────────────────────────────────
       const spaceRows = gridsData.map(g => ({
         client_id:      clientId,
@@ -336,6 +402,9 @@ function CheckoutInner() {
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "알 수 없는 오류";
+      if (message.includes("3001") || message.includes("취소") || message.includes("CANCEL")) {
+        return;
+      }
       console.error("결제 처리 실패 상세:", err);
       alert(`[처리 오류]\n원인: ${message}\n\n※ 이 메시지를 관리자에게 알려주세요!`);
     } finally {
@@ -412,17 +481,44 @@ function CheckoutInner() {
             <StepLabel n={2} title="결제 수단 선택" />
             <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 12, paddingLeft: 30 }}>결제 방식을 선택해주세요.</p>
 
-            {/* 탭 */}
-            <div style={{ display: "flex", background: "#E8F5F0", borderRadius: 14, padding: 4, marginBottom: 14 }}>
+            {/* 선택형 카드 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {[
-                { id: "card" as const, icon: CreditCard, label: "카드결제 및 현금영수증" },
-                { id: "bank" as const, icon: Building2,  label: "홈택스 세금계산서 전용" },
-              ].map(({ id, icon: Icon, label }) => {
+                {
+                  id: "card" as const,
+                  icon: CreditCard,
+                  label: "카드결제",
+                  desc: "신용·체크카드로 즉시 결제됩니다. KCP 안전결제 시스템을 통해 처리됩니다.",
+                },
+                {
+                  id: "cash" as const,
+                  icon: FileText,
+                  label: "현금영수증 및 사업자지출증빙",
+                  desc: "KCP 결제 시스템을 통해 즉시 처리되며, 현금영수증(지출증빙)이 자동 발행됩니다. 매입세액 공제에 사용 가능합니다.",
+                },
+                {
+                  id: "bank" as const,
+                  icon: Building2,
+                  label: "홈택스 세금계산서 전용",
+                  desc: "내부 규정상 국세청 홈택스 발급본이 반드시 필요한 경우에만 선택해주세요. 담당자 확인 후 수동 발행되며 1~2 영업일이 소요됩니다.",
+                },
+              ].map(({ id, icon: Icon, label, desc }) => {
                 const active = payMethod === id;
                 return (
                   <button key={id} onClick={() => setPayMethod(id)}
-                    style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer", background: active ? "#fff" : "transparent", color: active ? BLUE : "#94A3B8", fontWeight: active ? 700 : 500, fontSize: 12, boxShadow: active ? "0 1px 6px rgba(0,0,0,0.08)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}>
-                    <Icon size={14} strokeWidth={1.8} />{label}
+                    style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px", borderRadius: 16, border: `2px solid ${active ? BLUE : "#D1E8DF"}`, background: active ? "#EFF6FF" : "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.18s", boxShadow: active ? `0 2px 12px ${BLUE}22` : "0 1px 4px rgba(0,0,0,0.04)" }}>
+                    {/* 라디오 */}
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${active ? BLUE : "#D1E8DF"}`, background: active ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, transition: "all 0.15s" }}>
+                      {active && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
+                    </div>
+                    {/* 텍스트 */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+                        <Icon size={15} color={active ? BLUE : "#94A3B8"} strokeWidth={1.8} />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: active ? BLUE : "#374151" }}>{label}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: active ? "#3B82F6" : "#94A3B8", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                    </div>
                   </button>
                 );
               })}
@@ -469,6 +565,33 @@ function CheckoutInner() {
                   }}
                 />
                 ──────────────────────────────────────────────────────────────── */}
+              </div>
+            )}
+
+            {/* ─── 현금영수증·사업자지출증빙 탭 ───────────────────────────────────── */}
+            {payMethod === "cash" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>NHN KCP 계좌이체 · 현금영수증</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
+                        카드 정보는 당사 서버에 저장되지 않습니다.<br />
+                        결제하기 버튼을 누르면 KCP 결제창이 바로 열립니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#64748B" }}>결제 예정 금액</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmt(grandTotalBank)}</span>
+                  </div>
+                  <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 6 }}>
+                    보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 이행보증금 {fmt(deposit)}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -608,7 +731,14 @@ function CheckoutInner() {
             onClick={handlePayment}
             disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", boxShadow: allChecked ? `0 4px 16px ${BLUE}55` : "none", transition: "all 0.2s" }}>
-            {isSubmitting ? "처리 중..." : !allChecked ? "약관에 동의해주세요" : `${fmt(grandTotalCard)} 결제하기`}
+            {isSubmitting ? "처리 중..." : !allChecked ? "필수 약관에 동의 후 결제 가능합니다" : (
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <Lock size={16} color="#fff" strokeWidth={2.5} />
+                <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.3px" }}>
+                  {fmt(payMethod === "bank" ? grandTotalBank : grandTotalCard)} 결제하기
+                </span>
+              </span>
+            )}
           </button>
         </div>
 
