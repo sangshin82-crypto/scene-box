@@ -47,8 +47,8 @@ export default function BillingPage() {
         .select("*")
         .eq("client_id", clientId)
         .in("status", ["pending", "processing", "paid"])
-        .order("billing_year", { ascending: true })
-        .order("billing_month", { ascending: true });
+        .order("billing_year", { ascending: false })
+        .order("billing_month", { ascending: false });
 
       if (billsError) {
         console.error("청구서 로딩 실패:", billsError);
