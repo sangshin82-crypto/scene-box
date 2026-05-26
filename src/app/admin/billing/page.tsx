@@ -186,7 +186,7 @@ export default function AdminBilling() {
           </select>
           {bill && (
             <p className="text-xs text-green-600 mt-2 font-medium">
-              ✅ {billingYear}년 {billingMonth}월 청구서 있음 (상태: {bill.status === 'pending' ? '미결제' : '결제완료'})
+              ✅ {billingYear}년 {billingMonth}월 청구서 있음 (상태: {bill.status === 'pending' ? '미결제' : bill.status === 'processing' ? '결제 진행 중' : '결제완료'})
             </p>
           )}
           {!bill && selectedClientId && (

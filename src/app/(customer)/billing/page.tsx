@@ -81,7 +81,14 @@ export default function BillingPage() {
       );
 
       // lineItems가 있는 청구서만 표시
-      setBills(billsWithItems.filter(b => b.lineItems.length > 0));
+      const now = new Date();
+      setBills(billsWithItems.filter(b => {
+        if (b.lineItems.length === 0) return false;
+        if (b.status !== "paid") return true;
+        const billDate = new Date(b.billing_year, b.billing_month - 1);
+        const diffMonths = (now.getFullYear() - billDate.getFullYear()) * 12 + (now.getMonth() - billDate.getMonth());
+        return diffMonths <= 3;
+      }));
       setIsLoading(false);
     }
     fetchBillingData();
