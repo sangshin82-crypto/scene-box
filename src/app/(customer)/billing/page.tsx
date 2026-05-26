@@ -95,6 +95,7 @@ export default function BillingPage() {
         const diffMonths = (now.getFullYear() - billDate.getFullYear()) * 12 + (now.getMonth() - billDate.getMonth());
         return diffMonths <= 3;
       }));
+      setIsLoading(false);
     }
     fetchBillingData();
   }, []);
