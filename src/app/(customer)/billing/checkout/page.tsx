@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, X, CreditCard, Building2, Check, ShieldCheck, FileText, ChevronDown, Camera } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
-import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
+// ─── 토스페이먼츠 (비활성화) ────────────────────────────────────────────────
+// import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
+// ────────────────────────────────────────────────────────────────────────────
 
 const BLUE = "#2563EB";
 const fmtWon = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -46,8 +48,10 @@ function BillingCheckoutInner() {
   const [existingLicenseUrl, setExistingLicenseUrl] = useState<string>("");
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
 
-  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
-  const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
+  // ─── 토스페이먼츠 상태 (비활성화) ──────────────────────────────────────────
+  // const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
+  // const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
+  // ────────────────────────────────────────────────────────────────────────────
 
   const allChecked   = checks.terms && checks.liability && checks.scope && checks.checkout;
   const toggleCheck  = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
@@ -113,36 +117,40 @@ function BillingCheckoutInner() {
     fetchData();
   }, [billIdFromQuery]);
 
-  useEffect(() => {
-    if (payMethod !== "card") return;
-    const initializeWidget = async () => {
-      try {
-        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-        if (!clientKey) return;
-        const widget = await loadPaymentWidget(clientKey, "GUEST");
-        setPaymentWidget(widget);
-      } catch (error) {
-        console.error("토스 위젯 초기화 실패:", error);
-      }
-    };
-    initializeWidget();
-  }, [payMethod]);
+  // ─── 토스페이먼츠 위젯 초기화 (비활성화) ────────────────────────────────────
+  // useEffect(() => {
+  //   if (payMethod !== "card") return;
+  //   const initializeWidget = async () => {
+  //     try {
+  //       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+  //       if (!clientKey) return;
+  //       const widget = await loadPaymentWidget(clientKey, "GUEST");
+  //       setPaymentWidget(widget);
+  //     } catch (error) {
+  //       console.error("토스 위젯 초기화 실패:", error);
+  //     }
+  //   };
+  //   initializeWidget();
+  // }, [payMethod]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   const subtotal = lineItems.filter(it => it.item_type !== "deposit").reduce((sum, it) => sum + (it.amount ?? 0), 0);
   const total    = subtotal; // lineItems에 이미 VAT 포함 금액으로 저장됨
 
-  useEffect(() => {
-    if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
-    try {
-      paymentWidget.renderPaymentMethods(
-        "#billing-payment-methods",
-        { value: total },
-        { variantKey: "DEFAULT" }
-      );
-    } catch (error) {
-      console.error("결제 수단 렌더링 실패:", error);
-    }
-  }, [paymentWidget, total, payMethod]);
+  // ─── 토스페이먼츠 위젯 렌더링 (비활성화) ────────────────────────────────────
+  // useEffect(() => {
+  //   if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
+  //   try {
+  //     paymentWidget.renderPaymentMethods(
+  //       "#billing-payment-methods",
+  //       { value: total },
+  //       { variantKey: "DEFAULT" }
+  //     );
+  //   } catch (error) {
+  //     console.error("결제 수단 렌더링 실패:", error);
+  //   }
+  // }, [paymentWidget, total, payMethod]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   const orderId  = `BILL_${bill?.id ?? Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   const orderName = `씬박스 ${bill?.billing_year}년 ${bill?.billing_month}월 정산`;
