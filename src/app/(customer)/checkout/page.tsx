@@ -7,11 +7,24 @@ import {
   Check, FileText, ShieldCheck, ChevronDown, Lock
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
-import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
+// ─── 토스페이먼츠 (비활성화) ────────────────────────────────────────────────
+// import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
+// ────────────────────────────────────────────────────────────────────────────
+
+// ─── 포트원 V2: 정적 import 제거 → useEffect에서 동적 로드 ──────────────────
+// // 포트원 동적 import (브라우저 환경에서만 로드)
+// ────────────────────────────────────────────────────────────────────────────
 
 const BLUE = "#2563EB";
 
 type CheckKey = "terms" | "liability" | "scope" | "checkout";
+
+// ─── 포트원 V2 응답 타입 ─────────────────────────────────────────────────────
+type PortOneErrorResponse = {
+  code: string;
+  message: string;
+};
+// ────────────────────────────────────────────────────────────────────────────
 
 const fmt     = (n: number) => n.toLocaleString("ko-KR") + "원";
 const fmtDate = (d: Date) =>
@@ -41,9 +54,9 @@ function CheckoutInner() {
 
   const gridList   = gridStr ? gridStr.split(",") : [];
   const deposit    = monthly * 2;
-  const vat        = Math.round(totalAmt * 0.1); // 보관료에만 VAT 10%
+  const vat        = Math.round(totalAmt * 0.1);
   const grandTotalCard = totalAmt + vat + deposit;
-  const grandTotalBank = totalAmt + vat + deposit; // 무통장도 VAT 포함으로 통일
+  const grandTotalBank = totalAmt + vat + deposit;
 
   const startDate = new Date();
   const endDate   = new Date();
@@ -60,52 +73,64 @@ function CheckoutInner() {
   });
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [needsInvoice, setNeedsInvoice] = useState(false);
-  
-  // 토스페이먼츠 상태
-  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
-  const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
-  
-  // 주문 정보
-  const orderId = `SCENE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const orderName = `씬박스 그리드 예약 - ${gridList.join(", ")}`;
+
+  // ─── 토스페이먼츠 상태 (비활성화) ──────────────────────────────────────────
+  // const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
+  // const paymentMethodsRef = useRef<HTMLDivElement | null>(null);
+  // ────────────────────────────────────────────────────────────────────────────
+
+  // ─── 포트원 V2: 고유 paymentId (렌더링 간 안정 유지) ──────────────────────
+  const paymentIdRef = useRef<string>(
+    `SCENE_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+  );
+
+  // ─── 포트원 V2: 동적 모듈 ref (SSR 안전) ───────────────────────────────────
+  const portoneRef = useRef<typeof import("@portone/browser-sdk/v2") | null>(null);
+
+  useEffect(() => {
+    import("@portone/browser-sdk/v2")
+      .then(mod => { portoneRef.current = mod; })
+      .catch(err => console.error("포트원 SDK 로드 실패:", err));
+  }, []);
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const orderName = `씬박스 그리드 보관`;
 
   const allChecked = checks.terms && checks.liability && checks.scope && checks.checkout;
 
   const toggleCheck  = (k: CheckKey) => setChecks(p => ({ ...p, [k]: !p[k] }));
   const toggleExpand = (k: CheckKey) => setExpanded(p => ({ ...p, [k]: !p[k] }));
-  
-  // 토스페이먼츠 위젯 초기화
-  useEffect(() => {
-    if (payMethod !== "card") return;
-    
-    const initializeWidget = async () => {
-      try {
-        const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-        if (!clientKey) return; // 키 없으면 조용히 종료
-        const widget = await loadPaymentWidget(clientKey, "GUEST");
-        setPaymentWidget(widget);
-      } catch (error) {
-        console.error("토스 위젯 초기화 실패:", error);
-      }
-    };
-    
-    initializeWidget();
-  }, [payMethod]);
-  
-  // 결제 수단 렌더링
-  useEffect(() => {
-    if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
-    
-    try {
-      paymentWidget.renderPaymentMethods(
-        "#payment-methods",
-        { value: grandTotalCard },
-        { variantKey: "DEFAULT" }
-      );
-    } catch (error) {
-      console.error("결제 수단 렌더링 실패:", error);
-    }
-  }, [paymentWidget, grandTotalCard, payMethod]);
+
+  // ─── 토스페이먼츠 위젯 초기화 (비활성화) ────────────────────────────────────
+  // useEffect(() => {
+  //   if (payMethod !== "card") return;
+  //   const initializeWidget = async () => {
+  //     try {
+  //       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+  //       if (!clientKey) return;
+  //       const widget = await loadPaymentWidget(clientKey, "GUEST");
+  //       setPaymentWidget(widget);
+  //     } catch (error) {
+  //       console.error("토스 위젯 초기화 실패:", error);
+  //     }
+  //   };
+  //   initializeWidget();
+  // }, [payMethod]);
+
+  // ─── 토스페이먼츠 결제 수단 렌더링 (비활성화) ───────────────────────────────
+  // useEffect(() => {
+  //   if (!paymentWidget || !paymentMethodsRef.current || payMethod !== "card") return;
+  //   try {
+  //     paymentWidget.renderPaymentMethods(
+  //       "#payment-methods",
+  //       { value: grandTotalCard },
+  //       { variantKey: "DEFAULT" }
+  //     );
+  //   } catch (error) {
+  //     console.error("결제 수단 렌더링 실패:", error);
+  //   }
+  // }, [paymentWidget, grandTotalCard, payMethod]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   const handlePayment = async () => {
     if (!allChecked || isSubmitting) return;
@@ -116,7 +141,7 @@ function CheckoutInner() {
       const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
 
       // 사업자등록증 업로드
-      let uploadedUrl = null;
+      let uploadedUrl: string | null = null;
       if (licenseFile) {
         const fileExt = licenseFile.name.split('.').pop();
         const fileName = `${clientId}_${Date.now()}.${fileExt}`;
@@ -152,12 +177,16 @@ function CheckoutInner() {
         .in("grid_number", gridList);
       if (gridsError || !gridsData?.length) throw new Error("Grid 조회 실패");
 
-      // 카드 결제 - 토스페이먼츠
+      // ─── 포트원 V2 카드결제 ─────────────────────────────────────────────────
       if (payMethod === "card") {
-        if (!paymentWidget) {
-          throw new Error("결제 위젯이 초기화되지 않았습니다.");
+        const storeId    = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+        const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
+
+        if (!storeId || !channelKey) {
+          throw new Error("포트원 환경변수(storeId / channelKey)가 설정되지 않았습니다.");
         }
-        
+
+        // 1) spaces DB에 pending 상태로 먼저 저장
         const spaceRows = gridsData.map(g => ({
           client_id:      clientId,
           grid_id:        g.id,
@@ -168,24 +197,57 @@ function CheckoutInner() {
           end_date:       endDate.toISOString().split("T")[0],
           status:         "pending",
         }));
-        
+
         const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
         if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
-        
-        await paymentWidget.requestPayment({
-          orderId: orderId,
-          orderName: orderName,
-          successUrl: `${window.location.origin}/success?orderId=${orderId}&clientId=${clientId}&grids=${gridStr}&uploadedUrl=${uploadedUrl || ''}`,
-          failUrl: `${window.location.origin}/fail`,
-          customerName: form.name || clientName,
-          customerEmail: form.email || undefined,
-          customerMobilePhone: form.phone || undefined,
+
+        // 2) 포트원 V2 결제창 호출 (동적 로드된 모듈 사용)
+        const PortOne = portoneRef.current;
+        if (!PortOne) {
+          throw new Error("결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        const portoneResponse = await PortOne.requestPayment({
+          storeId,
+          channelKey,
+          paymentId:   paymentIdRef.current,
+          orderName,
+          totalAmount: grandTotalCard,
+          currency:    "KRW",
+          payMethod:   "CARD",
         });
-        
+
+        // 결제 실패 / 취소
+        const errRes = portoneResponse as PortOneErrorResponse | null;
+        if (errRes?.code !== undefined) {
+          throw new Error(errRes.message || "결제에 실패했습니다.");
+        }
+
+        // 3) 백엔드 결제 검증 요청
+        const confirmRes = await fetch("/api/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentId:   paymentIdRef.current,
+            amount:      grandTotalCard,
+            clientId,
+            grids:       gridStr,
+            uploadedUrl: uploadedUrl ?? "",
+          }),
+        });
+
+        if (!confirmRes.ok) {
+          const errData = await confirmRes.json();
+          throw new Error(errData.error || "결제 검증 실패");
+        }
+
+        alert(`결제가 완료되었습니다! 🎉\n\n총 결제 금액: ${fmt(grandTotalCard)}\n\n예약 확정을 위해 관리자 확인 후 안내드립니다.`);
+        router.push("/dashboard");
         return;
       }
-      
-      // 무통장 입금 - 기존 청구서가 있으면 업데이트, 없으면 생성
+      // ────────────────────────────────────────────────────────────────────────
+
+      // ─── 홈택스 세금계산서 / 무통장 입금 ────────────────────────────────────
       const spaceRows = gridsData.map(g => ({
         client_id:      clientId,
         grid_id:        g.id,
@@ -215,14 +277,12 @@ function CheckoutInner() {
       let billId: string;
 
       if (existingBill) {
-        // 기존 청구서에 보관료 추가
         await supabase
           .from("monthly_bills")
           .update({ storage_fee: (existingBill.storage_fee ?? 0) + totalAmt })
           .eq("id", existingBill.id);
         billId = existingBill.id;
       } else {
-        // 새 청구서 생성
         const { data: billData, error: billError } = await supabase
           .from("monthly_bills")
           .insert({
@@ -242,7 +302,6 @@ function CheckoutInner() {
         billId = billData.id;
       }
 
-      // VAT 포함 금액으로 저장
       const storageAmountWithVat = totalAmt + vat;
 
       await supabase.from("bill_line_items").insert({
@@ -252,7 +311,6 @@ function CheckoutInner() {
         amount:      storageAmountWithVat,
       });
 
-      // 이행보증금도 bill_line_items에 추가 (VAT 없음)
       if (deposit > 0) {
         await supabase.from("bill_line_items").insert({
           bill_id:     billId,
@@ -263,7 +321,7 @@ function CheckoutInner() {
       }
 
       await sendTelegramNotification(
-        `🎉 <b>그리드 예약 접수 (무통장)</b>\n\n` +
+        `🎉 <b>그리드 예약 접수 (무통장/세금계산서)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📦 예약 공간: ${gridList.join(", ")} (${gridList.length} Grid)\n` +
         `📅 이용 기간: ${months}개월\n` +
@@ -274,10 +332,12 @@ function CheckoutInner() {
 
       alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotalCard)} (VAT 포함)\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
       router.push("/dashboard");
-      
-    } catch (err: any) {
+      // ────────────────────────────────────────────────────────────────────────
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "알 수 없는 오류";
       console.error("결제 처리 실패 상세:", err);
-      alert(`[데이터베이스 처리 오류]\n원인: ${err.message || "알 수 없는 오류"}\n\n※ 이 메시지를 자비스에게 알려주세요!`);
+      alert(`[처리 오류]\n원인: ${message}\n\n※ 이 메시지를 관리자에게 알려주세요!`);
     } finally {
       setIsSubmitting(false);
     }
@@ -351,50 +411,68 @@ function CheckoutInner() {
           <section>
             <StepLabel n={2} title="결제 수단 선택" />
             <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 12, paddingLeft: 30 }}>결제 방식을 선택해주세요.</p>
+
+            {/* 탭 */}
             <div style={{ display: "flex", background: "#E8F5F0", borderRadius: 14, padding: 4, marginBottom: 14 }}>
               {[
-                { id: "card" as const, icon: CreditCard, label: "카드 결제" },
-                { id: "bank" as const, icon: Building2,  label: "세금계산서 및 무통장 입금" },
+                { id: "card" as const, icon: CreditCard, label: "카드결제 및 현금영수증" },
+                { id: "bank" as const, icon: Building2,  label: "홈택스 세금계산서 전용" },
               ].map(({ id, icon: Icon, label }) => {
                 const active = payMethod === id;
                 return (
                   <button key={id} onClick={() => setPayMethod(id)}
-                    style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer", background: active ? "#fff" : "transparent", color: active ? BLUE : "#94A3B8", fontWeight: active ? 700 : 500, fontSize: 13, boxShadow: active ? "0 1px 6px rgba(0,0,0,0.08)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}>
-                    <Icon size={15} strokeWidth={1.8} />{label}
+                    style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer", background: active ? "#fff" : "transparent", color: active ? BLUE : "#94A3B8", fontWeight: active ? 700 : 500, fontSize: 12, boxShadow: active ? "0 1px 6px rgba(0,0,0,0.08)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}>
+                    <Icon size={14} strokeWidth={1.8} />{label}
                   </button>
                 );
               })}
             </div>
 
+            {/* ─── 카드결제 및 현금영수증 탭 ──────────────────────────────────────── */}
             {payMethod === "card" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* 포트원 안내 배너 */}
                 <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                     <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>토스페이먼츠 안전결제</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>NHN KCP 안전결제</p>
                       <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
-                        카드 정보는 당사 서버에 저장되지 않습니다. 안전하게 결제하세요.
+                        카드 정보는 당사 서버에 저장되지 않습니다.<br />
+                        결제하기 버튼을 누르면 결제창이 바로 열립니다.
                       </p>
                     </div>
                   </div>
                 </div>
-                
-                {/* 토스페이먼츠 결제 수단 렌더링 영역 */}
-                <div 
-                  id="payment-methods" 
+
+                {/* 결제 금액 확인 박스 */}
+                <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#64748B" }}>결제 예정 금액</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmt(grandTotalCard)}</span>
+                  </div>
+                  <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 6 }}>
+                    보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 이행보증금 {fmt(deposit)}
+                  </p>
+                </div>
+
+                {/* ─── 토스페이먼츠 위젯 영역 (비활성화) ─────────────────────────────
+                <div
+                  id="payment-methods"
                   ref={paymentMethodsRef}
-                  style={{ 
-                    background: "#fff", 
-                    borderRadius: 16, 
+                  style={{
+                    background: "#fff",
+                    borderRadius: 16,
                     padding: "16px",
                     border: "0.5px solid #D1E8DF",
                     minHeight: "200px"
                   }}
                 />
+                ──────────────────────────────────────────────────────────────── */}
               </div>
             )}
 
+            {/* ─── 홈택스 세금계산서 전용 탭 ──────────────────────────────────────── */}
             {payMethod === "bank" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* 계좌번호 안내 */}
@@ -404,7 +482,7 @@ function CheckoutInner() {
                     <p style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>입금 계좌 안내</p>
                   </div>
                   <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>
-                    입금하실 계좌번호는 <strong>하단 필수 약관 동의 후 [예약 확정] 버튼</strong>을 누르시면 안전하게 발급 및 안내됩니다.(국민은행 567001-04-101845 박민지)
+                    국민은행 567001-04-101845 박민지
                   </p>
                 </div>
 
@@ -420,13 +498,11 @@ function CheckoutInner() {
                       <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>사업자 거래 시 선택해주세요</p>
                     </div>
                   </div>
-                  {/* 토글 스위치 */}
                   <div style={{ width: 44, height: 24, borderRadius: 99, background: needsInvoice ? BLUE : "#D1E8DF", position: "relative", transition: "all 0.2s", flexShrink: 0 }}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: needsInvoice ? 23 : 3, transition: "all 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }} />
                   </div>
                 </button>
 
-                {/* 세금계산서 폼 - 토글 ON일 때만 표시 */}
                 {needsInvoice && (
                   <>
                     {/* 담당자 정보 */}
