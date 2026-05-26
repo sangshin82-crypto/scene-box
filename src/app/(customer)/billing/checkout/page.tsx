@@ -33,7 +33,7 @@ function BillingCheckoutInner() {
   const [bill, setBill]           = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [payMethod, setPayMethod] = useState<"card" | "bank">("card");
+  const [payMethod, setPayMethod] = useState<"card" | "cash" | "bank">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientName, setClientName] = useState("");
   const [clientId, setClientId] = useState("");
@@ -179,6 +179,26 @@ function BillingCheckoutInner() {
         return;
       }
 
+      // 현금영수증 — 카드와 동일하게 processing 처리
+      if (payMethod === "cash") {
+        await supabase
+          .from("monthly_bills")
+          .update({ status: "processing" })
+          .eq("id", bill.id);
+        await sendTelegramNotification(
+          `🧾 <b>현금영수증 결제 링크 요청!</b>\n\n` +
+          `👤 고객명: ${clientName}\n` +
+          `📅 청구 월: ${bill.billing_year}년 ${bill.billing_month}월\n` +
+          `💰 결제 금액: ${fmtWon(total)} (VAT 포함)\n` +
+          `📅 요청일: ${new Date().toLocaleDateString("ko-KR")}\n\n` +
+          `⚡ 페이앱으로 현금영수증 결제 링크 발송 필요!`
+        );
+        alert("현금영수증 결제 요청이 접수되었습니다.\n관리자가 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.");
+        router.push("/billing");
+        router.refresh();
+        return;
+      }
+
       // 무통장 — 해당 billId만 paid 처리
       let uploadedUrl = existingLicenseUrl || "";
 
@@ -308,17 +328,43 @@ function BillingCheckoutInner() {
 
           {/* 결제 수단 */}
           <section>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>결제 수단 선택</p>
-            <div style={{ display: "flex", background: "#E8F5F0", borderRadius: 14, padding: 4, marginBottom: 14 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginBottom: 12 }}>결제 수단 선택</p>
+            <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 12 }}>결제 방식을 선택해주세요.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
               {[
-                { id: "card" as const, icon: CreditCard, label: "카드 결제" },
-                { id: "bank" as const, icon: Building2, label: "세금계산서 및 무통장입금" },
-              ].map(({ id, icon: Icon, label }) => {
+                {
+                  id: "card" as const,
+                  icon: CreditCard,
+                  label: "카드결제",
+                  desc: "결제하기 버튼을 누르시면 카드 결제 요청이 접수됩니다. 관리자가 카드 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.",
+                },
+                {
+                  id: "cash" as const,
+                  icon: FileText,
+                  label: "현금영수증 및 사업자지출증빙",
+                  desc: "KCP 결제 시스템을 통해 즉시 처리되며, 현금영수증(지출증빙)이 자동 발행됩니다. 매입세액 공제에 사용 가능합니다.",
+                },
+                {
+                  id: "bank" as const,
+                  icon: Building2,
+                  label: "홈택스 세금계산서 전용",
+                  desc: "내부 규정상 국세청 홈택스 발급본이 반드시 필요한 경우에만 선택해주세요. 담당자 확인 후 수동 발행되며 1~2 영업일이 소요됩니다.",
+                },
+              ].map(({ id, icon: Icon, label, desc }) => {
                 const active = payMethod === id;
                 return (
                   <button key={id} onClick={() => setPayMethod(id)}
-                    style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer", background: active ? "#fff" : "transparent", color: active ? BLUE : "#94A3B8", fontWeight: active ? 700 : 500, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s", boxShadow: active ? "0 1px 6px rgba(0,0,0,0.08)" : "none" }}>
-                    <Icon size={15} strokeWidth={1.8} />{label}
+                    style={{ width: "100%", display: "flex", alignItems: "flex-start", gap: 14, padding: "16px 18px", borderRadius: 16, border: `2px solid ${active ? BLUE : "#D1E8DF"}`, background: active ? "#EFF6FF" : "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.18s", boxShadow: active ? `0 2px 12px ${BLUE}22` : "0 1px 4px rgba(0,0,0,0.04)" }}>
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${active ? BLUE : "#D1E8DF"}`, background: active ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, transition: "all 0.15s" }}>
+                      {active && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+                        <Icon size={15} color={active ? BLUE : "#94A3B8"} strokeWidth={1.8} />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: active ? BLUE : "#374151" }}>{label}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: active ? "#3B82F6" : "#94A3B8", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                    </div>
                   </button>
                 );
               })}
@@ -326,16 +372,45 @@ function BillingCheckoutInner() {
 
             {payMethod === "card" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "20px 18px", border: "0.5px solid #BFDBFE" }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <CreditCard size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 8 }}>카드 결제 안내</p>
-                      <p style={{ fontSize: 12, color: "#374151", lineHeight: 1.8 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>카드 결제 안내</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
                         결제하기 버튼을 누르시면 카드 결제 요청이 접수됩니다.<br />
                         관리자가 카드 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.
                       </p>
                     </div>
+                  </div>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#64748B" }}>결제 예정 금액</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {payMethod === "cash" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #BFDBFE" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <ShieldCheck size={19} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 4 }}>현금영수증 안내</p>
+                      <p style={{ fontSize: 12, color: "#60A5FA", lineHeight: 1.6 }}>
+                        결제하기 버튼을 누르시면 카드 결제 요청이 접수됩니다.<br />
+                        관리자가 현금영수증 결제 링크를 곧 문자(카카오톡)으로 발송해드립니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: "#64748B" }}>결제 예정 금액</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmtWon(total)}</span>
                   </div>
                 </div>
               </div>
@@ -479,7 +554,13 @@ function BillingCheckoutInner() {
         <div style={{ position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(240,247,244,0.95)", backdropFilter: "blur(12px)", borderTop: "0.5px solid #D1E8DF", padding: "14px 16px 20px", zIndex: 90, boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
           <button onClick={handlePayment} disabled={!allChecked || isSubmitting}
             style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: allChecked ? `linear-gradient(90deg, ${BLUE}, #3B82F6)` : "#E5E7EB", color: allChecked ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 700, cursor: allChecked ? "pointer" : "not-allowed", transition: "all 0.2s", boxShadow: allChecked ? `0 4px 16px ${BLUE}44` : "none" }}>
-            {isSubmitting ? "결제 요청 중..." : allChecked ? `${fmtWon(total)} 결제하기` : "약관에 동의해주세요"}
+            {isSubmitting ? "결제 요청 중..." : !allChecked ? "필수 약관에 동의 후 결제 가능합니다" : (
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.3px" }}>
+                  {fmtWon(total)} 결제하기
+                </span>
+              </span>
+            )}
           </button>
         </div>
       </div>
