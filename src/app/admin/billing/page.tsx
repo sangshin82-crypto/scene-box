@@ -6,6 +6,8 @@ import { supabase } from '@/app/lib/supabase';
 
 type Client = { id: string; name: string; };
 type Bill = { id: string; status: string; transport_fee: number; disposal_fee: number; storage_fee: number; admin_memo: string | null; };
+type BillLineItem = { id: string; description: string; amount: number; item_type: string; };
+type AllBill = Bill & { billing_year: number; billing_month: number; paid_at: string | null; lineItems: BillLineItem[]; };
 
 export default function AdminBilling() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function AdminBilling() {
   const [memo, setMemo] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [allBills, setAllBills] = useState<AllBill[]>([]);
 
   // 청구 월 선택 (기본값: 다음 달)
   const now = new Date();
@@ -55,6 +58,34 @@ export default function AdminBilling() {
     setDisposalFee('');
     setStorageFee('');
     setMemo('');
+
+    async function fetchAllBills() {
+      const { data: billsData } = await supabase
+        .from('monthly_bills')
+        .select('*')
+        .eq('client_id', selectedClientId)
+        .order('billing_year', { ascending: false })
+        .order('billing_month', { ascending: false });
+
+      if (billsData) {
+        const withItems = await Promise.all(
+          billsData.map(async (b) => {
+            const { data: itemsData } = await supabase
+              .from('bill_line_items')
+              .select('*')
+              .eq('bill_id', b.id)
+              .neq('item_type', 'deposit')
+              .order('created_at', { ascending: true });
+            const filtered = (itemsData ?? []).filter(
+              (item: any) => !item.description.startsWith('월 보관료')
+            );
+            return { ...b, lineItems: filtered };
+          })
+        );
+        setAllBills(withItems.filter(b => b.lineItems.length > 0));
+      }
+    }
+    fetchAllBills();
 
     async function fetchBill() {
       const { data } = await supabase
@@ -262,30 +293,71 @@ export default function AdminBilling() {
           {isSaving ? '저장 중...' : `${billingYear}년 ${billingMonth}월 청구서 저장`}
         </button>
 
-        {/* 결제 완료 처리 버튼 */}
-        {bill && bill.status === "processing" && (
-          <button
-            onClick={async () => {
-              const confirmed = window.confirm(
-                `⚠️ ${billingYear}년 ${billingMonth}월 청구서를 결제 완료 처리하시겠습니까?\n\n고객 화면에 즉시 반영됩니다.`
+        {/* 전체 청구 히스토리 */}
+        {allBills.length > 0 && (
+          <div className="space-y-4 mt-2">
+            <p className="text-sm font-bold text-gray-700">📋 전체 청구 내역</p>
+            {allBills.map(b => {
+              const subtotal = b.lineItems.reduce((sum, it) => sum + (it.amount ?? 0), 0);
+              const statusLabel = b.status === 'paid' ? '✅ 결제완료' : b.status === 'processing' ? '🔵 결제 진행 중' : '🟠 미결제';
+              const statusColor = b.status === 'paid' ? 'text-green-600 bg-green-50' : b.status === 'processing' ? 'text-blue-600 bg-blue-50' : 'text-orange-500 bg-orange-50';
+              return (
+                <div key={b.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  {/* 월 헤더 */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-bold text-gray-900">{b.billing_year}년 {b.billing_month}월</p>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusColor}`}>{statusLabel}</span>
+                  </div>
+                  {/* 항목 */}
+                  {b.lineItems.map((it, idx) => (
+                    <div key={it.id} className={`flex justify-between items-center px-4 py-3 ${idx !== 0 ? 'border-t border-gray-50' : ''}`}>
+                      <p className="text-sm text-gray-700">{it.description}</p>
+                      <p className="text-sm font-bold text-gray-900">{Math.round(it.amount / 1.1).toLocaleString()}원</p>
+                    </div>
+                  ))}
+                  {/* 합계 */}
+                  <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-100">
+                    <p className="text-xs text-gray-500">VAT 포함 합계</p>
+                    <p className="text-sm font-bold text-blue-600">{subtotal.toLocaleString()}원</p>
+                  </div>
+                  {/* 메모 */}
+                  {b.admin_memo && (
+                    <div className="px-4 py-2 bg-blue-50 border-t border-blue-100">
+                      <p className="text-xs text-blue-600">📝 {b.admin_memo}</p>
+                    </div>
+                  )}
+                  {/* 결제 완료 처리 버튼 */}
+                  {b.status === 'processing' && (
+                    <div className="px-4 py-3 border-t border-gray-100">
+                      <button
+                        onClick={async () => {
+                          const confirmed = window.confirm(`⚠️ ${b.billing_year}년 ${b.billing_month}월 청구서를 결제 완료 처리하시겠습니까?`);
+                          if (!confirmed) return;
+                          const { error } = await supabase
+                            .from('monthly_bills')
+                            .update({ status: 'paid', paid_at: new Date().toISOString() })
+                            .eq('id', b.id);
+                          if (error) {
+                            alert('처리 실패: ' + error.message);
+                          } else {
+                            setAllBills(prev => prev.map(x => x.id === b.id ? { ...x, status: 'paid' } : x));
+                            if (bill?.id === b.id) setBill(prev => prev ? { ...prev, status: 'paid' } : null);
+                            alert('✅ 결제 완료 처리되었습니다!');
+                          }
+                        }}
+                        className="w-full bg-green-600 text-white text-sm font-bold py-2 rounded-lg active:bg-green-700 transition-colors"
+                      >
+                        ✅ 결제 완료 처리
+                      </button>
+                    </div>
+                  )}
+                </div>
               );
-              if (!confirmed) return;
-              const { error } = await supabase
-                .from("monthly_bills")
-                .update({ status: "paid", paid_at: new Date().toISOString() })
-                .eq("id", bill.id);
-              if (error) {
-                alert("처리 실패: " + error.message);
-              } else {
-                setBill(prev => prev ? { ...prev, status: "paid" } : null);
-                alert("✅ 결제 완료 처리되었습니다!");
-              }
-            }}
-            className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-sm active:bg-green-700 transition-colors"
-          >
-            ✅ 결제 완료 처리
-          </button>
+            })}
+          </div>
         )}
+
+        
       </div>
     </div>
   );
