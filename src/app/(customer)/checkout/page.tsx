@@ -207,6 +207,15 @@ function CheckoutInner() {
           throw new Error("결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
         }
 
+        // 모바일 리다이렉트 대비 컨텍스트 저장
+        sessionStorage.setItem("payment_context", JSON.stringify({
+          paymentId:   paymentIdRef.current,
+          amount:      grandTotalCard,
+          clientId,
+          grids:       gridStr,
+          uploadedUrl: uploadedUrl ?? "",
+        }));
+
         const portoneResponse = await PortOne.requestPayment({
           storeId,
           channelKey,
@@ -215,6 +224,7 @@ function CheckoutInner() {
           totalAmount: grandTotalCard,
           currency:    "KRW",
           payMethod:   "CARD",
+          redirectUrl: `${window.location.origin}/payment/callback`,
         });
 
         // 결제 실패 / 취소
@@ -275,6 +285,15 @@ function CheckoutInner() {
           throw new Error("결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
         }
 
+        // 모바일 리다이렉트 대비 컨텍스트 저장
+        sessionStorage.setItem("payment_context", JSON.stringify({
+          paymentId:   paymentIdRef.current,
+          amount:      grandTotalBank,
+          clientId,
+          grids:       gridStr,
+          uploadedUrl: uploadedUrl ?? "",
+        }));
+
         const portoneResponse = await PortOne.requestPayment({
           storeId,
           channelKey,
@@ -283,6 +302,7 @@ function CheckoutInner() {
           totalAmount: grandTotalBank,
           currency:    "KRW",
           payMethod:   "TRANSFER",
+          redirectUrl: `${window.location.origin}/payment/callback`,
         });
 
         const errRes = portoneResponse as PortOneErrorResponse | null;
