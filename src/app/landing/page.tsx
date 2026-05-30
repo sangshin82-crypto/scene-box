@@ -14,6 +14,8 @@ export default function LandingPage() {
         window.location.href = "/";
       };
 
+  const [lightbox, setLightbox] = useState<string | null>(null);
+
   // 스크롤 리빌
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
@@ -298,15 +300,15 @@ export default function LandingPage() {
               <h2>이런 짐도 보관합니다</h2>
             </div>
             <div className="gallery-grid">
-              <div className="gal-item reveal">
+            <div className="gal-item reveal" onClick={() => setLightbox("/images/gallery-1.png")}>
                 <img className="gal-img" src="/images/gallery-1.png" alt="촬영 소품 세트" />
                 <div className="cap"><div className="t">촬영 소품 세트</div><div className="d">빈티지 트렁크 · 오브제 보관</div></div>
               </div>
-              <div className="gal-item reveal">
+              <div className="gal-item reveal" onClick={() => setLightbox("/images/gallery-2.png")}>
                 <img className="gal-img" src="/images/gallery-2.png" alt="대형 무대 설치물" />
                 <div className="cap"><div className="t">대형 무대 설치물</div><div className="d">에어바운스 놀이시설 · 높이 5m</div></div>
               </div>
-              <div className="gal-item reveal">
+              <div className="gal-item reveal" onClick={() => setLightbox("/images/gallery-3.png")}>
                 <img className="gal-img" src="/images/gallery-3.png" alt="웨딩 행사 세트" />
                 <div className="cap"><div className="t">웨딩 · 행사 세트</div><div className="d">플라워 아치 · 높이 3m</div></div>
               </div>
@@ -323,7 +325,7 @@ export default function LandingPage() {
             </div>
             <div className="price-grid">
             <div className="price-card reveal">
-                <div className="size-img"><img className="size-pic" src="/images/pricing-1.jpg" alt="파레트 1개 사이즈 비교" /></div>
+            <div className="size-img" style={{ cursor: "zoom-in" }} onClick={() => setLightbox("/images/pricing-1.jpg")}><img className="size-pic" src="/images/pricing-1.jpg" alt="파레트 1개 사이즈 비교" /></div>
                 <div className="plan mono">PALLET</div>
                 <div className="price">50,000<small>원/월</small></div>
                 <div className="desc">표준 파레트 1개 · VAT 별도</div>
@@ -334,7 +336,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="price-card featured reveal">
-                <div className="size-img"><img className="size-pic" src="/images/pricing-2.jpg" alt="1그리드 사이즈 비교" /></div>
+              <div className="size-img" style={{ cursor: "zoom-in" }} onClick={() => setLightbox("/images/pricing-2.jpg")}><img className="size-pic" src="/images/pricing-2.jpg" alt="1그리드 사이즈 비교" /></div>
                 <div className="plan mono">1 GRID</div>
                 <div className="price">120,000<small>원/월</small></div>
                 <div className="desc">파레트 3개 (1.2평) · VAT 별도</div>
@@ -376,8 +378,35 @@ export default function LandingPage() {
           </div>
           <div className="footer-copy">© 2026 씬박스(SceneBox). 비정형 짐 전문 보관 서비스. All rights reserved. &nbsp;|&nbsp; scenebox.co.kr &nbsp;|&nbsp; @scenebox_official</div>
         </footer>
-      </div>
+        </div>
 
-      </>
-  );
+{lightbox && (
+  <div
+    onClick={() => setLightbox(null)}
+    style={{
+      position: "fixed", inset: 0, zIndex: 2000,
+      background: "rgba(10,10,10,0.9)", backdropFilter: "blur(8px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "40px", cursor: "zoom-out",
+    }}
+  >
+    <img
+      src={lightbox}
+      alt="확대 이미지"
+      style={{ maxWidth: "92%", maxHeight: "92%", borderRadius: "12px", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
+    />
+    <button
+      onClick={() => setLightbox(null)}
+      style={{
+        position: "fixed", top: "24px", right: "24px",
+        width: "44px", height: "44px", borderRadius: "50%",
+        border: "none", background: "rgba(255,255,255,0.15)", color: "#fff",
+        fontSize: "24px", cursor: "pointer",
+      }}
+    >×</button>
+  </div>
+)}
+
+</>
+);
 }
