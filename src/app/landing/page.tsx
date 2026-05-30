@@ -10,23 +10,9 @@ const INK = "#0A0A0A";
 const GRAY = "#8A8A85";
 
 export default function LandingPage() {
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const openModal = () => {
-    setModalOpen(true);
-    document.body.style.overflow = "hidden";
-  };
-  const closeModal = () => {
-    setModalOpen(false);
-    document.body.style.overflow = "";
-  };
-
-  // ESC로 모달 닫기
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
+    const openModal = () => {
+        window.location.href = "/";
+      };
 
   // 스크롤 리빌
   useEffect(() => {
@@ -392,23 +378,6 @@ export default function LandingPage() {
         </footer>
       </div>
 
-      {/* MODAL */}
-      {modalOpen && (
-        <div
-          className="lp-modal-overlay open"
-          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-        >
-          <div className="lp-modal-box">
-            <div className="lp-modal-head">
-              <div className="title">씬박스 보관 예약</div>
-              <button className="close" onClick={closeModal}>×</button>
-            </div>
-            <div className="lp-modal-body">
-              <iframe src="/" title="씬박스 예약" />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      </>
   );
 }
