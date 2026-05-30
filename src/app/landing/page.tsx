@@ -76,8 +76,8 @@ export default function LandingPage() {
           background: ${BEIGE};
         }
         .lp .hero-img {
-          width: 100%; max-width: 760px; height: auto; display: block;
-          margin-bottom: 36px; position: relative; z-index: 2;
+          width: 100%; max-width: 1100px; height: auto; display: block;
+          margin-bottom: 24px; position: relative; z-index: 2;
           opacity: 0; animation: lpFadeUp 0.9s ease 0.15s forwards;
         }
         .lp .hero-tag {
