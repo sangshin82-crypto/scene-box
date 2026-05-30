@@ -71,24 +71,14 @@ export default function LandingPage() {
         /* HERO */
         .lp .hero {
           min-height: 100vh; display: flex; flex-direction: column;
-          justify-content: flex-end; align-items: center; position: relative;
-          padding: 0 24px 130px; overflow: hidden;
-          background:
-            repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(10,10,10,0.025) 22px, rgba(10,10,10,0.025) 23px),
-            ${BEIGE};
-          background-size: cover; background-position: center;
-          /* 실제 적용 시: background: url('/images/hero-kv.png') center/cover; */
+          justify-content: center; align-items: center; position: relative;
+          padding: 100px 24px 110px; overflow: hidden;
+          background: ${BEIGE};
         }
-        .lp .hero::after {
-          content: ""; position: absolute; inset: 0;
-          background: linear-gradient(to top, rgba(245,244,239,0.92) 0%, rgba(245,244,239,0.4) 35%, transparent 60%);
-          pointer-events: none; z-index: 1;
-        }
-        .lp .hero-kv-label {
-          position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
-          font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 14px;
-          letter-spacing: 1px; color: ${GRAY}; text-align: center; line-height: 1.9;
-          z-index: 1; opacity: 0.6;
+        .lp .hero-img {
+          width: 100%; max-width: 760px; height: auto; display: block;
+          margin-bottom: 36px; position: relative; z-index: 2;
+          opacity: 0; animation: lpFadeUp 0.9s ease 0.15s forwards;
         }
         .lp .hero-tag {
           font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 700;
@@ -181,6 +171,8 @@ export default function LandingPage() {
         .lp .gal-item .cap { position: relative; z-index: 2; padding: 24px; background: linear-gradient(to top, rgba(10,10,10,0.78), transparent); color: #fff; }
         .lp .gal-item .cap .t { font-weight: 800; font-size: 18px; }
         .lp .gal-item .cap .d { font-size: 13px; opacity: 0.85; margin-top: 4px; font-weight: 500; }
+        .lp .gal-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .lp .size-pic { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
 
         /* PRICING */
         .lp .pricing { background: ${INK}; color: #fff; padding: 140px 48px; }
@@ -275,12 +267,7 @@ export default function LandingPage() {
 
         {/* HERO */}
         <header className="hero">
-          <div className="hero-kv-label">[ 풀스크린 키비주얼<br />여기에 배경으로 들어갑니다<br />3840 × 2160px / cover ]</div>
-          <div className="hero-tag mono">STORAGE FOR THE SCENE</div>
-          <h1>
-            <span className="line"><span>공간에 맞추지 말고</span></span>
-            <span className="line"><span className="blue">짐에 맞춰 보관하세요</span></span>
-          </h1>
+          <img className="hero-img" src="/images/hero.png" alt="공간에 맞추지 말고 짐에 맞춰 보관하세요 - SCENE BOX" />
           <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 대형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
           <div className="hero-cta">
             <button className="btn-primary" onClick={openModal}>보관 예약하기</button>
@@ -326,15 +313,15 @@ export default function LandingPage() {
             </div>
             <div className="gallery-grid">
               <div className="gal-item reveal">
-                <div className="ph">[ 빈티지 트렁크 · 소품 ]</div>
+                <img className="gal-img" src="/images/gallery-1.png" alt="촬영 소품 세트" />
                 <div className="cap"><div className="t">촬영 소품 세트</div><div className="d">빈티지 트렁크 · 오브제 보관</div></div>
               </div>
               <div className="gal-item reveal">
-                <div className="ph">[ 에어바운스 · 5m ]</div>
+                <img className="gal-img" src="/images/gallery-2.png" alt="대형 무대 설치물" />
                 <div className="cap"><div className="t">대형 무대 설치물</div><div className="d">에어바운스 놀이시설 · 높이 5m</div></div>
               </div>
               <div className="gal-item reveal">
-                <div className="ph">[ 웨딩 플라워 아치 ]</div>
+                <img className="gal-img" src="/images/gallery-3.png" alt="웨딩 행사 세트" />
                 <div className="cap"><div className="t">웨딩 · 행사 세트</div><div className="d">플라워 아치 · 높이 3m</div></div>
               </div>
             </div>
@@ -349,8 +336,8 @@ export default function LandingPage() {
               <h2>짐에 맞는 요금</h2>
             </div>
             <div className="price-grid">
-              <div className="price-card reveal">
-                <div className="size-img"><div className="ph">[ 파레트 1개<br />사이즈 비교 이미지 ]</div></div>
+            <div className="price-card reveal">
+                <div className="size-img"><img className="size-pic" src="/images/pricing-1.jpg" alt="파레트 1개 사이즈 비교" /></div>
                 <div className="plan mono">PALLET</div>
                 <div className="price">50,000<small>원/월</small></div>
                 <div className="desc">표준 파레트 1개 · VAT 별도</div>
@@ -361,7 +348,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="price-card featured reveal">
-                <div className="size-img"><div className="ph">[ 1그리드(파레트 3개)<br />사이즈 비교 이미지 ]</div></div>
+                <div className="size-img"><img className="size-pic" src="/images/pricing-2.jpg" alt="1그리드 사이즈 비교" /></div>
                 <div className="plan mono">1 GRID</div>
                 <div className="price">120,000<small>원/월</small></div>
                 <div className="desc">파레트 3개 (1.2평) · VAT 별도</div>
