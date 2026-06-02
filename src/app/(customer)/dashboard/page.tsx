@@ -238,6 +238,11 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
+            {monthlyBill > 0 && gridCount > 1 && (
+              <p style={{ fontSize: 10, color: "#94A3B8", marginTop: 12, lineHeight: 1.5 }}>
+                ※ 예상 청구액은 전체 공간의 총금액 기준이며, 공간별 결제일에 따라 별도로 안내됩니다.
+              </p>
+            )}
           </div>
 
           {/* 예약하기 */}
