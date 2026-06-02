@@ -208,60 +208,30 @@ export default function LandingPage() {
                 const email = (document.getElementById("email") as HTMLInputElement).value;
                 const password = (document.getElementById("password") as HTMLInputElement).value;
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) alert("로그인 실패: " + errase.auth.signInWithPassword({ email, password });
                 if (error) alert("로그인 실패: " + error.message);
                 else window.location.href = "/dashboard";
               }}
               style={{
                 width: "100%",
-                padding: "12px 0",
+                padding: "13px 0",
                 borderRadius: 12,
                 border: "none",
-                background: "#E5E7EB",
+                background: BLUE,
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#374151",
+                color: "#fff",
                 cursor: "pointer",
               }}
             >
               로그인
             </button>
-            <p style={{ textAlign: "right", fontSize: 12, color: "#94A3B8", marginTop: 8 }}>
+            <p style={{ textAlign: "right", fontSize: 12, color: "#94A3B8", marginTop: 10 }}>
               <a href="/forgot-password" style={{ color: "#6B7280", textDecoration: "none" }}>비밀번호를 잊으셨나요?</a>
             </p>
           </div>
-          <button
-            onClick={handleKakaoLogin}
-            style={{
-              width: "100%",
-              padding: "15px 0",
-              borderRadius: 16,
-              border: "none",
-              background: "#FEE500",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(254,229,0,0.4)",
-              transition: "all 0.2s",
-            }}
-            onMouseOver={e => (e.currentTarget.style.opacity = "0.9")}
-            onMouseOut={e => (e.currentTarget.style.opacity = "1")}
-          >
-            <MessageCircle size={20} color="#191600" strokeWidth={2} fill="#191600" />
-            <span style={{ fontSize: 15, fontWeight: 800, color: "#191600", letterSpacing: "-0.3px" }}>
-              카카오로 1초 만에 시작하기
-            </span>
-          </button>
-          <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
-            복잡한 정보 입력 없이 1초 만에 가입됩니다.
-          </p>
-          <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 16 }}>
-            카카오 계정이 없으신가요?{" "}
-            <a href="/signup" style={{ color: "#2563EB", fontWeight: 600, textDecoration: "none" }}>이메일로 회원가입</a>
-          </p>
-          <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 16 }}>
+
+          {/* 회원가입 링크 (1개만) */}
+          <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 20 }}>
             카카오 계정이 없으신가요?{" "}
             <a href="/signup" style={{ color: "#2563EB", fontWeight: 600, textDecoration: "none" }}>이메일로 회원가입</a>
           </p>
