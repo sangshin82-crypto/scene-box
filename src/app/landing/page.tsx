@@ -249,9 +249,9 @@ export default function LandingPage() {
       <div className="lp">
         {/* NAV */}
         <nav>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <div className="logo">SCENE<span className="box"></span>BOX</div>
-            <span style={{ fontFamily: "'Archivo',sans-serif", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.5px" }}>문의 070-8057-6783</span>
+            <span style={{ fontFamily: "'Archivo',sans-serif", fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>문의 070-8057-6783</span>
           </div>
           <button className="nav-cta" onClick={openModal}>예약하기</button>
         </nav>
