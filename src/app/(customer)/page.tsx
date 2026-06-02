@@ -125,95 +125,52 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ── BENEFITS ── */}
-        <div style={{ padding: "28px 16px 0", flex: "1 0 auto" }}>
-          <p style={{
-            fontSize: 11, fontWeight: 600, color: "#94A3B8",
-            textAlign: "center", letterSpacing: "2px",
-            textTransform: "uppercase", marginBottom: 16,
-          }}>
-            Why Scene Box?
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {benefits.map(({ icon: Icon, color, bg, title, note, desc }) => (
-              <div key={title} style={{
-                background: "#fff",
-                borderRadius: 20,
-                boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
-                padding: "18px 20px",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 12,
-              }}>
-                <div style={{
-                  width: 46, height: 46, borderRadius: 14,
-                  background: bg, display: "flex",
-                  alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                  <Icon size={21} color={color} strokeWidth={1.6} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B", lineHeight: 1.5, marginBottom: 0 }}>
-                    {title}
-                    {note && (
-                      <><br /><span style={{ fontSize: 10, fontWeight: 400, color: "#94A3B8" }}>{note}</span></>
-                    )}
-                  </p>
-                  <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.5, marginTop: 4 }}>{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── PRICING ── */}
-        <div style={{ padding: "24px 16px 0" }}>
-          <p style={{
-            fontSize: 11, fontWeight: 600, color: "#94A3B8",
-            textAlign: "center", letterSpacing: "2px",
-            textTransform: "uppercase", marginBottom: 16,
-          }}>
-            Pricing
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{
-              background: "#fff",
-              borderRadius: 20,
-              boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
-              padding: "18px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "#2563EB", marginBottom: 4 }}>그리드존</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>1그리드 (1.2평) 보관</p>
-              </div>
-              <p style={{ fontSize: 17, fontWeight: 800, color: "#1E293B" }}>120,000<span style={{ fontSize: 11, fontWeight: 500, color: "#94A3B8" }}>원/월</span></p>
-            </div>
-            <div style={{
-              background: "#fff",
-              borderRadius: 20,
-              boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
-              padding: "18px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "#F97316", marginBottom: 4 }}>파레트존</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>표준 파레트 1개 보관</p>
-              </div>
-              <p style={{ fontSize: 17, fontWeight: 800, color: "#1E293B" }}>50,000<span style={{ fontSize: 11, fontWeight: 500, color: "#94A3B8" }}>원/월</span></p>
-            </div>
-          </div>
-        </div>
-
         {/* ── BOTTOM CTA ── */}
-        <div style={{ padding: "24px 20px 0" }}>
-          {/* 임시 심사용 이메일 로그인 - 심사 완료 후 제거 */}
-          <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>로그인 하기</p>
+        <div style={{ padding: "32px 20px 0", flex: "1 0 auto" }}>
+          {/* 카카오 로그인 (메인) */}
+          <button
+            onClick={handleKakaoLogin}
+            style={{
+              width: "100%",
+              padding: "17px 0",
+              borderRadius: 16,
+              border: "none",
+              background: "#FEE500",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(254,229,0,0.4)",
+              transition: "all 0.2s",
+            }}
+            onMouseOver={e => (e.currentTarget.style.opacity = "0.9")}
+            onMouseOut={e => (e.currentTarget.style.opacity = "1")}
+          >
+            <MessageCircle size={22} color="#191600" strokeWidth={2} fill="#191600" />
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#191600", letterSpacing: "-0.3px" }}>
+              카카오로 1초 만에 시작하기
+            </span>
+          </button>
+          <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 10 }}>
+            복잡한 정보 입력 없이 1초 만에 가입됩니다.
+          </p>
+
+          {/* 구분선 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "#E5E7EB" }} />
+            <span style={{ fontSize: 12, color: "#9CA3AF" }}>또는</span>
+            <div style={{ flex: 1, height: 1, background: "#E5E7EB" }} />
+          </div>
+
+          {/* 이메일 로그인 박스 */}
+          <div style={{
+            background: "#fff",
+            borderRadius: 20,
+            boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
+            padding: "20px",
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 12 }}>이메일로 로그인</p>
             <input
               id="email"
               type="email"
@@ -227,7 +184,7 @@ export default function LandingPage() {
                 marginBottom: 8,
                 boxSizing: "border-box",
                 color: "#111827",
-                background: "#fff",
+                background: "#F9FAFB",
               }}
             />
             <input
@@ -243,7 +200,7 @@ export default function LandingPage() {
                 marginBottom: 8,
                 boxSizing: "border-box",
                 color: "#111827",
-                background: "#fff",
+                background: "#F9FAFB",
               }}
             />
             <button
@@ -251,6 +208,7 @@ export default function LandingPage() {
                 const email = (document.getElementById("email") as HTMLInputElement).value;
                 const password = (document.getElementById("password") as HTMLInputElement).value;
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) alert("로그인 실패: " + errase.auth.signInWithPassword({ email, password });
                 if (error) alert("로그인 실패: " + error.message);
                 else window.location.href = "/dashboard";
               }}
