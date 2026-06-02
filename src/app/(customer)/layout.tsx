@@ -12,12 +12,14 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isLoginPage   = pathname === '/' || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password';
   const isBookingPage = pathname.startsWith('/booking');
   const showPhoneBar  = !isLoginPage && !pathname.startsWith('/billing');
+  const isLanding     = pathname === '/';
+  const isLanding     = pathname === '/';
 
   return (
     <div style={{
       margin: '0 auto',
       width: '100%',
-      maxWidth: MAX_W,
+      maxWidth: isLanding ? '100%' : MAX_W,
       minHeight: '100vh',
       position: 'relative',
       background: '#F0F7F4',
