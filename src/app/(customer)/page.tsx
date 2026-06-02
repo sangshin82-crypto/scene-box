@@ -141,7 +141,7 @@ export default function LandingPage() {
             onClick={handleKakaoLogin}
             style={{
               width: "100%",
-              padding: "17px 0",
+              padding: "20px 0",
               borderRadius: 16,
               border: "none",
               background: "#FEE500",
@@ -150,14 +150,14 @@ export default function LandingPage() {
               justifyContent: "center",
               gap: 10,
               cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(254,229,0,0.4)",
+              boxShadow: "0 6px 24px rgba(254,229,0,0.5)",
               transition: "all 0.2s",
             }}
             onMouseOver={e => (e.currentTarget.style.opacity = "0.9")}
             onMouseOut={e => (e.currentTarget.style.opacity = "1")}
           >
-            <MessageCircle size={22} color="#191600" strokeWidth={2} fill="#191600" />
-            <span style={{ fontSize: 16, fontWeight: 800, color: "#191600", letterSpacing: "-0.3px" }}>
+            <MessageCircle size={24} color="#191600" strokeWidth={2} fill="#191600" />
+            <span style={{ fontSize: 17, fontWeight: 800, color: "#191600", letterSpacing: "-0.3px" }}>
               카카오로 1초 만에 시작하기
             </span>
           </button>
@@ -174,12 +174,12 @@ export default function LandingPage() {
 
           {/* 이메일 로그인 박스 */}
           <div style={{
-            background: "#fff",
-            borderRadius: 20,
-            boxShadow: "0 1px 12px rgba(0,0,0,0.05)",
-            padding: "20px",
+            background: "transparent",
+            borderRadius: 16,
+            border: "1px solid #E5E7EB",
+            padding: "18px",
           }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 12 }}>이메일로 로그인</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", marginBottom: 12 }}>이메일로 로그인</p>
             <input
               id="email"
               type="email"
