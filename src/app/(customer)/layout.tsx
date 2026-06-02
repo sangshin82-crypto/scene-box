@@ -13,7 +13,6 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isBookingPage = pathname.startsWith('/booking');
   const showPhoneBar  = !isLoginPage && !pathname.startsWith('/billing');
   const isLanding     = pathname === '/';
-  const isLanding     = pathname === '/';
 
   return (
     <div style={{
