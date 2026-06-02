@@ -180,8 +180,10 @@ export default function DashboardPage() {
           <button className="rounded-lg p-1" style={{ color: "#374151" }}>
             <Menu size={22} strokeWidth={1.5} />
           </button>
-          <span style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
-            Scene<span style={{ color: BLUE }}>Box</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 18, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>SCENE</span>
+            <span style={{ width: 15, height: 15, border: "2.5px solid #0A0A0A", borderRadius: 2, display: "inline-block" }} />
+            <span style={{ fontSize: 18, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>BOX</span>
           </span>
           <button className="relative rounded-lg p-1" style={{ color: "#374151" }}>
             <Bell size={22} strokeWidth={1.5} />
