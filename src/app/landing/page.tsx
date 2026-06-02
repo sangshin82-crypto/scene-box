@@ -249,7 +249,10 @@ export default function LandingPage() {
       <div className="lp">
         {/* NAV */}
         <nav>
-          <div className="logo">SCENE<span className="box"></span>BOX</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div className="logo">SCENE<span className="box"></span>BOX</div>
+            <span style={{ fontFamily: "'Archivo',sans-serif", fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "0.5px" }}>문의 070-8057-6783</span>
+          </div>
           <button className="nav-cta" onClick={openModal}>예약하기</button>
         </nav>
 
@@ -271,22 +274,22 @@ export default function LandingPage() {
         <section className="module" id="module">
           <div className="module-inner">
             <div className="section-label mono reveal">THE SYSTEM</div>
-            <h2 className="reveal">원하는 만큼,<br /><span className="yellow">원하는 크기로.</span></h2>
+            <h2 className="reveal">원하는 만큼, 원하는 크기로.<br /><span className="yellow">배차부터 보관까지 원스톱으로.</span></h2>
             <div className="module-grid">
               <div className="mod-card reveal">
                 <div className="num mono">01</div>
-                <h3>1.1m 모듈 파레트</h3>
-                <p>1.1m × 1.1m 표준 파레트 단위로 짐을 적재합니다. 짐의 양에 딱 맞는 공간만 사용하세요.</p>
+                <h3>규격화된 전용 Grid</h3>
+                <p>박스 적재부터 대형 세트장·비정형 화물까지 모두 수납 가능. 공간 효율을 극대화합니다.</p>
               </div>
               <div className="mod-card reveal">
                 <div className="num mono">02</div>
-                <h3>어떤 사이즈도 가능</h3>
-                <p>촬영 소품부터 5m 대형 무대 설치물까지. 높이와 형태에 제약 없이 보관합니다.</p>
+                <h3>전용 차량으로 원스톱 배차</h3>
+                <p>입고부터 납품까지, 전화 한 통으로 해결. 비정형 대형 화물 운송도 맡겨주세요.</p>
               </div>
               <div className="mod-card reveal">
                 <div className="num mono">03</div>
-                <h3>투명한 정산</h3>
-                <p>보관료·운송료·폐기비를 저울 단위로 정량 계근. 눈먼 비용 없이 깔끔하게 정산합니다.</p>
+                <h3>저울로 재는 투명한 폐기 정산</h3>
+                <p>kg당 정량 계근으로 정산합니다. 눈먼 폐기 비용 없이 깔끔하게 처리합니다.</p>
               </div>
             </div>
           </div>
