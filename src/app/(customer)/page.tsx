@@ -268,6 +268,9 @@ export default function LandingPage() {
             >
               로그인
             </button>
+            <p style={{ textAlign: "right", fontSize: 12, color: "#94A3B8", marginTop: 8 }}>
+              <a href="/forgot-password" style={{ color: "#6B7280", textDecoration: "none" }}>비밀번호를 잊으셨나요?</a>
+            </p>
           </div>
           <button
             onClick={handleKakaoLogin}
