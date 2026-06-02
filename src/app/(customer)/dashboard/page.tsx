@@ -95,7 +95,12 @@ export default function DashboardPage() {
       if (spacesData?.length) {
         setSpaces(spacesData as unknown as Space[]);
         setMonthlyBill(spacesData.reduce((sum: number, s: any) => sum + s.monthly_fee, 0));
-        if (spacesData[0]?.end_date) setNextPayDate(spacesData[0].end_date);
+        // 가장 가까운(빠른) 종료일을 다음 결제일로 표시
+        const earliest = spacesData
+          .map((s: any) => s.end_date)
+          .filter(Boolean)
+          .sort()[0];
+        if (earliest) setNextPayDate(earliest);
       }
 
       const { data: transports } = await supabase
