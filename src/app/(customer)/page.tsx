@@ -296,6 +296,14 @@ export default function LandingPage() {
           <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 8 }}>
             복잡한 정보 입력 없이 1초 만에 가입됩니다.
           </p>
+          <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 16 }}>
+            카카오 계정이 없으신가요?{" "}
+            <a href="/signup" style={{ color: "#2563EB", fontWeight: 600, textDecoration: "none" }}>이메일로 회원가입</a>
+          </p>
+          <p style={{ textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 16 }}>
+            카카오 계정이 없으신가요?{" "}
+            <a href="/signup" style={{ color: "#2563EB", fontWeight: 600, textDecoration: "none" }}>이메일로 회원가입</a>
+          </p>
         </div>
 
         {/* ── FOOTER INFO ── */}
