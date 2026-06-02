@@ -90,13 +90,22 @@ export default function LandingPage() {
               B2B 특수화물 전문 공유창고
             </span>
           </div>
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ fontSize: 44, fontWeight: 900, color: "#0F172A", letterSpacing: "-2px", lineHeight: 1 }}>
-              Scene<span style={{ color: BLUE }}>Box</span>
+          <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 38, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>
+              SCENE
+            </span>
+            <span style={{
+              width: 26, height: 26,
+              border: "3px solid #0A0A0A",
+              display: "inline-block",
+              borderRadius: 2,
+            }} />
+            <span style={{ fontSize: 38, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>
+              BOX
             </span>
           </div>
           <div style={{ marginBottom: 10 }}>
-            <span style={{ fontSize: 28, fontWeight: 700, color: "#334155", letterSpacing: "8px" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#334155", letterSpacing: "6px" }}>
               씬박스
             </span>
           </div>
