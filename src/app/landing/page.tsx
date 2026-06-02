@@ -284,12 +284,12 @@ export default function LandingPage() {
               <div className="mod-card reveal">
                 <div className="num mono">02</div>
                 <h3>전용 차량으로 원스톱 배차</h3>
-                <p>입고부터 납품까지, 전화 한 통으로 해결. 비정형 대형 화물 운송도 맡겨주세요.</p>
+                <p>입고부터 납품까지, 전화 한 통으로 해결.<br />비정형 대형 화물 운송도 맡겨주세요.</p>
               </div>
               <div className="mod-card reveal">
                 <div className="num mono">03</div>
                 <h3>저울로 재는 투명한 폐기 정산</h3>
-                <p>kg당 정량 계근으로 정산합니다. 눈먼 폐기 비용 없이 깔끔하게 처리합니다.</p>
+                <p>kg당 정량 계근으로 정산합니다.<br />눈먼 폐기 비용 없이 깔끔하게 처리합니다.</p>
               </div>
             </div>
           </div>
