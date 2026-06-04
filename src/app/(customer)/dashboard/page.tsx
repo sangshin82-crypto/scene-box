@@ -68,7 +68,13 @@ export default function DashboardPage() {
         return;
       }
 
-      const name = user.user_metadata?.name ?? user.user_metadata?.full_name ?? "이름 없음";
+      const clientId = user.id;
+
+      const { data: clientData } = await supabase
+        .from("clients").select("name").eq("id", clientId).single();
+      if (clientData) setClient(clientData);
+
+      const name = clientData?.name ?? user.user_metadata?.name ?? user.user_metadata?.full_name ?? "이름 없음";
       const isNew = user.created_at === user.last_sign_in_at;
       fetch("/api/notify", {
         method: "POST",
@@ -79,12 +85,6 @@ export default function DashboardPage() {
             : `🔄 <b>기존 고객 로그인</b>\n\n👤 이름: ${name}\n🕐 로그인: ${new Date().toLocaleDateString("ko-KR")}`
         }),
       });
-
-      const clientId = user.id;
-
-      const { data: clientData } = await supabase
-        .from("clients").select("name").eq("id", clientId).single();
-      if (clientData) setClient(clientData);
 
       const { data: spacesData } = await supabase
         .from("spaces")
