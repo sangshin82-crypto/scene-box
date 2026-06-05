@@ -7,6 +7,7 @@ import {
   CheckCircle2, AlertTriangle, Check, Trash2,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { sendAlimtalk, ALIMTALK_TEMPLATES } from "@/app/lib/alimtalk";
 
 const BLUE = "#2563EB";
 
@@ -64,6 +65,14 @@ export default function DisposalPage() {
       `📅 요청일: ${new Date().toLocaleDateString("ko-KR")}\n\n` +
       `📌 고객에게 전화 상담을 진행해주세요.`
     );
+
+    // 고객에게 카카오 알림톡 발송 (폐기 신청 완료)
+    if (clientPhone && clientPhone !== "번호 없음") {
+      await sendAlimtalk(clientPhone, ALIMTALK_TEMPLATES.DISPOSAL_REQUEST, {
+        고객명:   clientName,
+        폐기내용: "폐기 상담 요청 (담당자 확인 예정)",
+      });
+    }
 
     alert("폐기 요청이 접수되었습니다!\n담당자가 곧 연락드릴 예정입니다.");
     router.push("/dashboard");

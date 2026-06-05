@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendAlimtalk, ALIMTALK_TEMPLATES } from '@/app/lib/alimtalk';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -221,11 +222,12 @@ export async function POST(req: NextRequest) {
     // 고객 정보 조회
     const { data: clientData } = await supabase
       .from('clients')
-      .select('name')
+      .select('name, contact_phone')
       .eq('id', clientId)
       .single();
 
     const clientName = clientData?.name ?? '고객';
+    const clientPhone = clientData?.contact_phone ?? '';
 
     // 텔레그램 알림 (서버에서 직접 호출)
     try {
@@ -247,6 +249,16 @@ export async function POST(req: NextRequest) {
       });
     } catch (e) {
       console.error('텔레그램 알림 실패:', e);
+    }
+
+    // 고객에게 카카오 알림톡 발송 (예약 완료)
+    if (clientPhone) {
+      await sendAlimtalk(clientPhone, ALIMTALK_TEMPLATES.RESERVATION, {
+        고객명:   clientName,
+        예약공간: `${gridList.join(', ')} (${gridList.length} Grid)`,
+        이용기간: `${months ?? '-'}개월`,
+        결제금액: `${Number(amount).toLocaleString('ko-KR')}원`,
+      });
     }
     // ────────────────────────────────────────────────────────────────────────
 

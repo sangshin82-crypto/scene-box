@@ -8,6 +8,7 @@ import {
   PersonStanding, UserCheck,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
+import { sendAlimtalk, ALIMTALK_TEMPLATES } from "@/app/lib/alimtalk";
 
 const BLUE = "#2563EB";
 
@@ -71,8 +72,9 @@ export default function TransportPage() {
     const clientId = user?.id ?? "00000000-0000-0000-0000-000000000001";
 
     const { data: clientData } = await supabase
-      .from("clients").select("name").eq("id", clientId).single();
+      .from("clients").select("name, contact_phone").eq("id", clientId).single();
     const clientName = clientData?.name ?? "고객";
+    const clientPhone = clientData?.contact_phone ?? "";
 
     const scheduledAt = new Date(`${date}T${time}:00`).toISOString();
 
@@ -101,6 +103,15 @@ export default function TransportPage() {
         `➕ 옵션: ${extraOption ?? "없음"}\n` +
         `📝 전달사항: ${note || "없음"}`
       );
+
+      // 고객에게 카카오 알림톡 발송 (배차 신청 완료)
+      if (clientPhone) {
+        await sendAlimtalk(clientPhone, ALIMTALK_TEMPLATES.TRANSPORT_REQUEST, {
+          고객명:   clientName,
+          배차내용: `${truck} 트럭 / 출발지 ${origin}`,
+          희망일시: `${date} ${time}`,
+        });
+      }
       alert("배차 요청이 완료되었습니다! 관리자가 운임을 확정하면 정산 탭에서 확인하실 수 있습니다.");
       router.push("/dashboard");
     }
