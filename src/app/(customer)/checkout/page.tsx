@@ -246,6 +246,8 @@ function CheckoutInner() {
             clientId,
             grids:       gridStr,
             uploadedUrl: uploadedUrl ?? "",
+            months,
+            startDate:   fmtDate(startDate),
           }),
         });
 
@@ -410,7 +412,7 @@ function CheckoutInner() {
       }
 
       await sendTelegramNotification(
-        `🎉 <b>그리드 예약 접수 (무통장/세금계산서)</b>\n\n` +
+        `💳 <b>결제 완료! (무통장)</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
         `📦 예약 공간: ${gridList.join(", ")} (${gridList.length} Grid)\n` +
         `📅 이용 기간: ${months}개월\n` +

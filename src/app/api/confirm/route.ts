@@ -21,12 +21,14 @@ interface PortOnePayment {
 export async function POST(req: NextRequest) {
   try {
     // ─── 포트원 V2: paymentId 기반 파라미터 ────────────────────────────────
-    const { paymentId, amount, clientId, grids, uploadedUrl } = await req.json() as {
+    const { paymentId, amount, clientId, grids, uploadedUrl, months, startDate } = await req.json() as {
       paymentId:   string;
       amount:      number;
       clientId:    string;
       grids:       string;
       uploadedUrl?: string;
+      months?:     number;
+      startDate?:  string;
     };
     // ────────────────────────────────────────────────────────────────────────
 
@@ -228,11 +230,12 @@ export async function POST(req: NextRequest) {
           chat_id: process.env.TELEGRAM_CHAT_ID,
           parse_mode: 'HTML',
           text:
-            `💳 <b>결제 완료!</b>\n\n` +
+            `💳 <b>결제 완료! (카드)</b>\n\n` +
             `👤 고객명: ${clientName}\n` +
             `📦 예약 공간: ${gridList.join(', ')} (${gridList.length} Grid)\n` +
+            `📅 이용 기간: ${months ?? '-'}개월\n` +
             `💰 결제 금액: ${Number(amount).toLocaleString('ko-KR')}원 (VAT 포함)\n` +
-            `💳 결제 방법: 카드` +
+            `🗓 시작일: ${startDate ?? '-'}` +
             (uploadedUrl ? `\n📎 사업자등록증: 첨부됨` : ''),
         }),
       });
