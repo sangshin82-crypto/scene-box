@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 
@@ -13,6 +13,22 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // 기존 정보가 있으면 불러와서 미리 채움 (수정 모드)
+  useEffect(() => {
+    async function loadExisting() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("clients")
+        .select("name, contact_phone")
+        .eq("id", user.id)
+        .single();
+      if (data?.name) setName(data.name);
+      if (data?.contact_phone) setPhone(data.contact_phone);
+    }
+    loadExisting();
+  }, []);
 
   const handleSubmit = async () => {
     if (!name.trim()) { setError("이름을 입력해주세요."); return; }

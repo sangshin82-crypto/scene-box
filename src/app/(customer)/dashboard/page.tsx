@@ -201,9 +201,17 @@ export default function DashboardPage() {
           {/* 보관 현황 카드 */}
           <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "20px" }}>
             <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 4, fontWeight: 500 }}>나의 보관 현황</p>
-            <h2 style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", marginBottom: 16, lineHeight: 1.3 }}>
-              {client?.name ?? "고객"} 님,<br />환영합니다 👋
-            </h2>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+              <h2 style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", lineHeight: 1.3 }}>
+                {client?.name ?? "고객"} 님,<br />환영합니다 👋
+              </h2>
+              <button
+                onClick={() => router.push("/onboarding")}
+                style={{ fontSize: 11, fontWeight: 600, color: BLUE, background: "#EFF6FF", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+              >
+                내 정보 수정
+              </button>
+            </div>
 
             <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "14px 16px", marginBottom: 14 }}>
               <div className="mb-3 flex items-center justify-between">
