@@ -17,6 +17,9 @@ import { supabase } from "@/app/lib/supabase";
 
 const BLUE = "#2563EB";
 
+// 런칭 프로모션: 이행보증금 면제 (보증금 부활 시 false로 변경)
+const LAUNCH_PROMO_NO_DEPOSIT = true;
+
 type CheckKey = "terms" | "liability" | "scope" | "checkout";
 
 // ─── 포트원 V2 응답 타입 ─────────────────────────────────────────────────────
@@ -53,7 +56,7 @@ function CheckoutInner() {
   const months   = Number(searchParams.get("months")  ?? 1);
 
   const gridList   = gridStr ? gridStr.split(",") : [];
-  const deposit    = monthly * 2;
+  const deposit    = LAUNCH_PROMO_NO_DEPOSIT ? 0 : monthly * 2;
   const vat        = Math.round(totalAmt * 0.1);
   const grandTotalCard = totalAmt + vat + deposit;
   const grandTotalBank = totalAmt + vat + deposit;
@@ -463,7 +466,9 @@ function CheckoutInner() {
                   {fmt(grandTotalCard)}
                 </p>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
-                  보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 보증금 {fmt(deposit)}
+                  {deposit > 0
+                    ? `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)} + 보증금 ${fmt(deposit)}`
+                    : `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)}`}
                 </p>
               </div>
               <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -483,12 +488,27 @@ function CheckoutInner() {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 13, color: "#94A3B8", flexShrink: 0, marginRight: 12 }}>이행 보증금</span>
                     <div style={{ textAlign: "right" }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{fmt(deposit)}</span>
-                      <p style={{ fontSize: 11, color: "#60A5FA", marginTop: 3, fontWeight: 500, lineHeight: 1.6 }}>
-                        2개월치 정상 보관료 기준<br />
-                        <span style={{ color: "#94A3B8" }}>미납 요금(운송/폐기 등) 정산용 포괄 담보금</span><br />
-                        <span style={{ color: "#94A3B8" }}>정상 퇴실 시 100% 환불</span>
-                      </p>
+                      {deposit > 0 ? (
+                        <>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{fmt(deposit)}</span>
+                          <p style={{ fontSize: 11, color: "#60A5FA", marginTop: 3, fontWeight: 500, lineHeight: 1.6 }}>
+                            2개월치 정상 보관료 기준<br />
+                            <span style={{ color: "#94A3B8" }}>미납 요금(운송/폐기 등) 정산용 포괄 담보금</span><br />
+                            <span style={{ color: "#94A3B8" }}>정상 퇴실 시 100% 환불</span>
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#10B981" }}>
+                            <span style={{ textDecoration: "line-through", color: "#CBD5E1", marginRight: 6 }}>{fmt(monthly * 2)}</span>
+                            0원
+                          </span>
+                          <p style={{ fontSize: 11, color: "#10B981", marginTop: 3, fontWeight: 600, lineHeight: 1.6 }}>
+                            🎉 런칭 프로모션 면제<br />
+                            <span style={{ color: "#94A3B8", fontWeight: 500 }}>한시적 이벤트로 보증금 없이 이용 가능</span>
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -568,7 +588,9 @@ function CheckoutInner() {
                     <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmt(grandTotalCard)}</span>
                   </div>
                   <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 6 }}>
-                    보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 이행보증금 {fmt(deposit)}
+                    {deposit > 0
+                      ? `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)} + 이행보증금 ${fmt(deposit)}`
+                      : `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)}`}
                   </p>
                 </div>
 
@@ -609,7 +631,9 @@ function CheckoutInner() {
                     <span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{fmt(grandTotalBank)}</span>
                   </div>
                   <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 6 }}>
-                    보관료 {fmt(totalAmt)} + VAT {fmt(vat)} + 이행보증금 {fmt(deposit)}
+                    {deposit > 0
+                      ? `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)} + 이행보증금 ${fmt(deposit)}`
+                      : `보관료 ${fmt(totalAmt)} + VAT ${fmt(vat)}`}
                   </p>
                 </div>
               </div>
