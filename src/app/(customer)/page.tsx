@@ -402,11 +402,11 @@ const closePromoToday = () => {
           <div className="footer-top">
             <div className="logo">SCENE<span className="box"></span>BOX</div>
             <div className="footer-links">
-              <a href="/terms">이용약관</a>
+            <a href="/terms">이용약관</a>
               <span>|</span>
-              <a href="/privacy">개인정보처리방침</a>
+              <a href="/privacy" style={{ fontWeight: 800, color: "#fff", textDecoration: "underline" }}>개인정보처리방침</a>
               <span>|</span>
-              <a href="/refund" style={{ fontWeight: 700 }}>취소 및 환불 규정</a>
+              <a href="/refund">취소 및 환불 규정</a>
             </div>
           </div>
           <div className="footer-meta">
