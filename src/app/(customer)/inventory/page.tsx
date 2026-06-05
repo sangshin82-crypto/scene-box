@@ -55,6 +55,7 @@ export default function InventoryPage() {
         .from("spaces")
         .select("id, plan_type, monthly_fee, deposit_amount, start_date, end_date, status, grids(grid_number, zone)")
         .eq("client_id", clientId)
+        .eq("status", "active")
         .order("start_date", { ascending: false });
 
       setSpaces((spacesData ?? []) as unknown as Space[]);
