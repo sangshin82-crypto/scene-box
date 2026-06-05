@@ -10,11 +10,33 @@ const INK = "#0A0A0A";
 const GRAY = "#8A8A85";
 
 export default function LandingPage() {
-    const openModal = () => {
-        window.location.href = "/login";
-      };
+  const openModal = () => {
+      window.location.href = "/login";
+    };
 
-  const [lightbox, setLightbox] = useState<string | null>(null);
+const [lightbox, setLightbox] = useState<string | null>(null);
+const [showPromo, setShowPromo] = useState(false);
+
+// 프리런칭 이벤트 팝업 (오늘 하루 보지 않기)
+useEffect(() => {
+  try {
+    const hideUntil = localStorage.getItem("promo_hide_until");
+    if (!hideUntil || new Date().getTime() > Number(hideUntil)) {
+      setShowPromo(true);
+    }
+  } catch {
+    setShowPromo(true);
+  }
+}, []);
+
+const closePromoToday = () => {
+  try {
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0); // 오늘 자정까지
+    localStorage.setItem("promo_hide_until", String(tomorrow.getTime()));
+  } catch {}
+  setShowPromo(false);
+};
 
   // 스크롤 리빌
   useEffect(() => {
@@ -382,6 +404,100 @@ export default function LandingPage() {
           <div className="footer-copy">© 2026 씬박스(SceneBox). 비정형 짐 전문 보관 서비스. All rights reserved. &nbsp;|&nbsp; scenebox.co.kr &nbsp;|&nbsp; @scenebox_official</div>
         </footer>
         </div>
+
+        {showPromo && (
+  <div
+    onClick={() => setShowPromo(false)}
+    style={{
+      position: "fixed", inset: 0, zIndex: 3000,
+      background: "rgba(10,10,10,0.6)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "20px",
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%", maxWidth: 380, background: "#fff",
+        borderRadius: 24, overflow: "hidden",
+        boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
+        fontFamily: "'Gothic A1','Apple SD Gothic Neo',sans-serif",
+        position: "relative",
+      }}
+    >
+      {/* 상단 노란 헤더 */}
+      <div style={{ background: "#FFD400", padding: "28px 24px 22px", textAlign: "center", position: "relative" }}>
+        <button
+          onClick={() => setShowPromo(false)}
+          style={{
+            position: "absolute", top: 16, right: 16, width: 30, height: 30,
+            borderRadius: "50%", border: "none", background: "rgba(10,10,10,0.1)",
+            color: "#0A0A0A", fontSize: 18, cursor: "pointer", lineHeight: 1,
+          }}
+        >×</button>
+        <div style={{ fontFamily: "'Archivo',sans-serif", fontSize: 12, fontWeight: 800, letterSpacing: 2, color: "#1A36E8", marginBottom: 8 }}>
+          PRE-LAUNCH EVENT
+        </div>
+        <h2 style={{ fontSize: 26, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
+          프리런칭 기념<br />이벤트 🎉
+        </h2>
+      </div>
+
+      {/* 이벤트 내용 */}
+      <div style={{ padding: "24px 24px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 16, fontWeight: 900, color: "#1A36E8" }}>1</div>
+          <div>
+          <p style={{ fontSize: 15, fontWeight: 800, color: "#0A0A0A", marginBottom: 3 }}>1개월 무료 증정</p>
+            <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>
+              결제 후 <strong style={{ color: "#1A36E8" }}>1개월 자동 연장</strong>으로<br />한 달을 무료로 더 이용하세요.
+            </p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 16, fontWeight: 900, color: "#10B981" }}>2</div>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "#0A0A0A", marginBottom: 3 }}>이행보증금 면제</p>
+            <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>
+              <strong style={{ color: "#10B981" }}>2개월치 이행보증금</strong>을<br />런칭 기념으로 전액 면제해 드립니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA 버튼 */}
+      <div style={{ padding: "0 24px 16px" }}>
+        <button
+          onClick={openModal}
+          style={{
+            width: "100%", padding: "15px 0", borderRadius: 14, border: "none",
+            background: "#1A36E8", color: "#fff", fontSize: 15, fontWeight: 800,
+            cursor: "pointer", boxShadow: "0 6px 20px rgba(26,54,232,0.35)",
+          }}
+        >
+          지금 예약하고 혜택 받기
+        </button>
+      </div>
+
+      {/* 하단 닫기 옵션 */}
+      <div style={{ borderTop: "1px solid #F0F0F0", display: "flex" }}>
+        <button
+          onClick={closePromoToday}
+          style={{ flex: 1, padding: "14px 0", border: "none", background: "transparent", color: "#94A3B8", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+        >
+          오늘 하루 보지 않기
+        </button>
+        <div style={{ width: 1, background: "#F0F0F0" }} />
+        <button
+          onClick={() => setShowPromo(false)}
+          style={{ flex: 1, padding: "14px 0", border: "none", background: "transparent", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 {lightbox && (
   <div
