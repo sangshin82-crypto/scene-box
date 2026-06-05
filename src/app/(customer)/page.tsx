@@ -120,14 +120,14 @@ const closePromoToday = () => {
           opacity: 0; animation: lpFadeUp 0.8s ease 1s forwards; z-index: 2;
         }
         .lp .hero-nav {
-          margin-bottom: 28px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+          margin-bottom: 28px; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.3s forwards; z-index: 2;
         }
         .lp .hero-nav button {
-          font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800;
-          letter-spacing: 1.5px; color: ${BLUE}; background: rgba(255,255,255,0.7);
-          border: 1.5px solid ${BLUE}; border-radius: 100px; padding: 9px 20px;
-          cursor: pointer; transition: all 0.2s;
+          font-family: 'Archivo', sans-serif; font-size: clamp(9px, 2.6vw, 12px); font-weight: 800;
+          letter-spacing: 0.5px; color: ${BLUE}; background: rgba(255,255,255,0.7);
+          border: 1.5px solid ${BLUE}; border-radius: 100px; padding: 8px clamp(10px, 3vw, 20px);
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
         .lp .hero-nav button:hover { background: ${BLUE}; color: #fff; }
         .lp .btn-primary {
