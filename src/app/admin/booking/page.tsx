@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Phone } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
+import { sendAlimtalk, ALIMTALK_TEMPLATES } from '@/app/lib/alimtalk';
 
 type Space = {
   id: string;
@@ -289,8 +290,34 @@ export default function BookingManagement() {
                   {t.status === 'confirmed' && (
                     <button
                       onClick={async () => {
+                        // 기사 연락처·방문일시 입력받기
+                        const driverPhone = window.prompt('기사님 연락처를 입력하세요 (예: 010-1234-5678)');
+                        if (driverPhone === null) return; // 취소
+                        const visitTime = window.prompt('방문 일시를 입력하세요 (예: 6월 10일 오후 2시)');
+                        if (visitTime === null) return; // 취소
+
+                        // 상태 완료 처리
                         await supabase.from('transport_requests').update({ status: 'completed' }).eq('id', t.id);
                         setTransports(prev => prev.map(x => x.id === t.id ? { ...x, status: 'completed' } : x));
+
+                        // 고객 전화번호 조회 후 배차완료 알림톡 발송
+                        const { data: clientRow } = await supabase
+                          .from('clients')
+                          .select('contact_phone')
+                          .eq('id', t.client_id)
+                          .single();
+                        const customerPhone = clientRow?.contact_phone ?? '';
+
+                        if (customerPhone && driverPhone && visitTime) {
+                          await sendAlimtalk(customerPhone, ALIMTALK_TEMPLATES.TRANSPORT_DONE, {
+                            고객명:     t.clients?.name ?? '고객',
+                            방문일시:   visitTime,
+                            기사연락처: driverPhone,
+                          });
+                          alert('완료 처리 및 고객 알림톡 발송이 요청되었습니다.');
+                        } else {
+                          alert('완료 처리되었습니다. (고객 전화번호가 없어 알림톡은 발송되지 않았습니다.)');
+                        }
                       }}
                       className="w-full py-2 rounded-lg bg-green-500 text-white text-xs font-bold"
                     >
