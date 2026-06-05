@@ -282,8 +282,9 @@ const closePromoToday = () => {
       <div className="lp">
         {/* NAV */}
         <nav>
-        <div style={{ display: "flex", alignItems: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>씬박스 문의 070-8057-6783</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>씬박스 문의</span>
+            <a href="tel:07080576783" style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap", textDecoration: "none" }}>070-8057-6783</a>
           </div>
           <button className="nav-cta" onClick={openModal}>예약하기</button>
         </nav>
