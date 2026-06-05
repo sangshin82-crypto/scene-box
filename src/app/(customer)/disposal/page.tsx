@@ -7,7 +7,7 @@ import {
   CheckCircle2, AlertTriangle, Check, Trash2,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
-import { sendAlimtalk, ALIMTALK_TEMPLATES } from "@/app/lib/alimtalk";
+import { requestAlimtalk } from "@/app/lib/alimtalk-client";
 
 const BLUE = "#2563EB";
 
@@ -68,7 +68,7 @@ export default function DisposalPage() {
 
     // 고객에게 카카오 알림톡 발송 (폐기 신청 완료)
     if (clientPhone && clientPhone !== "번호 없음") {
-      await sendAlimtalk(clientPhone, ALIMTALK_TEMPLATES.DISPOSAL_REQUEST, {
+      await requestAlimtalk(clientPhone, "DISPOSAL_REQUEST", {
         고객명:   clientName,
         폐기내용: "폐기 상담 요청 (담당자 확인 예정)",
       });

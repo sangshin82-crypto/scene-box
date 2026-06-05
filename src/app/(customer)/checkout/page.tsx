@@ -7,7 +7,7 @@ import {
   Check, FileText, ShieldCheck, ChevronDown, Lock
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
-import { sendAlimtalk, ALIMTALK_TEMPLATES } from "@/app/lib/alimtalk";
+import { requestAlimtalk } from "@/app/lib/alimtalk-client";
 // ─── 토스페이먼츠 (비활성화) ────────────────────────────────────────────────
 // import { loadPaymentWidget, PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
 // ────────────────────────────────────────────────────────────────────────────
@@ -428,15 +428,15 @@ function CheckoutInner() {
         .select("contact_phone")
         .eq("id", clientId)
         .single();
-      const customerPhone = phoneData?.contact_phone ?? "";
-      if (customerPhone) {
-        await sendAlimtalk(customerPhone, ALIMTALK_TEMPLATES.RESERVATION, {
-          고객명:   clientName,
-          예약공간: `${gridList.join(", ")} (${gridList.length} Grid)`,
-          이용기간: `${months}개월`,
-          결제금액: `${fmt(grandTotalCard)}`,
-        });
-      }
+        const customerPhone = phoneData?.contact_phone ?? "";
+        if (customerPhone) {
+          await requestAlimtalk(customerPhone, "RESERVATION", {
+            고객명:   clientName,
+            예약공간: `${gridList.join(", ")} (${gridList.length} Grid)`,
+            이용기간: `${months}개월`,
+            결제금액: `${fmt(grandTotalCard)}`,
+          });
+        }
 
       alert(`예약이 정상적으로 접수되었습니다!\n\n[입금 계좌 안내]\n국민은행 567001-04-101845 박민지\n입금 금액: ${fmt(grandTotalCard)} (VAT 포함)\n\n입금 확인이 완료되면 계약이 최종 확정됩니다.`);
       router.push("/dashboard");

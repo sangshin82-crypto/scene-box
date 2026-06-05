@@ -16,28 +16,24 @@ export const ALIMTALK_TEMPLATES = {
   TRANSPORT_DONE:    "gHVi3K7vP5", // 배차 완료
 } as const;
 
-type TemplateCode = (typeof ALIMTALK_TEMPLATES)[keyof typeof ALIMTALK_TEMPLATES];
+export type TemplateKey = keyof typeof ALIMTALK_TEMPLATES;
 
 /**
- * 카카오 알림톡 발송
- * @param to 수신자 휴대폰 번호 (하이픈 있어도 됨)
- * @param templateId 템플릿 코드 (ALIMTALK_TEMPLATES 참조)
- * @param variables 템플릿 변수 (예: { 고객명: "홍길동", 예약공간: "A존 A1" })
+ * [서버 전용] 카카오 알림톡 발송 (solapi 직접 호출)
  */
 export async function sendAlimtalk(
   to: string,
-  templateId: TemplateCode,
+  templateId: string,
   variables: Record<string, string>
 ) {
   try {
-    // 변수 키를 #{키} 형식으로 변환
     const formattedVariables: Record<string, string> = {};
     for (const [key, value] of Object.entries(variables)) {
       formattedVariables[`#{${key}}`] = value ?? "";
     }
 
     const result = await messageService.send({
-        to: to.replace(/[^0-9]/g, ""), // 숫자만 남김 (하이픈·공백 제거)
+      to: to.replace(/[^0-9]/g, ""), // 숫자만 남김
       from: FROM,
       kakaoOptions: {
         pfId: PFID,
@@ -49,6 +45,6 @@ export async function sendAlimtalk(
     return { success: true, result };
   } catch (error) {
     console.error("알림톡 발송 실패:", error);
-    return { success: false, error };
+    return { success: false, error: String(error) };
   }
 }

@@ -18,6 +18,15 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     setError('');
 
+    const ADMIN_EMAIL = 'easy.keep.kr@gmail.com';
+
+    // 관리자 이메일이 아니면 로그인 차단
+    if (email.trim().toLowerCase() !== ADMIN_EMAIL) {
+      setError('관리자 권한이 없는 계정입니다.');
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {

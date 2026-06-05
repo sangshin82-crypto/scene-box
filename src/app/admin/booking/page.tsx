@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Phone } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
-import { sendAlimtalk, ALIMTALK_TEMPLATES } from '@/app/lib/alimtalk';
+import { requestAlimtalk } from '@/app/lib/alimtalk-client';
 
 type Space = {
   id: string;
@@ -309,7 +309,7 @@ export default function BookingManagement() {
                         const customerPhone = clientRow?.contact_phone ?? '';
 
                         if (customerPhone && driverPhone && visitTime) {
-                          await sendAlimtalk(customerPhone, ALIMTALK_TEMPLATES.TRANSPORT_DONE, {
+                          await requestAlimtalk(customerPhone, "TRANSPORT_DONE", {
                             고객명:     t.clients?.name ?? '고객',
                             방문일시:   visitTime,
                             기사연락처: driverPhone,

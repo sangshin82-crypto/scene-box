@@ -8,7 +8,7 @@ import {
   PersonStanding, UserCheck,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
-import { sendAlimtalk, ALIMTALK_TEMPLATES } from "@/app/lib/alimtalk";
+import { requestAlimtalk } from "@/app/lib/alimtalk-client";
 
 const BLUE = "#2563EB";
 
@@ -106,7 +106,7 @@ export default function TransportPage() {
 
       // 고객에게 카카오 알림톡 발송 (배차 신청 완료)
       if (clientPhone) {
-        await sendAlimtalk(clientPhone, ALIMTALK_TEMPLATES.TRANSPORT_REQUEST, {
+        await requestAlimtalk(clientPhone, "TRANSPORT_REQUEST", {
           고객명:   clientName,
           배차내용: `${truck} 트럭 / 출발지 ${origin}`,
           희망일시: `${date} ${time}`,
