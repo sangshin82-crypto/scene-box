@@ -219,19 +219,20 @@ export async function POST(req: NextRequest) {
 
     const clientName = clientData?.name ?? '고객';
 
-    // 텔레그램 알림
+    // 텔레그램 알림 (서버에서 직접 호출)
     try {
-      await fetch(`${req.nextUrl.origin}/api/notify`, {
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message:
-            `🎉 <b>그리드 예약 및 결제 완료 (NHN KCP)</b>\n\n` +
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          parse_mode: 'HTML',
+          text:
+            `💳 <b>결제 완료!</b>\n\n` +
             `👤 고객명: ${clientName}\n` +
             `📦 예약 공간: ${gridList.join(', ')} (${gridList.length} Grid)\n` +
-            `💰 결제 금액: ${Number(amount).toLocaleString('ko-KR')}원\n` +
-            `💳 결제 방법: ${portoneData.method ?? '카드'}\n` +
-            `🆔 결제 ID: ${paymentId}` +
+            `💰 결제 금액: ${Number(amount).toLocaleString('ko-KR')}원 (VAT 포함)\n` +
+            `💳 결제 방법: 카드` +
             (uploadedUrl ? `\n📎 사업자등록증: 첨부됨` : ''),
         }),
       });

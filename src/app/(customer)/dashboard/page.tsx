@@ -76,15 +76,20 @@ export default function DashboardPage() {
 
       const name = clientData?.name ?? user.user_metadata?.name ?? user.user_metadata?.full_name ?? "이름 없음";
       const isNew = user.created_at === user.last_sign_in_at;
-      fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: isNew
-            ? `🆕 <b>신규 고객 가입!</b>\n\n👤 이름: ${name}\n🕐 가입일: ${new Date().toLocaleDateString("ko-KR")}`
-            : `🔄 <b>기존 고객 로그인</b>\n\n👤 이름: ${name}\n🕐 로그인: ${new Date().toLocaleDateString("ko-KR")}`
-        }),
-      });
+      // 세션당 1회만 알림 (탭 이동 시 반복 발송 방지)
+      const notifyKey = `login_notified_${user.id}`;
+      if (!sessionStorage.getItem(notifyKey)) {
+        sessionStorage.setItem(notifyKey, "1");
+        fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: isNew
+              ? `🆕 <b>신규 고객 가입!</b>\n\n👤 이름: ${name}\n🕐 가입일: ${new Date().toLocaleDateString("ko-KR")}`
+              : `🔄 <b>기존 고객 로그인</b>\n\n👤 이름: ${name}\n🕐 로그인: ${new Date().toLocaleDateString("ko-KR")}`
+          }),
+        });
+      }
 
       const { data: spacesData } = await supabase
         .from("spaces")
