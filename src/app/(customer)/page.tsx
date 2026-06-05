@@ -119,6 +119,17 @@ const closePromoToday = () => {
           margin-top: 34px; display: flex; gap: 16px;
           opacity: 0; animation: lpFadeUp 0.8s ease 1s forwards; z-index: 2;
         }
+        .lp .hero-nav {
+          margin-bottom: 28px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+          opacity: 0; animation: lpFadeUp 0.8s ease 0.3s forwards; z-index: 2;
+        }
+        .lp .hero-nav button {
+          font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800;
+          letter-spacing: 1.5px; color: ${BLUE}; background: rgba(255,255,255,0.7);
+          border: 1.5px solid ${BLUE}; border-radius: 100px; padding: 9px 20px;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .lp .hero-nav button:hover { background: ${BLUE}; color: #fff; }
         .lp .btn-primary {
           background: ${BLUE}; color: #fff; border: none; font-family: 'Gothic A1', sans-serif;
           font-weight: 800; font-size: 17px; padding: 18px 44px; border-radius: 100px;
@@ -271,17 +282,21 @@ const closePromoToday = () => {
       <div className="lp">
         {/* NAV */}
         <nav>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div className="logo">SCENE<span className="box"></span>BOX</div>
-            <span style={{ fontFamily: "'Archivo',sans-serif", fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>문의 070-8057-6783</span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>씬박스 문의 070-8057-6783</span>
           </div>
           <button className="nav-cta" onClick={openModal}>예약하기</button>
         </nav>
 
         {/* HERO */}
         <header className="hero">
+          <div className="hero-nav">
+            <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
+            <button onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}>REAL CASES</button>
+            <button onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>PRICING</button>
+          </div>
           <img className="hero-img" src="/images/hero.png" alt="공간에 맞추지 말고 짐에 맞춰 보관하세요 - SCENE BOX" />
-          <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 대형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
+          <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
           <div className="hero-cta">
             <button className="btn-primary" onClick={openModal}>보관 예약하기</button>
           </div>
@@ -296,7 +311,7 @@ const closePromoToday = () => {
         <section className="module" id="module">
           <div className="module-inner">
             <div className="section-label mono reveal">THE SYSTEM</div>
-            <h2 className="reveal">원하는 만큼, 원하는 크기로.<br /><span className="yellow">배차부터 보관까지 원스톱으로.</span></h2>
+            <h2 className="reveal">원하는 만큼,<br />원하는 크기로.<br /><span className="yellow">배차부터 보관까지,<br />원스톱으로.</span></h2>
             <div className="module-grid">
               <div className="mod-card reveal">
                 <div className="num mono">01</div>
