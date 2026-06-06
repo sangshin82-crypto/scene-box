@@ -153,7 +153,7 @@ export default function BookingPage() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, paddingLeft: 30, marginBottom: 14 }}>
               <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>예약할 공간을 선택해주세요.</p>
-              <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>(1 Grid = 1.2평 / 1 Pallet = 1.1m×1.1m)</p>
+              <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>(1 Grid = 3 Pallet = 1.2평 / 1 Pallet = 1.1m×1.1m)</p>
               <p style={{ fontSize: 11, color: "#94A3B8", margin: 0 }}>※ 비규격 화물은 전화 문의: 070-8057-6783</p>
             </div>
 
@@ -175,7 +175,7 @@ export default function BookingPage() {
               {Object.entries(ZONES).map(([zone, rows], zoneIdx) => {
                 const zoneColor = zone === "A" ? BLUE : zone === "B" ? GREEN : ORANGE;
                 const zoneName = zone === "P" ? "파레트존" : `${zone}존 (그리드)`;
-                const zonePrice = zone === "P" ? "50,000원/월" : "120,000원/월";
+                const zonePrice = zone === "P" ? "50,000원/월 · 1.1m×1.1m" : "120,000원/월 · 3 Pallet(1.2평)";
                 
                 return (
                   <div key={zone} style={{ marginBottom: zoneIdx < Object.keys(ZONES).length - 1 ? 20 : 0 }}>
