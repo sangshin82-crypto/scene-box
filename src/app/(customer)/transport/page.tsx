@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft, X, MapPin, Warehouse, ArrowUpDown,
@@ -51,7 +51,8 @@ const sendTelegramNotification = async (message: string) => {
 
 export default function TransportPage() {
   const router = useRouter();
-  const [origin, setOrigin]     = useState("");
+  const [origin, setOrigin]         = useState("");      // 기본주소 (검색)
+  const [originDetail, setOriginDetail] = useState("");  // 상세주소 (직접 입력)
   const [date, setDate]         = useState("");
   const [time, setTime]         = useState("");
   const [truck, setTruck]       = useState("2.5t");
@@ -61,6 +62,30 @@ export default function TransportPage() {
   const [swapped, setSwapped]   = useState(false);
   const [fareOpen, setFareOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 다음 우편번호 스크립트 로드
+  useEffect(() => {
+    const SCRIPT_SRC = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+    if (document.querySelector(`script[src="${SCRIPT_SRC}"]`)) return;
+    const script = document.createElement("script");
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  // 주소 검색 팝업 열기
+  const openAddressSearch = () => {
+    const daum = (window as any).daum;
+    if (!daum || !daum.Postcode) {
+      alert("주소 검색 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    new daum.Postcode({
+      oncomplete: (data: any) => {
+        setOrigin(data.roadAddress || data.jibunAddress);
+      },
+    }).open();
+  };
 
   const canSubmit = Boolean(origin.trim() && date && time && agreed);
 
@@ -78,11 +103,13 @@ export default function TransportPage() {
 
     const scheduledAt = new Date(`${date}T${time}:00`).toISOString();
 
+    const fullOrigin = originDetail.trim() ? `${origin} ${originDetail.trim()}` : origin;
+
     const { error } = await supabase
       .from("transport_requests")
       .insert({
         client_id:      clientId,
-        origin_address: origin,
+        origin_address: fullOrigin,
         destination: "경기도 용인시 처인구 모현읍 곡현로 734",
         scheduled_at:   scheduledAt,
         truck_type:     truck,
@@ -97,7 +124,7 @@ export default function TransportPage() {
       await sendTelegramNotification(
         `🚛 <b>배차 요청 접수!</b>\n\n` +
         `👤 고객명: ${clientName}\n` +
-        `📍 출발지: ${origin}\n` +
+        `📍 출발지: ${fullOrigin}\n` +
         `🚚 차량: ${truck} 트럭\n` +
         `📅 일정: ${date} ${time}\n` +
         `➕ 옵션: ${extraOption ?? "없음"}\n` +
@@ -108,7 +135,7 @@ export default function TransportPage() {
       if (clientPhone) {
         await requestAlimtalk(clientPhone, "TRANSPORT_REQUEST", {
           고객명:   clientName,
-          배차내용: `${truck} 트럭 / 출발지 ${origin}`,
+          배차내용: `${truck} 트럭 / 출발지 ${fullOrigin}`,
           희망일시: `${date} ${time}`,
         });
       }
@@ -119,11 +146,25 @@ export default function TransportPage() {
   };
 
   const originField = (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", borderRadius: 12, border: "1.5px solid #D1E8DF", padding: "13px 14px" }}>
-      <MapPin size={17} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0 }} />
-      <input value={origin} onChange={e => setOrigin(e.target.value)}
-        placeholder="출발지 주소를 입력해주세요"
-        style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: "#0F172A", background: "transparent" }} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div onClick={openAddressSearch}
+          style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, background: "#fff", borderRadius: 12, border: "1.5px solid #D1E8DF", padding: "13px 14px", cursor: "pointer" }}>
+          <MapPin size={17} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 14, color: origin ? "#0F172A" : "#94A3B8" }}>
+            {origin || "주소 검색"}
+          </span>
+        </div>
+        <button type="button" onClick={openAddressSearch}
+          style={{ flexShrink: 0, padding: "13px 14px", borderRadius: 12, border: "none", background: BLUE, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+          검색
+        </button>
+      </div>
+      {origin && (
+        <input value={originDetail} onChange={e => setOriginDetail(e.target.value)}
+          placeholder="상세주소 입력 (동·호수 등)"
+          style={{ width: "100%", boxSizing: "border-box", background: "#fff", borderRadius: 12, border: "1.5px solid #D1E8DF", padding: "13px 14px", fontSize: 14, color: "#0F172A", outline: "none" }} />
+      )}
     </div>
   );
 
