@@ -10,10 +10,10 @@ const FROM = "01028978524"; // 솔라피 등록 발신번호 (하이픈 없이)
 
 // 알림톡 템플릿 코드
 export const ALIMTALK_TEMPLATES = {
-  RESERVATION:       "INXmLQvKHx", // 보관 예약 완료
-  TRANSPORT_REQUEST: "kmJkowC02J", // 배차 신청 완료
-  DISPOSAL_REQUEST:  "e30JXaWA4O", // 폐기 신청 완료
-  TRANSPORT_DONE:    "gHVi3K7vP5", // 배차 완료
+  RESERVATION:       "KA01TP260605175843743wW0WAZNfyig", // 보관 예약 완료
+  TRANSPORT_REQUEST: "KA01TP260605180121091ji097aBKJEs", // 배차 신청 완료
+  DISPOSAL_REQUEST:  "KA01TP260605180221524pqnyEFGenB3", // 폐기 신청 완료
+  TRANSPORT_DONE:    "KA01TP260605180341993HevZzFUfyJe", // 배차 완료
 } as const;
 
 export type TemplateKey = keyof typeof ALIMTALK_TEMPLATES;
