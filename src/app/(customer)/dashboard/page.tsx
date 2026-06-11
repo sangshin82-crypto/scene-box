@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Menu, Bell, Package, Truck, Scale,
+  Menu, LogOut, Package, Truck, Scale,
   CheckCircle2, CalendarClock, Trash2,
-  ChevronRight, MessageCircle,
+  ChevronRight, MessageCircle, X,
+  CreditCard,
 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
@@ -51,6 +52,21 @@ export default function DashboardPage() {
   const [monthlyBill, setMonthlyBill] = useState<number>(0);
   const [nextPayDate, setNextPayDate] = useState<string>("");
   const [isLoading, setIsLoading]     = useState(true);
+  const [drawerOpen, setDrawerOpen]   = useState(false);
+
+  const menuItems = [
+    { label: "공간 예약", icon: Package, route: "/booking" },
+    { label: "차량 배차", icon: Truck, route: "/transport" },
+    { label: "폐기 요청", icon: Scale, route: "/disposal" },
+    { label: "내 보관함", icon: CheckCircle2, route: "/inventory" },
+    { label: "정산", icon: CreditCard, route: "/billing" },
+  ];
+
+  const handleLogout = async () => {
+    if (!window.confirm("로그아웃 하시겠어요?")) return;
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -182,7 +198,7 @@ export default function DashboardPage() {
         {/* 헤더 */}
         <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }}
           className="sticky top-0 z-50 flex items-center justify-between px-5 py-4">
-          <button className="rounded-lg p-1" style={{ color: "#374151" }}>
+          <button className="rounded-lg p-1" style={{ color: "#374151" }} onClick={() => setDrawerOpen(true)}>
             <Menu size={22} strokeWidth={1.5} />
           </button>
           <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -190,11 +206,58 @@ export default function DashboardPage() {
             <span style={{ width: 15, height: 15, border: "2.5px solid #0A0A0A", borderRadius: 2, display: "inline-block" }} />
             <span style={{ fontSize: 18, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>BOX</span>
           </span>
-          <button className="relative rounded-lg p-1" style={{ color: "#374151" }}>
-            <Bell size={22} strokeWidth={1.5} />
-            <span style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: "50%", background: "#EF4444", border: "1.5px solid #F0F7F4" }} />
+          <button className="rounded-lg p-1" style={{ color: "#374151" }} onClick={handleLogout}>
+            <LogOut size={22} strokeWidth={1.5} />
           </button>
         </header>
+
+        {/* 좌측 슬라이드 드로어 */}
+        {drawerOpen && (
+          <div onClick={() => setDrawerOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(10,10,10,0.45)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: 430, position: "relative" }}>
+              <div onClick={(e) => e.stopPropagation()}
+                style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: 270, background: "#fff", boxShadow: "4px 0 24px rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", animation: "drawerIn 0.25s cubic-bezier(0.16,1,0.3,1)" }}>
+                <style>{`@keyframes drawerIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }`}</style>
+
+                {/* 드로어 헤더 */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 20px 16px", borderBottom: "0.5px solid #E5E7EB" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>SCENE</span>
+                    <span style={{ width: 13, height: 13, border: "2.5px solid #0A0A0A", borderRadius: 2, display: "inline-block" }} />
+                    <span style={{ fontSize: 16, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>BOX</span>
+                  </span>
+                  <button onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94A3B8", padding: 2 }}>
+                    <X size={20} strokeWidth={1.8} />
+                  </button>
+                </div>
+
+                {/* 메뉴 목록 */}
+                <div style={{ flex: 1, padding: "12px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
+                  {menuItems.map(({ label, icon: Icon, route }) => (
+                    <button key={route}
+                      onClick={() => { setDrawerOpen(false); router.push(route); }}
+                      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", background: "none", border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left", width: "100%" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#F0F7F4")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "none")}>
+                      <Icon size={20} color="#374151" strokeWidth={1.6} />
+                      <span style={{ fontSize: 15, fontWeight: 600, color: "#0F172A" }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* 로그아웃 */}
+                <div style={{ padding: "12px", borderTop: "0.5px solid #E5E7EB" }}>
+                  <button onClick={() => { setDrawerOpen(false); handleLogout(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", background: "none", border: "none", borderRadius: 12, cursor: "pointer", textAlign: "left", width: "100%" }}>
+                    <LogOut size={20} color="#EF4444" strokeWidth={1.6} />
+                    <span style={{ fontSize: 15, fontWeight: 600, color: "#EF4444" }}>로그아웃</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-4 px-4" style={{ paddingTop: 52 }}>
 
