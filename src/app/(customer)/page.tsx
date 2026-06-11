@@ -375,7 +375,7 @@ const closePromoToday = () => {
                   <span>전화 상담</span><i>→</i><span>견적 확인</span><i>→</i><span>결제</span>
                 </div>
                 <p className="howto-note">법인·개인카드, 사업자지출증빙, 세금계산서 결제 가능</p>
-                <a className="howto-btn howto-btn-b" href="tel:07080576783">전화 상담하기 070-8057-6783</a>
+                <a className="howto-btn howto-btn-b" href="tel:07080576783">전화 바로 연결 →</a>
               </div>
 
             </div>
