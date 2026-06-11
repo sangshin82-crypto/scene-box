@@ -177,9 +177,9 @@ export default function DashboardPage() {
   const dday      = nextPayDate ? getDday(nextPayDate) : null;
 
   const quickActions = [
-    { id: "store", icon: Package, label: "공간 예약", sub: "그리드 선택 및 보관 공간 예약", color: BLUE,   bg: "#EFF6FF", iconBg: "#DBEAFE", route: "/booking"   },
-    { id: "truck", icon: Truck,   label: "차량 배차", sub: "픽업·납품 차량 즉시 신청",     color: GREEN,  bg: "#ECFDF5", iconBg: "#D1FAE5", route: "/transport" },
-    { id: "scale", icon: Scale,   label: "폐기 요청", sub: "폐기물 처리 및 정산 신청",     color: PURPLE, bg: "#F5F3FF", iconBg: "#EDE9FE", route: "/disposal"  },
+    { id: "store", icon: Package, label: "공간 예약", sub: "그리드 선택 및 보관 공간 예약", grad: "linear-gradient(135deg, #2563EB, #1D4ED8)", shadow: "rgba(37,99,235,0.35)",  route: "/booking"   },
+    { id: "truck", icon: Truck,   label: "차량 배차", sub: "픽업·납품 차량 즉시 신청",     grad: "linear-gradient(135deg, #10B981, #059669)", shadow: "rgba(16,185,129,0.35)", route: "/transport" },
+    { id: "scale", icon: Scale,   label: "폐기 요청", sub: "폐기물 처리 및 정산 신청",     grad: "linear-gradient(135deg, #7C3AED, #6D28D9)", shadow: "rgba(124,58,237,0.35)", route: "/disposal"  },
   ];
 
   if (isLoading) {
@@ -326,18 +326,18 @@ export default function DashboardPage() {
           {/* 예약하기 */}
           <div>
             <p style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", marginBottom: 10, paddingLeft: 2, letterSpacing: "0.5px" }}>예약하기</p>
-            <div className="flex flex-col gap-2">
-              {quickActions.map(({ id, icon: Icon, label, sub, color, bg, iconBg, route }) => (
+            <div className="flex flex-col gap-3">
+              {quickActions.map(({ id, icon: Icon, label, sub, grad, shadow, route }) => (
                 <button key={id} onClick={() => router.push(route)}
-                  style={{ background: bg, borderRadius: 16, padding: "14px 16px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "none", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left", width: "100%" }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon size={20} color={color} strokeWidth={1.5} />
+                  style={{ background: grad, borderRadius: 18, padding: "18px 18px", boxShadow: `0 6px 18px ${shadow}`, border: "none", display: "flex", alignItems: "center", gap: 16, cursor: "pointer", textAlign: "left", width: "100%" }}>
+                  <div style={{ width: 50, height: 50, borderRadius: 14, background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon size={24} color="#fff" strokeWidth={2} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 16, fontWeight: 800, color: color, marginBottom: 2 }}>{label}</p>
-                    <p style={{ fontSize: 11, color: "#64748B" }}>{sub}</p>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 3 }}>{label}</p>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)" }}>{sub}</p>
                   </div>
-                  <ChevronRight size={16} color="#CBD5E1" strokeWidth={1.5} />
+                  <ChevronRight size={20} color="rgba(255,255,255,0.7)" strokeWidth={2} />
                 </button>
               ))}
             </div>
