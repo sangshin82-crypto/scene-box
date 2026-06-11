@@ -185,7 +185,7 @@ const closePromoToday = () => {
         .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
         .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
         .lp .howto-btn-a { background: #fff; color: ${BLUE}; }
-        .lp .howto-btn-b { background: ${INK}; color: #fff; }
+        .lp .howto-btn-b { background: ${BLUE_DEEP}; color: #fff; }
 
         /* MODULE */
         .lp .module { background: ${BLUE}; color: #fff; padding: 140px 48px; position: relative; overflow: hidden; }
