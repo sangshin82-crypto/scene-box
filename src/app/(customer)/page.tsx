@@ -126,13 +126,13 @@ const closePromoToday = () => {
         .lp .hero-nav button {
           font-family: 'Archivo', sans-serif; font-size: clamp(9px, 2.6vw, 12px); font-weight: 800;
           letter-spacing: 0.5px; color: ${BLUE}; background: rgba(255,255,255,0.7);
-          border: 1.5px solid ${BLUE}; border-radius: 100px; padding: 8px clamp(10px, 3vw, 20px);
+          border: 1.5px solid ${BLUE}; border-radius: 4px; padding: 8px clamp(10px, 3vw, 20px);
           cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
         .lp .hero-nav button:hover { background: ${BLUE}; color: #fff; }
         .lp .btn-primary {
           background: ${BLUE}; color: #fff; border: none; font-family: 'Gothic A1', sans-serif;
-          font-weight: 800; font-size: 17px; padding: 18px 44px; border-radius: 100px;
+          font-weight: 800; font-size: 17px; padding: 18px 44px; border-radius: 4px;
           cursor: pointer; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
           box-shadow: 0 8px 28px rgba(26,54,232,0.32);
         }
