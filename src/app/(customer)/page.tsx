@@ -167,8 +167,8 @@ const closePromoToday = () => {
         .lp .howto-tag { font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; opacity: 0.85; }
         .lp .howto-a .howto-tag { color: ${YELLOW}; opacity: 1; }
         .lp .howto-b .howto-tag { color: ${BLUE_DEEP}; }
-        .lp .howto-card h3 { font-family: 'Gothic A1', sans-serif; font-weight: 900; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; }
-        .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; }
+        .lp .howto-card h3 { font-family: 'Gothic A1', sans-serif; font-weight: 900; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; word-break: keep-all; }
+        .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; word-break: keep-all; }
         .lp .howto-a .howto-desc { font-weight: 500; }
         .lp .howto-b .howto-desc { font-weight: 700; }
         .lp .howto-a .howto-desc { color: rgba(255,255,255,0.9); }
@@ -180,7 +180,7 @@ const closePromoToday = () => {
         .lp .howto-a .howto-flow span { background: rgba(255,255,255,0.16); color: #fff; }
         .lp .howto-b .howto-flow span { background: rgba(15,31,143,0.1); color: ${BLUE_DEEP}; font-weight: 800; }
         .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
-        .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; }
+        .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; word-break: keep-all; line-height: 1.6; }
         .lp .howto-b .howto-note { font-weight: 700; opacity: 0.9; }
         .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
         .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
@@ -375,7 +375,7 @@ const closePromoToday = () => {
                 <div className="howto-flow">
                   <span>전화 상담</span><i>→</i><span>견적 확인</span><i>→</i><span>결제</span>
                 </div>
-                <p className="howto-note">짐 종류·크기에 맞춰 1:1로 상담해 드려요</p>
+                <p className="howto-note">짐 종류·크기에 맞춰 1:1로 상담해 드려요<br />법인·개인카드, 사업자지출증빙, 세금계산서 결제 가능</p>
                 <a className="howto-btn howto-btn-b" href="tel:07080576783">전화 상담하기 070-8057-6783</a>
               </div>
 
