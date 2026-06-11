@@ -150,6 +150,40 @@ const closePromoToday = () => {
         }
         .lp .hero-strip .marquee span::after { content: "◆"; color: ${BLUE}; font-size: 9px; }
 
+        /* HOW IT WORKS */
+        .lp .howto { background: ${BEIGE}; padding: 130px 48px; }
+        .lp .howto-inner { max-width: 1080px; margin: 0 auto; }
+        .lp .howto .head { text-align: center; margin-bottom: 56px; }
+        .lp .howto .section-label { color: ${BLUE}; opacity: 1; }
+        .lp .howto h2 { font-family: 'Gothic A1', sans-serif; font-weight: 900; letter-spacing: -0.5px; font-size: clamp(30px, 4.2vw, 56px); color: ${INK}; line-height: 1.15; margin-top: 14px; }
+        .lp .howto-lead { font-size: clamp(14px, 1.6vw, 17px); font-weight: 600; color: #555; margin-top: 14px; }
+        .lp .howto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+        .lp .howto-card { border-radius: 22px; padding: 40px 34px; display: flex; flex-direction: column; transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s; }
+        .lp .howto-card:hover { transform: translateY(-8px); }
+        .lp .howto-a { background: ${BLUE}; color: #fff; box-shadow: 0 10px 30px rgba(26,54,232,0.25); }
+        .lp .howto-a:hover { box-shadow: 0 18px 44px rgba(26,54,232,0.38); }
+        .lp .howto-b { background: ${YELLOW}; color: ${INK}; box-shadow: 0 10px 30px rgba(255,212,0,0.3); }
+        .lp .howto-b:hover { box-shadow: 0 18px 44px rgba(255,212,0,0.45); }
+        .lp .howto-tag { font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; opacity: 0.85; }
+        .lp .howto-a .howto-tag { color: ${YELLOW}; opacity: 1; }
+        .lp .howto-b .howto-tag { color: ${BLUE_DEEP}; }
+        .lp .howto-card h3 { font-family: 'Gothic A1', sans-serif; font-weight: 900; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; }
+        .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; }
+        .lp .howto-a .howto-desc { color: rgba(255,255,255,0.9); }
+        .lp .howto-a .howto-desc strong { color: #fff; }
+        .lp .howto-b .howto-desc { color: #3A3A36; }
+        .lp .howto-b .howto-desc strong { color: ${INK}; }
+        .lp .howto-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 16px; }
+        .lp .howto-flow span { font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
+        .lp .howto-a .howto-flow span { background: rgba(255,255,255,0.16); color: #fff; }
+        .lp .howto-b .howto-flow span { background: rgba(10,10,10,0.07); color: ${INK}; }
+        .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
+        .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; }
+        .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
+        .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
+        .lp .howto-btn-a { background: #fff; color: ${BLUE}; }
+        .lp .howto-btn-b { background: ${INK}; color: #fff; }
+
         /* MODULE */
         .lp .module { background: ${BLUE}; color: #fff; padding: 140px 48px; position: relative; overflow: hidden; }
         .lp .module::before {
@@ -265,6 +299,8 @@ const closePromoToday = () => {
 
         @media (max-width: 880px) {
           .lp nav { padding: 18px 24px; }
+          .lp .howto-grid { grid-template-columns: 1fr; }
+          .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
           .lp .gallery-grid { grid-template-columns: 1fr; }
           .lp .price-grid { grid-template-columns: 1fr; }
@@ -307,6 +343,42 @@ const closePromoToday = () => {
             </div>
           </div>
         </header>
+
+        {/* HOW IT WORKS */}
+        <section className="howto" id="howto">
+          <div className="howto-inner">
+            <div className="head reveal">
+              <div className="section-label mono">HOW IT WORKS</div>
+              <h2>어떻게 이용하고 싶으세요?</h2>
+              <p className="howto-lead">두 가지 방법 중 편한 쪽을 선택하세요.</p>
+            </div>
+            <div className="howto-grid">
+
+              <div className="howto-card howto-a reveal">
+                <div className="howto-tag">공간을 직접 빌려요</div>
+                <h3>공간을 직접 빌려<br />자유롭게 쓰고 싶다면</h3>
+                <p className="howto-desc">전용 공간을 확보해 <strong>우리 회사 창고처럼.</strong> 필요할 때마다 자유롭게 짐을 넣고 빼세요.</p>
+                <div className="howto-flow">
+                  <span>로그인</span><i>→</i><span>최초 1회 정보 등록</span><i>→</i><span>공간·차량·폐기 신청</span><i>→</i><span>기간·결제</span>
+                </div>
+                <p className="howto-note">법인·개인카드, 사업자지출증빙, 세금계산서 결제 가능</p>
+                <button className="howto-btn howto-btn-a" onClick={openModal}>보관 예약하기 →</button>
+              </div>
+
+              <div className="howto-card howto-b reveal">
+                <div className="howto-tag">먼저 상담받아요</div>
+                <h3>짐 크기가<br />가늠 안 된다면</h3>
+                <p className="howto-desc">비정형·대형·일회성 화물, <strong>얼마나 들어갈지 모를 때.</strong> 전화 주시면 맞춰서 안내해 드립니다.</p>
+                <div className="howto-flow">
+                  <span>전화 상담</span><i>→</i><span>견적 확인</span><i>→</i><span>결제</span>
+                </div>
+                <p className="howto-note">짐 종류·크기에 맞춰 1:1로 상담해 드려요</p>
+                <a className="howto-btn howto-btn-b" href="tel:07080576783">전화 상담하기 070-8057-6783</a>
+              </div>
+
+            </div>
+          </div>
+        </section>
 
         {/* MODULE */}
         <section className="module" id="module">
@@ -392,10 +464,7 @@ const closePromoToday = () => {
             <div className="reveal" style={{ marginTop: 32, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 16, padding: "24px 28px", maxWidth: 1000, marginLeft: "auto", marginRight: "auto" }}>
               <p style={{ fontFamily: "'Archivo',sans-serif", fontSize: 12, fontWeight: 800, letterSpacing: 2, color: YELLOW, marginBottom: 14 }}>STORAGE GUIDE</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.85)", lineHeight: 1.7 }}>
-                  <span style={{ color: YELLOW, fontWeight: 800, marginRight: 8 }}>·</span>
-                  보관할 짐의 사이즈가 가늠되지 않으면, 먼저 <strong style={{ color: "#fff", fontWeight: 800 }}>최소 단위(파레트)로 예약</strong>하세요. 입고 후 실제 부피를 확인해 정산해 드립니다.
-                </p>
+
                 <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.85)", lineHeight: 1.7 }}>
                   <span style={{ color: YELLOW, fontWeight: 800, marginRight: 8 }}>·</span>
                   이삿짐 등 <strong style={{ color: "#fff", fontWeight: 800 }}>개인 단기 화물은 별도 문의</strong> 바랍니다. (070-8057-6783)
