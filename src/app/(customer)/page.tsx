@@ -601,6 +601,31 @@ const closePromoToday = () => {
   </div>
 )}
 
+{/* 카카오톡 플로팅 버튼 */}
+
+href="http://pf.kakao.com/_ngBCX/chat"
+  target="_blank"
+  rel="noopener noreferrer"
+  style={{
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    zIndex: 1500,
+    background: "#FEE500",
+    borderRadius: 100,
+    padding: "14px 20px",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    textDecoration: "none",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+    fontFamily: "'Gothic A1','Apple SD Gothic Neo',sans-serif",
+  }}
+>
+  <span style={{ fontSize: 18 }}>💬</span>
+  <span style={{ fontSize: 14, fontWeight: 800, color: "#191600", whiteSpace: "nowrap" }}>카카오톡 문의</span>
+</a>
+
 {lightbox && (
   <div
     onClick={() => setLightbox(null)}
