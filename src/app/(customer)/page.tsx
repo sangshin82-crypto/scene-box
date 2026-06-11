@@ -169,6 +169,8 @@ const closePromoToday = () => {
         .lp .howto-b .howto-tag { color: ${BLUE_DEEP}; }
         .lp .howto-card h3 { font-family: 'Gothic A1', sans-serif; font-weight: 900; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; }
         .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; }
+        .lp .howto-a .howto-desc { font-weight: 500; }
+        .lp .howto-b .howto-desc { font-weight: 700; }
         .lp .howto-a .howto-desc { color: rgba(255,255,255,0.9); }
         .lp .howto-a .howto-desc strong { color: #fff; }
         .lp .howto-b .howto-desc { color: ${BLUE_DEEP}; }
@@ -176,9 +178,10 @@ const closePromoToday = () => {
         .lp .howto-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 16px; }
         .lp .howto-flow span { font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
         .lp .howto-a .howto-flow span { background: rgba(255,255,255,0.16); color: #fff; }
-        .lp .howto-b .howto-flow span { background: rgba(15,31,143,0.1); color: ${BLUE_DEEP}; }
+        .lp .howto-b .howto-flow span { background: rgba(15,31,143,0.1); color: ${BLUE_DEEP}; font-weight: 800; }
         .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
         .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; }
+        .lp .howto-b .howto-note { font-weight: 700; opacity: 0.9; }
         .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
         .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
         .lp .howto-btn-a { background: #fff; color: ${BLUE}; }
