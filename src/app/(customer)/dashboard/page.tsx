@@ -375,7 +375,7 @@ export default function DashboardPage() {
           <div style={{ background: "#FFFDF0", borderRadius: 18, border: "1px solid #FDE68A", padding: "18px 18px" }}>
             <p style={{ fontSize: 14, fontWeight: 800, color: "#1A1A1A", marginBottom: 6 }}>💡 계약 종료 및 예약 변경 안내</p>
             <p style={{ fontSize: 12, color: "#78716C", lineHeight: 1.7, marginBottom: 14 }}>
-              보관 계약 종료(짐 빼기) 신청, 배차 시간 변경 등 모든 문의는 카카오톡을 통해 즉시 처리해 드립니다.
+              보관 계약 종료(짐 빼기) 신청, 예약 취소, 배차 시간 변경 등 모든 문의는 카카오톡을 통해 즉시 처리해 드립니다.
             </p>
             <button
               onClick={() => window.open(KAKAO_CHAT_URL, '_blank')}
@@ -392,7 +392,7 @@ export default function DashboardPage() {
           onClick={() => window.open(KAKAO_CHAT_URL, '_blank')}
           style={{ position: "fixed", bottom: 84, right: "max(16px, calc(50% - 215px + 16px))", background: "#FEE500", border: "none", borderRadius: 99, padding: "11px 18px", display: "flex", alignItems: "center", gap: 7, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 90 }}>
           <MessageCircle size={16} color="#191600" strokeWidth={2} fill="#191600" />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#191600", whiteSpace: "nowrap" }}>반출/변경/기타 문의</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "#191600", whiteSpace: "nowrap" }}>반출/변경/취소/기타 문의</span>
         </button>
 
       </div>
