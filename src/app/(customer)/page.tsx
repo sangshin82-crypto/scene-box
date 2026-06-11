@@ -180,7 +180,7 @@ const closePromoToday = () => {
         .lp .howto-a .howto-flow span { background: rgba(255,255,255,0.16); color: #fff; }
         .lp .howto-b .howto-flow span { background: rgba(15,31,143,0.1); color: ${BLUE_DEEP}; font-weight: 800; }
         .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
-        .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; word-break: keep-all; line-height: 1.6; }
+        .lp .howto-note { font-size: 11px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; line-height: 1.6; white-space: nowrap; }
         .lp .howto-b .howto-note { font-weight: 700; opacity: 0.9; }
         .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
         .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
