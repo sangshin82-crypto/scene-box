@@ -164,8 +164,8 @@ const closePromoToday = () => {
         .lp .howto-a:hover { box-shadow: 0 18px 44px rgba(26,54,232,0.38); }
         .lp .howto-b { background: ${YELLOW}; color: ${BLUE_DEEP}; box-shadow: 0 10px 30px rgba(255,212,0,0.3); }
         .lp .howto-b:hover { box-shadow: 0 18px 44px rgba(255,212,0,0.45); }
-        .lp .howto-tag { font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; opacity: 0.85; }
-        .lp .howto-a .howto-tag { color: ${YELLOW}; opacity: 1; }
+        .lp .howto-tag { font-size: 12px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 18px; display: inline-block; align-self: flex-start; background: #fff; padding: 6px 14px; border-radius: 4px; }
+        .lp .howto-a .howto-tag { color: ${BLUE}; }
         .lp .howto-b .howto-tag { color: ${BLUE_DEEP}; }
         .lp .howto-card h3 { font-family: 'Gothic A1', sans-serif; font-weight: 900; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; word-break: keep-all; }
         .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; word-break: keep-all; }
