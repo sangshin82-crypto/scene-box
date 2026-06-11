@@ -370,7 +370,7 @@ const closePromoToday = () => {
               <div className="howto-card howto-b reveal">
                 <div className="howto-tag">먼저 상담받아요</div>
                 <h3>짐 크기가<br />가늠 안 된다면</h3>
-                <p className="howto-desc">비정형·대형·일회성 화물, <strong>얼마나 들어갈지 모를 때.</strong> 전화 주시면 맞춰서 안내해 드립니다.</p>
+                <p className="howto-desc">우리 짐이 <strong>얼마나 들어갈지 모를 때.</strong><br />전화 주시면 맞춰서 안내해 드립니다.</p>
                 <div className="howto-flow">
                   <span>전화 상담</span><i>→</i><span>견적 확인</span><i>→</i><span>결제</span>
                 </div>
