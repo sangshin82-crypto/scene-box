@@ -602,7 +602,7 @@ const closePromoToday = () => {
 )}
 
 {/* 카카오톡 플로팅 버튼 */}
-
+<a
 href="http://pf.kakao.com/_ngBCX/chat"
   target="_blank"
   rel="noopener noreferrer"
