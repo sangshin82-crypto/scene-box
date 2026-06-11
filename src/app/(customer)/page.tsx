@@ -388,6 +388,20 @@ const closePromoToday = () => {
                 </ul>
               </div>
             </div>
+
+            <div className="reveal" style={{ marginTop: 32, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 16, padding: "24px 28px", maxWidth: 1000, marginLeft: "auto", marginRight: "auto" }}>
+              <p style={{ fontFamily: "'Archivo',sans-serif", fontSize: 12, fontWeight: 800, letterSpacing: 2, color: YELLOW, marginBottom: 14 }}>STORAGE GUIDE</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.85)", lineHeight: 1.7 }}>
+                  <span style={{ color: YELLOW, fontWeight: 800, marginRight: 8 }}>·</span>
+                  보관할 짐의 사이즈가 가늠되지 않으면, 먼저 <strong style={{ color: "#fff", fontWeight: 800 }}>최소 단위(파레트)로 예약</strong>하세요. 입고 후 실제 부피를 확인해 정산해 드립니다.
+                </p>
+                <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.85)", lineHeight: 1.7 }}>
+                  <span style={{ color: YELLOW, fontWeight: 800, marginRight: 8 }}>·</span>
+                  이삿짐 등 <strong style={{ color: "#fff", fontWeight: 800 }}>개인 단기 화물은 별도 문의</strong> 바랍니다. (070-8057-6783)
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
