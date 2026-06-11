@@ -182,7 +182,7 @@ const closePromoToday = () => {
         .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
         .lp .howto-note { font-size: 11px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; line-height: 1.6; white-space: nowrap; }
         .lp .howto-b .howto-note { font-weight: 700; opacity: 0.9; }
-        .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
+        .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
         .lp .howto-card .howto-btn:hover { transform: scale(1.02); }
         .lp .howto-btn-a { background: #fff; color: ${BLUE}; }
         .lp .howto-btn-b { background: ${INK}; color: #fff; }
@@ -330,9 +330,9 @@ const closePromoToday = () => {
         {/* HERO */}
         <header className="hero">
           <div className="hero-nav">
-            <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
-            <button onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}>REAL CASES</button>
+          <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
             <button onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>PRICING</button>
+            <button onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}>REAL CASES</button>
           </div>
           <img className="hero-img" src="/images/hero.png" alt="공간에 맞추지 말고 짐에 맞춰 보관하세요 - SCENE BOX" />
           <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
