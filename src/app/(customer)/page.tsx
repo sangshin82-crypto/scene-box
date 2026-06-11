@@ -162,7 +162,7 @@ const closePromoToday = () => {
         .lp .howto-card:hover { transform: translateY(-8px); }
         .lp .howto-a { background: ${BLUE}; color: #fff; box-shadow: 0 10px 30px rgba(26,54,232,0.25); }
         .lp .howto-a:hover { box-shadow: 0 18px 44px rgba(26,54,232,0.38); }
-        .lp .howto-b { background: ${YELLOW}; color: ${INK}; box-shadow: 0 10px 30px rgba(255,212,0,0.3); }
+        .lp .howto-b { background: ${YELLOW}; color: ${BLUE_DEEP}; box-shadow: 0 10px 30px rgba(255,212,0,0.3); }
         .lp .howto-b:hover { box-shadow: 0 18px 44px rgba(255,212,0,0.45); }
         .lp .howto-tag { font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; opacity: 0.85; }
         .lp .howto-a .howto-tag { color: ${YELLOW}; opacity: 1; }
@@ -171,12 +171,12 @@ const closePromoToday = () => {
         .lp .howto-desc { font-size: 15px; line-height: 1.7; font-weight: 500; margin-bottom: 24px; }
         .lp .howto-a .howto-desc { color: rgba(255,255,255,0.9); }
         .lp .howto-a .howto-desc strong { color: #fff; }
-        .lp .howto-b .howto-desc { color: #3A3A36; }
-        .lp .howto-b .howto-desc strong { color: ${INK}; }
+        .lp .howto-b .howto-desc { color: ${BLUE_DEEP}; }
+        .lp .howto-b .howto-desc strong { color: ${BLUE_DEEP}; }
         .lp .howto-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 16px; }
         .lp .howto-flow span { font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
         .lp .howto-a .howto-flow span { background: rgba(255,255,255,0.16); color: #fff; }
-        .lp .howto-b .howto-flow span { background: rgba(10,10,10,0.07); color: ${INK}; }
+        .lp .howto-b .howto-flow span { background: rgba(15,31,143,0.1); color: ${BLUE_DEEP}; }
         .lp .howto-flow i { font-style: normal; font-size: 12px; opacity: 0.5; }
         .lp .howto-note { font-size: 12.5px; font-weight: 600; margin-bottom: 26px; opacity: 0.75; }
         .lp .howto-card .howto-btn { margin-top: auto; display: block; width: 100%; text-align: center; font-family: 'Gothic A1', sans-serif; font-weight: 800; font-size: 15px; padding: 16px 0; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
