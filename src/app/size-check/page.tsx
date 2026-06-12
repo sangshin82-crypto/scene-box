@@ -4,7 +4,7 @@
 // 컨셉: "당신의 짐을 씬박스에 담아보세요" — 업로드 영역은 '담기' 은유, 결과 영역은 '파렛트' 단위만.
 // /api/pallet-estimate 로 multipart(images/a4_attached/size_hint/item_desc) POST.
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 
 // 기존 랜딩과 동일한 팔레트
@@ -18,6 +18,7 @@ const GRAY      = '#8A8A85';
 const MAX_IMAGES = 5;
 const PHONE_DISPLAY = '070-8057-6783'; // 화면 고정 — AI 응답에서 가져오지 않음
 const PHONE_TEL     = '07080576783';
+const STORAGE_KEY   = 'scenebox_last_estimate'; // 마지막 결과 보존(결과 데이터만, 사진 제외)
 
 interface EstObject { name: string; pallets: number | null; is_irregular: boolean | null; }
 interface EstResult {
@@ -35,6 +36,14 @@ function fmtPallets(p: number | null): string {
   if (p < 0.1) return '0.1';
   const r = Math.round(p * 10) / 10;
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
+}
+
+/** 저장 시각 표기 (YYYY.MM.DD HH:MM). */
+function fmtTime(ms: number | null): string {
+  if (!ms) return '';
+  const d = new Date(ms);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 /** 신뢰도 뱃지 색상. */
@@ -55,7 +64,48 @@ export default function SizeCheckPage() {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState<string | null>(null);
   const [result, setResult]       = useState<EstResult | null>(null);
+  const [savedAt, setSavedAt]     = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 마운트 시 저장된 마지막 결과 복원 (클라이언트에서만 — 하이드레이션 미스매치 방지)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      const hasData = p && (p.pallets_min != null || p.pallets_max != null || (Array.isArray(p.objects) && p.objects.length));
+      if (hasData) {
+        setResult({
+          pallets_min:    p.pallets_min ?? null,
+          pallets_max:    p.pallets_max ?? null,
+          confidence:     p.confidence ?? null,
+          advice_to_user: p.advice_to_user ?? null,
+          objects:        Array.isArray(p.objects) ? p.objects : [],
+        });
+        setSavedAt(typeof p.savedAt === 'number' ? p.savedAt : null);
+      }
+    } catch { /* 저장본 파손 시 무시 */ }
+  }, []);
+
+  // 결과를 localStorage 에 저장(결과 데이터만, 사진 제외). 새 추정마다 덮어써 갱신.
+  const persist = (r: EstResult, at: number) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        pallets_min:    r.pallets_min ?? null,
+        pallets_max:    r.pallets_max ?? null,
+        confidence:     r.confidence ?? null,
+        advice_to_user: r.advice_to_user ?? null,
+        objects:        r.objects ?? [],
+        savedAt:        at,
+      }));
+    } catch { /* 용량/프라이빗 모드 등으로 실패해도 화면 표시는 유지 */ }
+  };
+
+  const clearSaved = () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+    setSavedAt(null);
+    reset();
+  };
 
   const addFiles = (list: FileList | null) => {
     if (!list || list.length === 0) return;
@@ -108,7 +158,11 @@ export default function SizeCheckPage() {
         setError(body.error || '추정에 실패했어요. 사진을 바꿔 다시 시도해주세요.');
         return;
       }
-      setResult(body as EstResult);
+      const fresh = body as EstResult;
+      const now = Date.now();
+      setResult(fresh);
+      setSavedAt(now);
+      persist(fresh, now);
     } catch {
       setError('네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
     } finally {
@@ -174,6 +228,11 @@ export default function SizeCheckPage() {
         {/* ───── 결과 화면 ───── */}
         {result ? (
           <div style={{ marginTop: 26 }}>
+            {savedAt && (
+              <p style={{ marginBottom: 10, fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 700 }}>
+                최근 추정 결과 · {fmtTime(savedAt)}
+              </p>
+            )}
             {/* 메인 결과 */}
             <div style={{ background: '#fff', border: `2px solid ${INK}`, borderRadius: 4, padding: '28px 20px', textAlign: 'center' }}>
               <p style={{ fontSize: 13, color: GRAY, fontWeight: 700 }}>예상 보관 분량</p>
@@ -238,6 +297,12 @@ export default function SizeCheckPage() {
                 style={{ width: '100%', padding: '12px 0', background: 'transparent', color: 'rgba(255,255,255,0.8)', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
               >
                 다른 짐 다시 추정하기
+              </button>
+              <button
+                onClick={clearSaved}
+                style={{ width: '100%', padding: '2px 0 0', background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              >
+                저장된 결과 지우기
               </button>
             </div>
           </div>
