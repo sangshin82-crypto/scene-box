@@ -29,6 +29,7 @@ const SYSTEM_PROMPT = `당신은 물류 보관 전문가입니다. 사용자가 
 - 박스화된 짐(이사박스 등 정형 포장물)은 빈틈 없이 2m 높이까지 잘 쌓인다. 적재 손실을 작게(약 10~15%) 본다.
 - 박스화되지 않은 비정형 짐(가구, 안마의자, 의자, 자전거, 가방 등)은 쌓는 것이 가능은 하나 형태가 불규칙해 빈 공간이 많이 생긴다. 적재 손실을 크게(약 30~40%) 본다.
 - 비정형 짐이 많을수록 파렛트 수가 늘고, 박스화된 짐이 많을수록 줄어든다. 짐 구성에 따라 손실률을 가중평균하여 적용한다.
+- 각 물체를 박스화 정형물/비정형물로 판정하고, 그 결과를 objects 각 항목의 is_irregular(정형물=false, 비정형물=true)로 반드시 표기한다.
 
 # 원칙
 - 결과는 항상 범위로 제시한다 (예: 2~4파렛트). 단일값으로 단정하지 않는다.
@@ -44,7 +45,8 @@ const SYSTEM_PROMPT = `당신은 물류 보관 전문가입니다. 사용자가 
       "scale_basis": "A4 긴 변 기준 환산",     // 크기 환산 근거(선택)
       "estimated_dimensions_m": { "w": 0.97, "d": 1.04, "h": 1.34 }, // 가로·깊이·높이(m)
       "volume_m3": 1.34,                      // 부피(㎥)
-      "pallets": 1                            // 이 물체가 차지하는 파렛트 수
+      "pallets": 1,                           // 이 물체가 차지하는 파렛트 수
+      "is_irregular": true                    // 박스화 정형물(이사박스 등)=false, 비정형물(가구·안마의자·의자·가방 등)=true
     }
   ],
   "loading_loss_applied_pct": 25,            // 반영한 적재 손실(%) (선택)
@@ -77,11 +79,12 @@ const RESPONSE_SCHEMA = {
             required: ['w', 'd', 'h'],
             propertyOrdering: ['w', 'd', 'h'],
           },
-          volume_m3: { type: 'NUMBER' },
-          pallets:   { type: 'NUMBER' },
+          volume_m3:    { type: 'NUMBER' },
+          pallets:      { type: 'NUMBER' },
+          is_irregular: { type: 'BOOLEAN' },
         },
-        required: ['name'],
-        propertyOrdering: ['name', 'scale_basis', 'estimated_dimensions_m', 'volume_m3', 'pallets'],
+        required: ['name', 'is_irregular'],
+        propertyOrdering: ['name', 'scale_basis', 'estimated_dimensions_m', 'volume_m3', 'pallets', 'is_irregular'],
       },
     },
     loading_loss_applied_pct: { type: 'NUMBER' },
@@ -118,6 +121,7 @@ export interface PalletObject {
   estimated_dimensions_m?: { w: number; d: number; h: number };
   volume_m3?: number;
   pallets?: number;
+  is_irregular?: boolean; // 박스화 정형물=false, 비정형물(가구·가방 등)=true
 }
 
 export interface PalletEstimate {

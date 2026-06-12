@@ -144,13 +144,21 @@ export async function POST(req: NextRequest) {
       console.error('pallet_estimates 저장 실패:', insErr);
     }
 
-    // ─── ⑧ 노출 필드만 반환 (objects/reasoning 은 미노출) ──────────────────────
+    // ─── ⑧ 노출 필드만 반환 (reasoning·치수는 미노출, objects는 표시용만 추려서) ──
+    // 물체별 분해 표시를 위해 objects 의 name·pallets·is_irregular 만 노출한다.
+    const objects = (result.objects ?? []).map((o) => ({
+      name:         o.name,
+      pallets:      o.pallets ?? null,
+      is_irregular: o.is_irregular ?? null,
+    }));
+
     return withCookie(
       NextResponse.json({
         pallets_min,
         pallets_max,
         confidence:     result.confidence ?? null,
         advice_to_user: result.advice_to_user ?? null,
+        objects,
       }),
       issueCookie ? uid : null
     );
