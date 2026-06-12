@@ -396,12 +396,23 @@ export default function SizeCheckPage() {
             {/* A4 촬영 가이드 (아코디언) */}
             <button
               onClick={() => setGuideOpen(v => !v)}
-              style={{ marginTop: 'clamp(18px, 3vh, 28px)', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 'clamp(13.5px, 3.6vw, 15px)', fontWeight: 700, color: YELLOW, padding: '4px 0' }}
+              aria-expanded={guideOpen}
+              style={{
+                marginTop: 'clamp(18px, 3vh, 28px)', width: '100%',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                background: guideOpen ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.09)',
+                border: '1px solid rgba(255,255,255,0.38)',
+                borderRadius: 4, cursor: 'pointer', textAlign: 'left',
+                padding: '15px 16px',
+              }}
             >
-              정확한 추정을 위해 A4 용지를 함께 찍어주세요 {guideOpen ? '▴' : '▾'}
+              <span style={{ fontSize: 'clamp(14px, 3.8vw, 15.5px)', fontWeight: 800, color: '#fff', lineHeight: 1.4 }}>
+                📄 정확한 추정을 위해 A4 용지를 함께 찍어주세요
+              </span>
+              <span style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: YELLOW, color: INK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, transform: guideOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
             </button>
             {guideOpen && (
-              <div style={{ marginTop: 4, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '14px 16px', fontSize: 13, color: '#3A3A37', lineHeight: 1.8 }}>
+              <div style={{ marginTop: 6, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '14px 16px', fontSize: 13, color: '#3A3A37', lineHeight: 1.8 }}>
                 <p>① A4 용지 한 장을 준비하세요.</p>
                 <p>② 보관할 물건의 정면에 A4를 붙이거나 기대 세워주세요. (평평하게 밀착)</p>
                 <p>③ 물건 전체와 A4가 한 화면에 들어오게 정면에 가깝게 찍으세요.</p>
@@ -413,12 +424,23 @@ export default function SizeCheckPage() {
             {/* 보조 입력 (아코디언) */}
             <button
               onClick={() => setAuxOpen(v => !v)}
-              style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 'clamp(13.5px, 3.6vw, 15px)', fontWeight: 700, color: 'rgba(255,255,255,0.85)', padding: '4px 0' }}
+              aria-expanded={auxOpen}
+              style={{
+                marginTop: 'clamp(10px, 1.6vh, 16px)', width: '100%',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                background: auxOpen ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.09)',
+                border: '1px solid rgba(255,255,255,0.38)',
+                borderRadius: 4, cursor: 'pointer', textAlign: 'left',
+                padding: '15px 16px',
+              }}
             >
-              더 정확하게 하려면 {auxOpen ? '▴' : '▾'}
+              <span style={{ fontSize: 'clamp(14px, 3.8vw, 15.5px)', fontWeight: 800, color: '#fff', lineHeight: 1.4 }}>
+                ⚙️ 더 정확하게 하려면
+              </span>
+              <span style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: YELLOW, color: INK, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, transform: auxOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
             </button>
             {auxOpen && (
-              <div style={{ marginTop: 4, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ marginTop: 6, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 13.5, fontWeight: 700 }}>A4 용지를 함께 찍었어요</span>
                   <button
