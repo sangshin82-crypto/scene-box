@@ -130,14 +130,22 @@ export default function SizeCheckPage() {
   const conf = result ? confidenceStyle(result.confidence) : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: BEIGE, color: INK }}>
+    <div className="sc-bg" style={{ minHeight: '100vh', background: BLUE, color: '#fff' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Gothic+A1:wght@400;500;700;800;900&display=swap');
-        .sc { font-family: 'Gothic A1', sans-serif; }
+        .sc-bg { position: relative; overflow: hidden; }
+        .sc-bg::before {
+          content: ""; position: absolute; inset: 0; pointer-events: none;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+          background-size: 54px 54px;
+        }
+        .sc { font-family: 'Gothic A1', sans-serif; position: relative; z-index: 2; }
         .sc .mono { font-family: 'Archivo', sans-serif; }
-        .sc .box { width: 14px; height: 14px; border: 2.5px solid ${INK}; display: inline-block; }
+        .sc .box { width: 14px; height: 14px; border: 2.5px solid #fff; display: inline-block; }
         @keyframes scSpin { to { transform: rotate(360deg); } }
-        .sc .spin { width: 34px; height: 34px; border: 3px solid #E5E4DF; border-top-color: ${BLUE}; border-radius: 50%; animation: scSpin 0.9s linear infinite; }
+        .sc .spin { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.3); border-top-color: ${YELLOW}; border-radius: 50%; animation: scSpin 0.9s linear infinite; }
         .sc input[type=text]::placeholder { color: #B8B8B2; }
       `}</style>
 
@@ -149,10 +157,10 @@ export default function SizeCheckPage() {
         </div>
 
         {/* 타이틀 */}
-        <h1 style={{ marginTop: 22, fontSize: 26, fontWeight: 900, lineHeight: 1.3, letterSpacing: '-0.5px' }}>
-          당신의 짐을<br />씬박스에 담아보세요
+        <h1 style={{ marginTop: 22, fontSize: 26, fontWeight: 900, lineHeight: 1.3, letterSpacing: '-0.5px', color: '#fff' }}>
+          당신의 짐을<br /><span style={{ color: YELLOW }}>씬박스</span>에 담아보세요
         </h1>
-        <p style={{ marginTop: 10, fontSize: 14, color: '#5C5C57', lineHeight: 1.5 }}>
+        <p style={{ marginTop: 10, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
           사진을 올리면 AI가 보관에 필요한 파렛트 수를 알려드려요.
         </p>
 
@@ -231,9 +239,9 @@ export default function SizeCheckPage() {
           <div style={{ marginTop: 26 }}>
             {/* 업로드 프레임 ('담기' 은유) */}
             <div style={{
-              border: `2px dashed ${files.length ? BLUE : '#C7C6BF'}`,
+              border: `2px dashed ${files.length ? YELLOW : 'rgba(255,255,255,0.5)'}`,
               borderRadius: 4,
-              background: '#FBFAF6',
+              background: 'rgba(255,255,255,0.06)',
               padding: 16,
               minHeight: 180,
               display: 'flex',
@@ -244,11 +252,11 @@ export default function SizeCheckPage() {
               {files.length === 0 ? (
                 <>
                   <p style={{ fontSize: 30 }}>📦</p>
-                  <p style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: '#3A3A37' }}>여기에 짐 사진을 담아주세요</p>
-                  <p style={{ marginTop: 4, fontSize: 12, color: GRAY }}>최대 {MAX_IMAGES}장 · 모바일은 카메라 촬영도 가능</p>
+                  <p style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: '#fff' }}>여기에 짐 사진을 담아주세요</p>
+                  <p style={{ marginTop: 4, fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>최대 {MAX_IMAGES}장 · 모바일은 카메라 촬영도 가능</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ marginTop: 16, padding: '11px 26px', background: BLUE, color: '#fff', border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
+                    style={{ marginTop: 16, padding: '11px 26px', background: YELLOW, color: INK, border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
                   >
                     사진 올리기
                   </button>
@@ -270,11 +278,11 @@ export default function SizeCheckPage() {
                     {files.length < MAX_IMAGES && (
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        style={{ aspectRatio: '1 / 1', borderRadius: 4, border: `1.5px dashed ${BLUE}`, background: '#fff', color: BLUE, fontSize: 26, fontWeight: 700, cursor: 'pointer' }}
+                        style={{ aspectRatio: '1 / 1', borderRadius: 4, border: `1.5px dashed ${YELLOW}`, background: 'rgba(255,255,255,0.06)', color: YELLOW, fontSize: 26, fontWeight: 700, cursor: 'pointer' }}
                       >+</button>
                     )}
                   </div>
-                  <p style={{ marginTop: 12, fontSize: 12, color: GRAY, alignSelf: 'flex-start' }}>{files.length} / {MAX_IMAGES}장 담음</p>
+                  <p style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.7)', alignSelf: 'flex-start' }}>{files.length} / {MAX_IMAGES}장 담음</p>
                 </>
               )}
             </div>
@@ -291,7 +299,7 @@ export default function SizeCheckPage() {
             {/* A4 촬영 가이드 (아코디언) */}
             <button
               onClick={() => setGuideOpen(v => !v)}
-              style={{ marginTop: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: BLUE, padding: '4px 0' }}
+              style={{ marginTop: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: YELLOW, padding: '4px 0' }}
             >
               정확한 추정을 위해 A4 용지를 함께 찍어주세요 {guideOpen ? '▴' : '▾'}
             </button>
@@ -308,7 +316,7 @@ export default function SizeCheckPage() {
             {/* 보조 입력 (아코디언) */}
             <button
               onClick={() => setAuxOpen(v => !v)}
-              style={{ marginTop: 10, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: '#5C5C57', padding: '4px 0' }}
+              style={{ marginTop: 10, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: 'rgba(255,255,255,0.85)', padding: '4px 0' }}
             >
               더 정확하게 하려면 {auxOpen ? '▴' : '▾'}
             </button>
@@ -356,8 +364,8 @@ export default function SizeCheckPage() {
             {loading ? (
               <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0' }}>
                 <div className="spin" />
-                <p style={{ fontSize: 15, fontWeight: 800, color: INK }}>씬박스에 짐을 담는 중…</p>
-                <p style={{ fontSize: 12.5, color: GRAY }}>AI가 사진을 분석하고 있어요. 최대 1분 정도 걸릴 수 있어요.</p>
+                <p style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>씬박스에 짐을 담는 중…</p>
+                <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.7)' }}>AI가 사진을 분석하고 있어요. 최대 1분 정도 걸릴 수 있어요.</p>
               </div>
             ) : (
               <button
@@ -367,14 +375,14 @@ export default function SizeCheckPage() {
                   marginTop: 22,
                   width: '100%',
                   padding: '17px 0',
-                  background: files.length === 0 ? '#D6D5CE' : BLUE,
-                  color: files.length === 0 ? '#8F8F89' : '#fff',
+                  background: files.length === 0 ? 'rgba(255,255,255,0.18)' : YELLOW,
+                  color: files.length === 0 ? 'rgba(255,255,255,0.55)' : INK,
                   border: 'none',
                   borderRadius: 4,
                   fontSize: 16,
                   fontWeight: 800,
                   cursor: files.length === 0 ? 'not-allowed' : 'pointer',
-                  boxShadow: files.length === 0 ? 'none' : '0 8px 24px rgba(26,54,232,0.28)',
+                  boxShadow: files.length === 0 ? 'none' : '0 8px 24px rgba(255,212,0,0.35)',
                 }}
               >
                 내 짐 부피 확인하기
