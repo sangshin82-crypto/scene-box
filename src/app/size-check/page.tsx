@@ -201,9 +201,32 @@ export default function SizeCheckPage() {
         @keyframes scSpin { to { transform: rotate(360deg); } }
         .sc .spin { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.3); border-top-color: ${YELLOW}; border-radius: 50%; animation: scSpin 0.9s linear infinite; }
         .sc input[type=text]::placeholder { color: #B8B8B2; }
+
+        /* 박스 프레임 — 얇은 노란 점선 테두리 + 카메라 뷰파인더식 ㄱ자 코너 마크 */
+        .sc .pixel-box {
+          position: relative;
+          border-radius: 0;
+          background-color: ${BEIGE};
+          box-shadow: inset 0 2px 10px rgba(0,0,0,0.06);
+          /* 4변 얇은 노란 점선 테두리(차분하게 영역만 표시) — 상/하: repeat-x, 좌/우: repeat-y */
+          background-image:
+            repeating-linear-gradient(90deg, ${YELLOW} 0 7px, transparent 7px 14px),
+            repeating-linear-gradient(90deg, ${YELLOW} 0 7px, transparent 7px 14px),
+            repeating-linear-gradient(0deg,  ${YELLOW} 0 7px, transparent 7px 14px),
+            repeating-linear-gradient(0deg,  ${YELLOW} 0 7px, transparent 7px 14px);
+          background-position: 0 0, 0 100%, 0 0, 100% 0;
+          background-size: 14px 2px, 14px 2px, 2px 14px, 2px 14px;
+          background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+        }
+        /* 카메라 프레임 코너 마크(ㄱ자) — 두껍고 또렷하게 */
+        .sc .pixel-box .corner { position: absolute; width: 28px; height: 28px; pointer-events: none; z-index: 2; }
+        .sc .pixel-box .corner.tl { top: -2px;    left: -2px;  border-top: 5px solid ${YELLOW};    border-left: 5px solid ${YELLOW}; }
+        .sc .pixel-box .corner.tr { top: -2px;    right: -2px; border-top: 5px solid ${YELLOW};    border-right: 5px solid ${YELLOW}; }
+        .sc .pixel-box .corner.bl { bottom: -2px; left: -2px;  border-bottom: 5px solid ${YELLOW}; border-left: 5px solid ${YELLOW}; }
+        .sc .pixel-box .corner.br { bottom: -2px; right: -2px; border-bottom: 5px solid ${YELLOW}; border-right: 5px solid ${YELLOW}; }
       `}</style>
 
-      <div className="sc" style={{ maxWidth: 430, margin: '0 auto', padding: '28px 20px 60px' }}>
+      <div className="sc" style={{ maxWidth: 520, margin: '0 auto', padding: 'clamp(26px, 5vh, 44px) clamp(20px, 5vw, 32px) clamp(28px, 6vh, 48px)' }}>
 
         {/* 상단 헤더: 좌측 로고(홈) + 우측 닫기 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -218,25 +241,25 @@ export default function SizeCheckPage() {
         </div>
 
         {/* 타이틀 */}
-        <h1 style={{ marginTop: 22, fontSize: 26, fontWeight: 900, lineHeight: 1.3, letterSpacing: '-0.5px', color: '#fff' }}>
+        <h1 style={{ marginTop: 'clamp(24px, 5vh, 44px)', fontSize: 'clamp(30px, 8vw, 46px)', fontWeight: 900, lineHeight: 1.25, letterSpacing: '-0.5px', color: '#fff' }}>
           당신의 짐을<br /><span style={{ color: YELLOW }}>씬박스</span>에 담아보세요
         </h1>
-        <p style={{ marginTop: 10, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+        <p style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', fontSize: 'clamp(14px, 3.8vw, 17px)', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
           사진을 올리면 AI가 보관에 필요한 파렛트 수를 알려드려요.
         </p>
 
         {/* ───── 결과 화면 ───── */}
         {result ? (
-          <div style={{ marginTop: 26 }}>
+          <div style={{ marginTop: 'clamp(26px, 5vh, 44px)' }}>
             {savedAt && (
               <p style={{ marginBottom: 10, fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 700 }}>
                 최근 추정 결과 · {fmtTime(savedAt)}
               </p>
             )}
             {/* 메인 결과 */}
-            <div style={{ background: '#fff', border: `2px solid ${INK}`, borderRadius: 4, padding: '28px 20px', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: GRAY, fontWeight: 700 }}>예상 보관 분량</p>
-              <p style={{ marginTop: 8, fontSize: 38, fontWeight: 900, color: BLUE, letterSpacing: '-1px' }}>
+            <div style={{ background: '#fff', border: `2px solid ${INK}`, borderRadius: 4, padding: 'clamp(28px, 5vw, 40px) 20px', textAlign: 'center' }}>
+              <p style={{ fontSize: 'clamp(13px, 3.4vw, 15px)', color: GRAY, fontWeight: 700 }}>예상 보관 분량</p>
+              <p style={{ marginTop: 8, fontSize: 'clamp(38px, 11vw, 54px)', fontWeight: 900, color: BLUE, letterSpacing: '-1px', lineHeight: 1.1 }}>
                 약 {fmtPallets(result.pallets_min)}~{fmtPallets(result.pallets_max)} 파렛트
               </p>
               {conf && (
@@ -308,34 +331,36 @@ export default function SizeCheckPage() {
           </div>
         ) : (
           /* ───── 입력 화면 ───── */
-          <div style={{ marginTop: 26 }}>
-            {/* 업로드 프레임 ('담기' 은유) */}
-            <div style={{
-              border: `2px dashed ${files.length ? YELLOW : 'rgba(255,255,255,0.5)'}`,
-              borderRadius: 4,
-              background: 'rgba(255,255,255,0.06)',
-              padding: 16,
-              minHeight: 180,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
+          <div style={{ marginTop: 'clamp(26px, 5vh, 44px)' }}>
+            {/* 업로드 프레임 ('담기' 은유) — 픽셀아트 박스 */}
+            <div
+              className={`pixel-box${files.length ? ' filled' : ''}`}
+              style={{
+                padding: 'clamp(20px, 5vw, 36px)',
+                minHeight: 'clamp(300px, 52vh, 480px)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {/* 카메라 뷰파인더식 ㄱ자 코너 마크 */}
+              <span className="corner tl" /><span className="corner tr" /><span className="corner bl" /><span className="corner br" />
               {files.length === 0 ? (
                 <>
-                  <p style={{ fontSize: 30 }}>📦</p>
-                  <p style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: '#fff' }}>여기에 짐 사진을 담아주세요</p>
-                  <p style={{ marginTop: 4, fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>최대 {MAX_IMAGES}장 · 모바일은 카메라 촬영도 가능</p>
+                  <p style={{ fontSize: 'clamp(52px, 14vw, 88px)', lineHeight: 1 }}>📦</p>
+                  <p style={{ marginTop: 'clamp(12px, 2vh, 20px)', fontSize: 'clamp(17px, 4.6vw, 22px)', fontWeight: 800, color: INK, textAlign: 'center' }}>여기에 짐 사진을 담아주세요</p>
+                  <p style={{ marginTop: 8, fontSize: 'clamp(12px, 3.2vw, 14px)', color: GRAY, textAlign: 'center' }}>최대 {MAX_IMAGES}장 · 모바일은 카메라 촬영도 가능</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ marginTop: 16, padding: '11px 26px', background: YELLOW, color: INK, border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
+                    style={{ marginTop: 'clamp(20px, 3vh, 30px)', minHeight: 52, padding: 'clamp(14px, 4vw, 18px) clamp(30px, 9vw, 48px)', background: YELLOW, color: INK, border: 'none', borderRadius: 4, fontSize: 'clamp(15px, 4.2vw, 18px)', fontWeight: 800, cursor: 'pointer' }}
                   >
                     사진 올리기
                   </button>
                 </>
               ) : (
                 <>
-                  <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'clamp(8px, 2.5vw, 14px)' }}>
                     {previews.map((src, i) => (
                       <div key={i} style={{ position: 'relative', aspectRatio: '1 / 1', borderRadius: 4, overflow: 'hidden', border: '1px solid #E5E4DF' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -350,11 +375,11 @@ export default function SizeCheckPage() {
                     {files.length < MAX_IMAGES && (
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        style={{ aspectRatio: '1 / 1', borderRadius: 4, border: `1.5px dashed ${YELLOW}`, background: 'rgba(255,255,255,0.06)', color: YELLOW, fontSize: 26, fontWeight: 700, cursor: 'pointer' }}
+                        style={{ aspectRatio: '1 / 1', borderRadius: 4, border: `1.5px dashed ${BLUE}`, background: '#F4F6FF', color: BLUE, fontSize: 26, fontWeight: 700, cursor: 'pointer' }}
                       >+</button>
                     )}
                   </div>
-                  <p style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.7)', alignSelf: 'flex-start' }}>{files.length} / {MAX_IMAGES}장 담음</p>
+                  <p style={{ marginTop: 14, fontSize: 13, color: '#55554F', fontWeight: 700, alignSelf: 'flex-start' }}>{files.length} / {MAX_IMAGES}장 담음</p>
                 </>
               )}
             </div>
@@ -371,7 +396,7 @@ export default function SizeCheckPage() {
             {/* A4 촬영 가이드 (아코디언) */}
             <button
               onClick={() => setGuideOpen(v => !v)}
-              style={{ marginTop: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: YELLOW, padding: '4px 0' }}
+              style={{ marginTop: 'clamp(18px, 3vh, 28px)', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 'clamp(13.5px, 3.6vw, 15px)', fontWeight: 700, color: YELLOW, padding: '4px 0' }}
             >
               정확한 추정을 위해 A4 용지를 함께 찍어주세요 {guideOpen ? '▴' : '▾'}
             </button>
@@ -388,7 +413,7 @@ export default function SizeCheckPage() {
             {/* 보조 입력 (아코디언) */}
             <button
               onClick={() => setAuxOpen(v => !v)}
-              style={{ marginTop: 10, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: 'rgba(255,255,255,0.85)', padding: '4px 0' }}
+              style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 'clamp(13.5px, 3.6vw, 15px)', fontWeight: 700, color: 'rgba(255,255,255,0.85)', padding: '4px 0' }}
             >
               더 정확하게 하려면 {auxOpen ? '▴' : '▾'}
             </button>
@@ -444,17 +469,18 @@ export default function SizeCheckPage() {
                 onClick={submit}
                 disabled={files.length === 0}
                 style={{
-                  marginTop: 22,
+                  marginTop: 'clamp(24px, 4vh, 36px)',
                   width: '100%',
-                  padding: '17px 0',
-                  background: files.length === 0 ? 'rgba(255,255,255,0.18)' : YELLOW,
-                  color: files.length === 0 ? 'rgba(255,255,255,0.55)' : INK,
-                  border: 'none',
+                  minHeight: 56,
+                  padding: 'clamp(17px, 2.4vh, 21px) 0',
+                  background: files.length === 0 ? 'rgba(255,255,255,0.12)' : YELLOW,
+                  color: files.length === 0 ? 'rgba(255,255,255,0.9)' : INK,
+                  border: files.length === 0 ? '2px solid rgba(255,255,255,0.6)' : '2px solid ' + YELLOW,
                   borderRadius: 4,
-                  fontSize: 16,
+                  fontSize: 'clamp(16px, 4.4vw, 19px)',
                   fontWeight: 800,
                   cursor: files.length === 0 ? 'not-allowed' : 'pointer',
-                  boxShadow: files.length === 0 ? 'none' : '0 8px 24px rgba(255,212,0,0.35)',
+                  boxShadow: files.length === 0 ? 'none' : '0 10px 30px rgba(255,212,0,0.55)',
                 }}
               >
                 내 짐 부피 확인하기
