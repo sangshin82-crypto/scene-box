@@ -151,9 +151,16 @@ export default function SizeCheckPage() {
 
       <div className="sc" style={{ maxWidth: 430, margin: '0 auto', padding: '28px 20px 60px' }}>
 
-        {/* 로고 */}
-        <div className="mono" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 900, fontSize: 18, letterSpacing: '-0.5px' }}>
-          SCENE<span className="box" />BOX
+        {/* 상단 헤더: 좌측 로고(홈) + 우측 닫기 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <a href="/" className="mono" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 900, fontSize: 18, letterSpacing: '-0.5px', color: '#fff', textDecoration: 'none' }}>
+            SCENE<span className="box" />BOX
+          </a>
+          <a
+            href="/"
+            aria-label="홈으로"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.55)', color: '#fff', fontSize: 16, lineHeight: 1, textDecoration: 'none' }}
+          >✕</a>
         </div>
 
         {/* 타이틀 */}
