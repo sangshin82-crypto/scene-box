@@ -116,8 +116,20 @@ const closePromoToday = () => {
           opacity: 0; animation: lpFadeUp 0.8s ease 0.8s forwards; z-index: 2;
         }
         .lp .hero-cta {
-          margin-top: 34px; display: flex; gap: 16px;
+          margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 12px;
           opacity: 0; animation: lpFadeUp 0.8s ease 1s forwards; z-index: 2;
+        }
+        .lp .btn-ai {
+          background: ${YELLOW}; color: ${INK}; border: none; font-family: 'Gothic A1', sans-serif;
+          font-weight: 900; font-size: 17px; padding: 18px 40px; border-radius: 4px;
+          cursor: pointer; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
+          box-shadow: 0 8px 28px rgba(255,212,0,0.45); display: inline-flex; align-items: center; gap: 8px;
+          white-space: nowrap;
+        }
+        .lp .btn-ai:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 14px 36px rgba(255,212,0,0.55); }
+        .lp .btn-ai .ai-chip {
+          font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 12px; letter-spacing: 0.5px;
+          background: ${INK}; color: ${YELLOW}; border-radius: 3px; padding: 2px 6px;
         }
         .lp .hero-nav {
           margin-bottom: 28px; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center;
@@ -337,6 +349,9 @@ const closePromoToday = () => {
           <img className="hero-img" src="/images/hero.png" alt="공간에 맞추지 말고 짐에 맞춰 보관하세요 - SCENE BOX" />
           <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
           <div className="hero-cta">
+            <button className="btn-ai" onClick={() => { window.location.href = "/size-check"; }}>
+              <span className="ai-chip">AI</span>내 짐 사이즈 알아보기
+            </button>
             <button className="btn-primary" onClick={openModal}>보관 예약하기</button>
           </div>
           <div className="hero-strip">
