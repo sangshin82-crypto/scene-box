@@ -5,7 +5,7 @@
 // /api/pallet-estimate 로 multipart(images/a4_attached/size_hint/item_desc) POST.
 
 import { useState, useRef, useEffect } from 'react';
-import { Package, Sofa, Shapes } from 'lucide-react';
+import { Package, Sofa, Shapes, Clock } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 
 // 기존 랜딩과 동일한 팔레트
@@ -17,8 +17,7 @@ const INK       = '#0A0A0A';
 const GRAY      = '#8A8A85';
 
 const MAX_IMAGES = 5;
-const PHONE_DISPLAY = '070-8057-6783'; // 화면 고정 — AI 응답에서 가져오지 않음
-const PHONE_TEL     = '07080576783';
+const PHONE_TEL     = '07080576783'; // tel: 링크용 (화면 고정 — AI 응답에서 가져오지 않음)
 const STORAGE_KEY   = 'scenebox_last_estimate'; // 마지막 결과 보존(결과 데이터만, 사진 제외)
 
 interface EstObject { name: string; pallets: number | null; is_irregular: boolean | null; }
@@ -77,6 +76,7 @@ export default function SizeCheckPage() {
   const [error, setError]         = useState<string | null>(null);
   const [result, setResult]       = useState<EstResult | null>(null);
   const [savedAt, setSavedAt]     = useState<number | null>(null);
+  const [limitReached, setLimitReached] = useState(false); // 비로그인 일일 한도 초과(429)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 마운트 시 저장된 마지막 결과 복원 (클라이언트에서만 — 하이드레이션 미스매치 방지)
@@ -152,6 +152,7 @@ export default function SizeCheckPage() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setLimitReached(false);
     try {
       const fd = new FormData();
       files.forEach(f => fd.append('images', f));
@@ -171,6 +172,10 @@ export default function SizeCheckPage() {
       const res = await fetch('/api/pallet-estimate', { method: 'POST', body: fd, headers });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 429) {        // 비로그인 일일 한도 초과 → 전화 상담 안내 화면
+          setLimitReached(true);
+          return;
+        }
         setError(body.error || '추정에 실패했어요. 사진을 바꿔 다시 시도해주세요.');
         return;
       }
@@ -195,13 +200,14 @@ export default function SizeCheckPage() {
     setSizeHint('');
     setItemDesc('');
     setA4(true);
+    setLimitReached(false);
   };
 
   const conf = result ? confidenceStyle(result.confidence) : null;
   const reasoningLines = result?.reasoning ? cleanReasoning(result.reasoning) : [];
 
   return (
-    <div className="sc-bg" style={{ minHeight: '100vh', background: BLUE, color: '#fff' }}>
+    <div className="sc-bg" style={{ minHeight: '100vh', background: BLUE, color: '#fff', display: 'flex', flexDirection: 'column' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Gothic+A1:wght@400;500;700;800;900&display=swap');
         .sc-bg { position: relative; overflow: hidden; }
@@ -241,9 +247,23 @@ export default function SizeCheckPage() {
         .sc .pixel-box .corner.tr { top: -3px;    right: -3px; border-top: 8px solid ${YELLOW};    border-right: 8px solid ${YELLOW}; }
         .sc .pixel-box .corner.bl { bottom: -3px; left: -3px;  border-bottom: 8px solid ${YELLOW}; border-left: 8px solid ${YELLOW}; }
         .sc .pixel-box .corner.br { bottom: -3px; right: -3px; border-bottom: 8px solid ${YELLOW}; border-right: 8px solid ${YELLOW}; }
+
+        /* 푸터 — 홈(랜딩) 검은 푸터와 동일 내용·스타일 */
+        .sc-footer { background: ${INK}; color: #fff; padding: 36px clamp(20px, 5vw, 48px); flex-shrink: 0; position: relative; z-index: 2; font-family: 'Gothic A1', sans-serif; }
+        .sc-footer .ft-top { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .sc-footer .ft-logo { font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 22px; display: flex; align-items: center; gap: 9px; }
+        .sc-footer .ft-logo .box { width: 15px; height: 15px; border: 2.5px solid #fff; display: inline-block; }
+        .sc-footer .ft-links { display: flex; align-items: center; gap: 12px; }
+        .sc-footer .ft-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; }
+        .sc-footer .ft-links a:hover { color: ${YELLOW}; }
+        .sc-footer .ft-links span { color: rgba(255,255,255,0.25); }
+        .sc-footer .ft-meta { max-width: 1200px; margin: 18px auto 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+        .sc-footer .ft-meta span { font-size: 12px; color: rgba(255,255,255,0.45); position: relative; }
+        .sc-footer .ft-meta span:not(:last-child)::after { content: "·"; position: absolute; right: -11px; color: rgba(255,255,255,0.25); }
+        .sc-footer .ft-copy { max-width: 1200px; margin: 16px auto 0; font-size: 11.5px; color: rgba(255,255,255,0.3); }
       `}</style>
 
-      <div className="sc" style={{ maxWidth: 520, margin: '0 auto', padding: 'clamp(26px, 5vh, 44px) clamp(20px, 5vw, 32px) clamp(28px, 6vh, 48px)' }}>
+      <div className="sc" style={{ maxWidth: 520, margin: '0 auto', padding: 'clamp(26px, 5vh, 44px) clamp(20px, 5vw, 32px) clamp(28px, 6vh, 48px)', flex: '1 0 auto', width: '100%' }}>
 
         {/* 상단 헤더: 좌측 로고(홈) + 우측 닫기 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -265,12 +285,47 @@ export default function SizeCheckPage() {
           사진을 올리면 AI가 보관에 필요한 파렛트 수를 추천해드립니다.
         </p>
 
-        {/* ───── 결과 화면 ───── */}
-        {result ? (
+        {/* ───── 한도 초과 안내 화면 (비로그인 일일 3회 초과) ───── */}
+        {limitReached ? (
+          <div style={{ marginTop: 'clamp(26px, 5vh, 44px)' }}>
+            <div style={{ background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: 'clamp(28px, 7vw, 40px) clamp(20px, 5vw, 28px)', textAlign: 'center', marginBottom: 14 }}>
+              <Clock color={BLUE} strokeWidth={1.6} style={{ width: 'clamp(40px, 12vw, 56px)', height: 'clamp(40px, 12vw, 56px)' }} />
+              <h2 style={{ marginTop: 14, fontSize: 'clamp(19px, 5.2vw, 24px)', fontWeight: 900, color: INK, lineHeight: 1.35 }}>
+                오늘 무료 추정 횟수를<br />모두 사용하셨어요
+              </h2>
+              <p style={{ marginTop: 12, fontSize: 'clamp(14px, 3.8vw, 16px)', color: '#55554F', lineHeight: 1.6 }}>
+                무료 추정은 내일 다시 이용하실 수 있어요.
+              </p>
+            </div>
+
+            {/* 전화 바로 연결 (전화번호 표기 없이 버튼만) */}
+            <a
+              href={`tel:${PHONE_TEL}`}
+              style={{ display: 'block', width: '100%', textAlign: 'center', minHeight: 56, padding: '16px 0', background: '#fff', color: BLUE, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, textDecoration: 'none' }}
+            >
+              전화 바로 연결 →
+            </a>
+
+            <button
+              onClick={() => setLimitReached(false)}
+              style={{ marginTop: 14, width: '100%', padding: '12px 0', background: 'transparent', color: 'rgba(255,255,255,0.8)', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              돌아가기
+            </button>
+          </div>
+        ) : /* ───── 결과 화면 ───── */
+        result ? (
           <div style={{ marginTop: 'clamp(26px, 5vh, 44px)' }}>
             {savedAt && (
               <p style={{ marginBottom: 10, fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 700 }}>
                 최근 추정 결과 · {fmtTime(savedAt)}
+                {' / '}
+                <button
+                  onClick={clearSaved}
+                  style={{ background: 'transparent', border: 'none', padding: 0, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  저장된 결과 지우기
+                </button>
               </p>
             )}
             {/* 메인 결과 */}
@@ -317,7 +372,7 @@ export default function SizeCheckPage() {
             <div style={{ marginTop: 14, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '14px 16px', fontSize: 12, color: '#55554F', lineHeight: 1.7 }}>
               <p>※ 이 결과는 사진 기반 AI 추정치로, 참고용입니다.</p>
               <p>※ 박스화되지 않은 비정형 짐(가구 등)이 포함된 경우, 실제 적재 시 1파렛트 내외의 오차가 발생할 수 있습니다.</p>
-              <p>※ 정확한 견적과 보관 방법은 전화 상담을 통해 안내받으실 수 있습니다. 📞 씬박스 {PHONE_DISPLAY}</p>
+              <p>※ 정확한 견적과 보관 방법은 전화 상담을 통해 안내받으실 수 있습니다.</p>
             </div>
 
             {/* 예약 흐름 연결 */}
@@ -326,25 +381,20 @@ export default function SizeCheckPage() {
                 onClick={() => { window.location.href = '/login'; }}
                 style={{ width: '100%', padding: '16px 0', background: YELLOW, color: INK, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(255,212,0,0.35)' }}
               >
-                보관 예약하기
+                보관 예약하기 →
               </button>
+              {/* 전화 바로 연결 (전화번호 표기 없이 버튼만) */}
               <a
                 href={`tel:${PHONE_TEL}`}
-                style={{ width: '100%', padding: '15px 0', background: '#fff', color: BLUE, border: '2px solid #fff', borderRadius: 4, fontSize: 15, fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}
+                style={{ display: 'block', width: '100%', textAlign: 'center', minHeight: 56, padding: '16px 0', background: '#fff', color: BLUE, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, textDecoration: 'none' }}
               >
-                📞 전화 상담 {PHONE_DISPLAY}
+                전화 바로 연결 →
               </a>
               <button
                 onClick={reset}
                 style={{ width: '100%', padding: '12px 0', background: 'transparent', color: 'rgba(255,255,255,0.8)', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
               >
                 다른 짐 다시 추정하기
-              </button>
-              <button
-                onClick={clearSaved}
-                style={{ width: '100%', padding: '2px 0 0', background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
-              >
-                저장된 결과 지우기
               </button>
             </div>
           </div>
@@ -536,6 +586,29 @@ export default function SizeCheckPage() {
           </div>
         )}
       </div>
+
+      {/* 푸터 — 홈(랜딩) 검은 푸터와 동일 */}
+      <footer className="sc-footer">
+        <div className="ft-top">
+          <div className="ft-logo">SCENE<span className="box" />BOX</div>
+          <div className="ft-links">
+            <a href="/terms">이용약관</a>
+            <span>|</span>
+            <a href="/privacy" style={{ fontWeight: 800, color: '#fff', textDecoration: 'underline' }}>개인정보처리방침</a>
+            <span>|</span>
+            <a href="/refund">취소 및 환불 규정</a>
+          </div>
+        </div>
+        <div className="ft-meta">
+          <span>씬박스(SceneBox) · 대표 박민지</span>
+          <span>사업자등록번호 806-36-01589</span>
+          <span>통신판매업 2026-용인처인-01107</span>
+          <span>경기도 용인시 처인구 모현읍 곡현로 734</span>
+          <span>070-8057-6783 / 010-2897-8524</span>
+          <span>easy.keep.kr@gmail.com</span>
+        </div>
+        <div className="ft-copy">© 2026 씬박스(SceneBox). 비정형 짐 전문 보관 서비스. All rights reserved. &nbsp;|&nbsp; scenebox.co.kr &nbsp;|&nbsp; @scenebox_official</div>
+      </footer>
     </div>
   );
 }
