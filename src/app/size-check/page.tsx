@@ -218,12 +218,12 @@ export default function SizeCheckPage() {
           background-size: 14px 2px, 14px 2px, 2px 14px, 2px 14px;
           background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
         }
-        /* 카메라 프레임 코너 마크(ㄱ자) — 두껍고 또렷하게 */
-        .sc .pixel-box .corner { position: absolute; width: 28px; height: 28px; pointer-events: none; z-index: 2; }
-        .sc .pixel-box .corner.tl { top: -2px;    left: -2px;  border-top: 5px solid ${YELLOW};    border-left: 5px solid ${YELLOW}; }
-        .sc .pixel-box .corner.tr { top: -2px;    right: -2px; border-top: 5px solid ${YELLOW};    border-right: 5px solid ${YELLOW}; }
-        .sc .pixel-box .corner.bl { bottom: -2px; left: -2px;  border-bottom: 5px solid ${YELLOW}; border-left: 5px solid ${YELLOW}; }
-        .sc .pixel-box .corner.br { bottom: -2px; right: -2px; border-bottom: 5px solid ${YELLOW}; border-right: 5px solid ${YELLOW}; }
+        /* 카메라 프레임 코너 마크(ㄱ자) — 크고 두껍게 강조 */
+        .sc .pixel-box .corner { position: absolute; width: 46px; height: 46px; pointer-events: none; z-index: 2; }
+        .sc .pixel-box .corner.tl { top: -3px;    left: -3px;  border-top: 8px solid ${YELLOW};    border-left: 8px solid ${YELLOW}; }
+        .sc .pixel-box .corner.tr { top: -3px;    right: -3px; border-top: 8px solid ${YELLOW};    border-right: 8px solid ${YELLOW}; }
+        .sc .pixel-box .corner.bl { bottom: -3px; left: -3px;  border-bottom: 8px solid ${YELLOW}; border-left: 8px solid ${YELLOW}; }
+        .sc .pixel-box .corner.br { bottom: -3px; right: -3px; border-bottom: 8px solid ${YELLOW}; border-right: 8px solid ${YELLOW}; }
       `}</style>
 
       <div className="sc" style={{ maxWidth: 520, margin: '0 auto', padding: 'clamp(26px, 5vh, 44px) clamp(20px, 5vw, 32px) clamp(28px, 6vh, 48px)' }}>
@@ -495,9 +495,10 @@ export default function SizeCheckPage() {
                   width: '100%',
                   minHeight: 56,
                   padding: 'clamp(17px, 2.4vh, 21px) 0',
-                  background: files.length === 0 ? 'rgba(255,255,255,0.12)' : YELLOW,
-                  color: files.length === 0 ? 'rgba(255,255,255,0.9)' : INK,
-                  border: files.length === 0 ? '2px solid rgba(255,255,255,0.6)' : '2px solid ' + YELLOW,
+                  // 같은 노란 계열에서 밝기/선명도로 활성/비활성 구분 (회색 미사용)
+                  background: files.length === 0 ? '#E9D88A' : YELLOW,
+                  color: files.length === 0 ? 'rgba(10,10,10,0.45)' : INK,
+                  border: 'none',
                   borderRadius: 4,
                   fontSize: 'clamp(16px, 4.4vw, 19px)',
                   fontWeight: 800,
