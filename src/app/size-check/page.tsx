@@ -93,6 +93,8 @@ export default function SizeCheckPage() {
           confidence:     p.confidence ?? null,
           advice_to_user: p.advice_to_user ?? null,
           objects:        Array.isArray(p.objects) ? p.objects : [],
+          reasoning:        p.reasoning ?? null,
+          loading_loss_pct: p.loading_loss_pct ?? null,
         });
         setSavedAt(typeof p.savedAt === 'number' ? p.savedAt : null);
       }
@@ -108,6 +110,8 @@ export default function SizeCheckPage() {
         confidence:     r.confidence ?? null,
         advice_to_user: r.advice_to_user ?? null,
         objects:        r.objects ?? [],
+        reasoning:        r.reasoning ?? null,
+        loading_loss_pct: r.loading_loss_pct ?? null,
         savedAt:        at,
       }));
     } catch { /* 용량/프라이빗 모드 등으로 실패해도 화면 표시는 유지 */ }
@@ -194,8 +198,6 @@ export default function SizeCheckPage() {
   };
 
   const conf = result ? confidenceStyle(result.confidence) : null;
-  // 개별 짐 파렛트 합계(합계 → 손실 → 최종 흐름 표시용)
-  const objectsSum = result ? result.objects.reduce((s, o) => s + (o.pallets ?? 0), 0) : 0;
   const reasoningLines = result?.reasoning ? cleanReasoning(result.reasoning) : [];
 
   return (
@@ -284,42 +286,13 @@ export default function SizeCheckPage() {
               )}
             </div>
 
-            {/* 물체별 분해 */}
+            {/* 식별된 물체 (이름만 — 개별 파렛트 수치는 노출하지 않음) */}
             {result.objects && result.objects.length > 0 && (
               <div style={{ marginTop: 14, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '16px 18px' }}>
-                <p style={{ fontSize: 13, fontWeight: 800, color: INK, marginBottom: 10 }}>물체별 예상 분량</p>
-                {result.objects.map((o, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderTop: i === 0 ? 'none' : '1px solid #F0EFEA' }}>
-                    <span style={{ flex: 1, fontSize: 14, color: '#2A2A28', lineHeight: 1.4 }}>
-                      · {o.name}
-                      {o.is_irregular && (
-                        <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 3, background: '#F1F1EE', color: GRAY, fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' }}>비정형</span>
-                      )}
-                    </span>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: INK, whiteSpace: 'nowrap' }}>≈ {fmtPallets(o.pallets)} 파렛트</span>
-                  </div>
-                ))}
-
-                {/* 합계 → 손실 반영 → 최종 흐름 (개별 합과 최종값 차이 설명) */}
-                <div style={{ marginTop: 10, paddingTop: 12, borderTop: '2px solid #ECEBE6' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#55554F' }}>
-                    <span>개별 짐 합계</span>
-                    <span style={{ fontWeight: 700 }}>≈ {fmtPallets(objectsSum)} 파렛트</span>
-                  </div>
-                  {result.loading_loss_pct != null && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: GRAY, marginTop: 6 }}>
-                      <span>비정형 적재 손실 반영 ↓</span>
-                      <span style={{ fontWeight: 700 }}>약 {result.loading_loss_pct}%</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14.5, color: INK, fontWeight: 900, marginTop: 8 }}>
-                    <span>최종 예상</span>
-                    <span style={{ color: BLUE }}>약 {fmtPallets(result.pallets_min)}~{fmtPallets(result.pallets_max)} 파렛트</span>
-                  </div>
-                  <p style={{ marginTop: 10, fontSize: 11.5, color: GRAY, lineHeight: 1.6 }}>
-                    ※ 비정형 짐은 형태가 불규칙해 쌓을 때 빈 공간이 생겨, 실제 점유 공간이 개별 합보다 커집니다.
-                  </p>
-                </div>
+                <p style={{ fontSize: 13, fontWeight: 800, color: INK, marginBottom: 8 }}>AI가 식별한 물체</p>
+                <p style={{ fontSize: 14, color: '#2A2A28', lineHeight: 1.7 }}>
+                  {result.objects.map((o) => o.name).join(' · ')}
+                </p>
               </div>
             )}
 
