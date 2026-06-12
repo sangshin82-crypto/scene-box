@@ -28,6 +28,17 @@ interface EstResult {
   confidence: string | null;
   advice_to_user: string | null;
   objects: EstObject[];
+  reasoning?: string | null;
+  loading_loss_pct?: number | null;
+}
+
+/** reasoning 텍스트의 가벼운 마크다운 정리(** 강조, * 불릿 제거) → 줄 배열. */
+function cleanReasoning(text: string): string[] {
+  return text
+    .replace(/\*\*/g, '')
+    .split('\n')
+    .map((l) => l.replace(/^\s*[*-]\s+/, '· ').trim())
+    .filter((l) => l.length > 0);
 }
 
 /** 파렛트 수 표기: 정수는 그대로, 소수는 1자리, 0이 아닌 미세값은 0.1 하한. */
@@ -183,6 +194,9 @@ export default function SizeCheckPage() {
   };
 
   const conf = result ? confidenceStyle(result.confidence) : null;
+  // 개별 짐 파렛트 합계(합계 → 손실 → 최종 흐름 표시용)
+  const objectsSum = result ? result.objects.reduce((s, o) => s + (o.pallets ?? 0), 0) : 0;
+  const reasoningLines = result?.reasoning ? cleanReasoning(result.reasoning) : [];
 
   return (
     <div className="sc-bg" style={{ minHeight: '100vh', background: BLUE, color: '#fff' }}>
@@ -245,7 +259,7 @@ export default function SizeCheckPage() {
         <h1 style={{ marginTop: 'clamp(24px, 5vh, 44px)', fontSize: 'clamp(30px, 8vw, 46px)', fontWeight: 900, lineHeight: 1.25, letterSpacing: '-0.5px', color: '#fff' }}>
           당신의 짐을<br /><span style={{ color: YELLOW }}>씬박스</span>에 담아보세요
         </h1>
-        <p style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', fontSize: 'clamp(14px, 3.8vw, 17px)', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+        <p style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', fontSize: 'clamp(12.5px, 3.4vw, 15px)', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, wordBreak: 'keep-all', textWrap: 'balance', letterSpacing: '-0.2px' }}>
           사진을 올리면 AI가 보관에 필요한 파렛트 수를 추천해드립니다.
         </p>
 
@@ -285,6 +299,27 @@ export default function SizeCheckPage() {
                     <span style={{ fontSize: 14, fontWeight: 800, color: INK, whiteSpace: 'nowrap' }}>≈ {fmtPallets(o.pallets)} 파렛트</span>
                   </div>
                 ))}
+
+                {/* 합계 → 손실 반영 → 최종 흐름 (개별 합과 최종값 차이 설명) */}
+                <div style={{ marginTop: 10, paddingTop: 12, borderTop: '2px solid #ECEBE6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#55554F' }}>
+                    <span>개별 짐 합계</span>
+                    <span style={{ fontWeight: 700 }}>≈ {fmtPallets(objectsSum)} 파렛트</span>
+                  </div>
+                  {result.loading_loss_pct != null && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: GRAY, marginTop: 6 }}>
+                      <span>비정형 적재 손실 반영 ↓</span>
+                      <span style={{ fontWeight: 700 }}>약 {result.loading_loss_pct}%</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14.5, color: INK, fontWeight: 900, marginTop: 8 }}>
+                    <span>최종 예상</span>
+                    <span style={{ color: BLUE }}>약 {fmtPallets(result.pallets_min)}~{fmtPallets(result.pallets_max)} 파렛트</span>
+                  </div>
+                  <p style={{ marginTop: 10, fontSize: 11.5, color: GRAY, lineHeight: 1.6 }}>
+                    ※ 비정형 짐은 형태가 불규칙해 쌓을 때 빈 공간이 생겨, 실제 점유 공간이 개별 합보다 커집니다.
+                  </p>
+                </div>
               </div>
             )}
 
@@ -292,6 +327,16 @@ export default function SizeCheckPage() {
             {result.advice_to_user && (
               <div style={{ marginTop: 14, background: '#EEF1FF', border: `1px solid #C9D2FF`, borderRadius: 4, padding: '14px 16px', fontSize: 13.5, color: BLUE_DEEP, lineHeight: 1.55 }}>
                 💬 {result.advice_to_user}
+              </div>
+            )}
+
+            {/* 추정 근거 (AI reasoning, 항상 표시) */}
+            {reasoningLines.length > 0 && (
+              <div style={{ marginTop: 14, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '16px 18px' }}>
+                <p style={{ fontSize: 13, fontWeight: 800, color: INK, marginBottom: 10 }}>🔍 추정 근거</p>
+                {reasoningLines.map((line, i) => (
+                  <p key={i} style={{ fontSize: 13, color: '#3A3A37', lineHeight: 1.7, marginTop: i === 0 ? 0 : 6 }}>{line}</p>
+                ))}
               </div>
             )}
 

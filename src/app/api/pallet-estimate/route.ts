@@ -156,9 +156,11 @@ export async function POST(req: NextRequest) {
       NextResponse.json({
         pallets_min,
         pallets_max,
-        confidence:     result.confidence ?? null,
-        advice_to_user: result.advice_to_user ?? null,
+        confidence:       result.confidence ?? null,
+        advice_to_user:   result.advice_to_user ?? null,
         objects,
+        reasoning:        result.reasoning ?? null,                 // 추정 근거(전문)
+        loading_loss_pct: result.loading_loss_applied_pct ?? null,  // 적재 손실(%)
       }),
       issueCookie ? uid : null
     );
