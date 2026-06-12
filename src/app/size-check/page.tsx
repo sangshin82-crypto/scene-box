@@ -206,7 +206,7 @@ export default function SizeCheckPage() {
             )}
 
             {/* 고정 안내 (하드코딩, 항상 동일) */}
-            <div style={{ marginTop: 16, fontSize: 12, color: GRAY, lineHeight: 1.7 }}>
+            <div style={{ marginTop: 14, background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: '14px 16px', fontSize: 12, color: '#55554F', lineHeight: 1.7 }}>
               <p>※ 이 결과는 사진 기반 AI 추정치로, 참고용입니다.</p>
               <p>※ 박스화되지 않은 비정형 짐(가구 등)이 포함된 경우, 실제 적재 시 1파렛트 내외의 오차가 발생할 수 있습니다.</p>
               <p>※ 정확한 견적과 보관 방법은 전화 상담을 통해 안내받으실 수 있습니다. 📞 씬박스 {PHONE_DISPLAY}</p>
@@ -216,19 +216,19 @@ export default function SizeCheckPage() {
             <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={() => { window.location.href = '/login'; }}
-                style={{ width: '100%', padding: '16px 0', background: BLUE, color: '#fff', border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(26,54,232,0.28)' }}
+                style={{ width: '100%', padding: '16px 0', background: YELLOW, color: INK, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(255,212,0,0.35)' }}
               >
                 보관 예약하기
               </button>
               <a
                 href={`tel:${PHONE_TEL}`}
-                style={{ width: '100%', padding: '15px 0', background: '#fff', color: BLUE, border: `2px solid ${BLUE}`, borderRadius: 4, fontSize: 15, fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}
+                style={{ width: '100%', padding: '15px 0', background: '#fff', color: BLUE, border: '2px solid #fff', borderRadius: 4, fontSize: 15, fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}
               >
                 📞 전화 상담 {PHONE_DISPLAY}
               </a>
               <button
                 onClick={reset}
-                style={{ width: '100%', padding: '12px 0', background: 'transparent', color: GRAY, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ width: '100%', padding: '12px 0', background: 'transparent', color: 'rgba(255,255,255,0.8)', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
               >
                 다른 짐 다시 추정하기
               </button>
@@ -357,7 +357,7 @@ export default function SizeCheckPage() {
 
             {/* 에러 */}
             {error && (
-              <p style={{ marginTop: 14, fontSize: 13, color: '#DC2626', fontWeight: 700, lineHeight: 1.5 }}>{error}</p>
+              <p style={{ marginTop: 14, background: '#fff', borderRadius: 4, padding: '10px 14px', fontSize: 13, color: '#DC2626', fontWeight: 700, lineHeight: 1.5 }}>{error}</p>
             )}
 
             {/* 실행 / 로딩 */}
