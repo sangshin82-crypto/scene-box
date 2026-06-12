@@ -5,6 +5,7 @@
 // /api/pallet-estimate 로 multipart(images/a4_attached/size_hint/item_desc) POST.
 
 import { useState, useRef, useEffect } from 'react';
+import { Package, Sofa, Shapes } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 
 // 기존 랜딩과 동일한 팔레트
@@ -245,7 +246,7 @@ export default function SizeCheckPage() {
           당신의 짐을<br /><span style={{ color: YELLOW }}>씬박스</span>에 담아보세요
         </h1>
         <p style={{ marginTop: 'clamp(10px, 1.6vh, 16px)', fontSize: 'clamp(14px, 3.8vw, 17px)', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
-          사진을 올리면 AI가 보관에 필요한 파렛트 수를 알려드려요.
+          사진을 올리면 AI가 보관에 필요한 파렛트 수를 추천해드립니다.
         </p>
 
         {/* ───── 결과 화면 ───── */}
@@ -348,8 +349,13 @@ export default function SizeCheckPage() {
               <span className="corner tl" /><span className="corner tr" /><span className="corner bl" /><span className="corner br" />
               {files.length === 0 ? (
                 <>
-                  <p style={{ fontSize: 'clamp(52px, 14vw, 88px)', lineHeight: 1 }}>📦</p>
-                  <p style={{ marginTop: 'clamp(12px, 2vh, 20px)', fontSize: 'clamp(17px, 4.6vw, 22px)', fontWeight: 800, color: INK, textAlign: 'center' }}>여기에 짐 사진을 담아주세요</p>
+                  {/* 박스·가구·비정형 화물 — 다양한 짐을 추정한다는 의미 */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(16px, 5vw, 30px)' }}>
+                    <Package color={BLUE} strokeWidth={1.6} style={{ width: 'clamp(38px, 11vw, 58px)', height: 'clamp(38px, 11vw, 58px)' }} />
+                    <Sofa color={BLUE} strokeWidth={1.6} style={{ width: 'clamp(38px, 11vw, 58px)', height: 'clamp(38px, 11vw, 58px)' }} />
+                    <Shapes color={BLUE} strokeWidth={1.6} style={{ width: 'clamp(38px, 11vw, 58px)', height: 'clamp(38px, 11vw, 58px)' }} />
+                  </div>
+                  <p style={{ marginTop: 'clamp(16px, 2.4vh, 24px)', fontSize: 'clamp(17px, 4.6vw, 22px)', fontWeight: 800, color: INK, textAlign: 'center' }}>여기에 짐 사진을 담아주세요</p>
                   <p style={{ marginTop: 8, fontSize: 'clamp(12px, 3.2vw, 14px)', color: GRAY, textAlign: 'center' }}>최대 {MAX_IMAGES}장 · 모바일은 카메라 촬영도 가능</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
