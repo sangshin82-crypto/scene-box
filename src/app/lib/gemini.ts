@@ -27,7 +27,77 @@ const SYSTEM_PROMPT = `당신은 물류 보관 전문가입니다. 사용자가 
 # 원칙
 - 결과는 항상 범위로 제시한다 (예: 2~4파렛트). 단일값으로 단정하지 않는다.
 - 추정 근거와 신뢰도를 반드시 함께 제시한다. 모르면 모른다고 밝힌다.
-- 출력은 아래 JSON 형식만 반환한다. 그 외 설명·서론·markdown 표기를 붙이지 않는다.`;
+- 출력은 아래 JSON 형식만, 아래 키 이름 그대로 반환한다. 그 외 설명·서론·markdown 표기를 붙이지 않는다.
+
+# 출력 JSON 형식 (키 이름을 절대 바꾸지 말 것)
+{
+  "a4_detected": true,                       // 사진에서 A4 용지를 찾았으면 true, 못 찾았으면 false
+  "objects": [                               // 식별한 물체별 추정 (각 물체 1개 항목)
+    {
+      "name": "안마의자",                     // 물체 이름(한국어)
+      "scale_basis": "A4 긴 변 기준 환산",     // 크기 환산 근거(선택)
+      "estimated_dimensions_m": { "w": 0.97, "d": 1.04, "h": 1.34 }, // 가로·깊이·높이(m)
+      "volume_m3": 1.34,                      // 부피(㎥)
+      "pallets": 1                            // 이 물체가 차지하는 파렛트 수
+    }
+  ],
+  "loading_loss_applied_pct": 25,            // 반영한 적재 손실(%) (선택)
+  "total_pallets_range": { "min": 2, "max": 3 }, // 총 파렛트 범위(정수)
+  "confidence": "높음",                       // "높음" | "중" | "낮음" 중 하나만
+  "reasoning": "A4를 기준으로 환산한 추정 근거를 한국어로 서술",
+  "advice_to_user": "사용자에게 보여줄 한 줄 안내(한국어)"
+}`;
+
+// ─── Gemini 구조화 출력 스키마 (키 구조를 API 레벨에서 강제) ──────────────────
+// generativelanguage v1beta responseSchema 형식(OpenAPI 서브셋). PalletEstimate 와 1:1 대응.
+const RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    a4_detected: { type: 'BOOLEAN' },
+    objects: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          name:           { type: 'STRING' },
+          scale_basis:    { type: 'STRING' },
+          estimated_dimensions_m: {
+            type: 'OBJECT',
+            properties: {
+              w: { type: 'NUMBER' },
+              d: { type: 'NUMBER' },
+              h: { type: 'NUMBER' },
+            },
+            required: ['w', 'd', 'h'],
+            propertyOrdering: ['w', 'd', 'h'],
+          },
+          volume_m3: { type: 'NUMBER' },
+          pallets:   { type: 'NUMBER' },
+        },
+        required: ['name'],
+        propertyOrdering: ['name', 'scale_basis', 'estimated_dimensions_m', 'volume_m3', 'pallets'],
+      },
+    },
+    loading_loss_applied_pct: { type: 'NUMBER' },
+    total_pallets_range: {
+      type: 'OBJECT',
+      properties: {
+        min: { type: 'NUMBER' },
+        max: { type: 'NUMBER' },
+      },
+      required: ['min', 'max'],
+      propertyOrdering: ['min', 'max'],
+    },
+    confidence:     { type: 'STRING', enum: ['높음', '중', '낮음'] },
+    reasoning:      { type: 'STRING' },
+    advice_to_user: { type: 'STRING' },
+  },
+  required: ['a4_detected', 'objects', 'total_pallets_range', 'confidence', 'advice_to_user'],
+  propertyOrdering: [
+    'a4_detected', 'objects', 'loading_loss_applied_pct',
+    'total_pallets_range', 'confidence', 'reasoning', 'advice_to_user',
+  ],
+};
 
 // ─── 입출력 타입 ─────────────────────────────────────────────────────────────
 export interface PalletAux {
@@ -84,7 +154,10 @@ async function callGemini(
     body: JSON.stringify({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts }],
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+      },
     }),
   });
 
