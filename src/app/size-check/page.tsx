@@ -76,7 +76,7 @@ export default function SizeCheckPage() {
   const [error, setError]         = useState<string | null>(null);
   const [result, setResult]       = useState<EstResult | null>(null);
   const [savedAt, setSavedAt]     = useState<number | null>(null);
-  const [limitReached, setLimitReached] = useState(false); // 비로그인 일일 한도 초과(429)
+  const [limitReached, setLimitReached] = useState(false); // 일일 한도 초과(429)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 마운트 시 저장된 마지막 결과 복원 (클라이언트에서만 — 하이드레이션 미스매치 방지)
@@ -160,7 +160,7 @@ export default function SizeCheckPage() {
       if (sizeHint.trim()) fd.append('size_hint', sizeHint.trim());
       if (itemDesc.trim()) fd.append('item_desc', itemDesc.trim());
 
-      // 로그인 상태면 토큰 첨부(한도 상향). 없으면 익명 쿠키 경로로 진행.
+      // 로그인 상태면 토큰 첨부(추정 기록을 계정에 연결). 한도는 로그인·비로그인 동일.
       const headers: Record<string, string> = {};
       try {
         const { data } = await supabase.auth.getSession();
@@ -172,7 +172,7 @@ export default function SizeCheckPage() {
       const res = await fetch('/api/pallet-estimate', { method: 'POST', body: fd, headers });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 429) {        // 비로그인 일일 한도 초과 → 전화 상담 안내 화면
+        if (res.status === 429) {        // 일일 한도 초과 → 전화 상담 안내 화면
           setLimitReached(true);
           return;
         }
@@ -285,7 +285,7 @@ export default function SizeCheckPage() {
           사진을 올리면 AI가 보관에 필요한 파렛트 수를 추천해드립니다.
         </p>
 
-        {/* ───── 한도 초과 안내 화면 (비로그인 일일 3회 초과) ───── */}
+        {/* ───── 한도 초과 안내 화면 (일일 3회 초과) ───── */}
         {limitReached ? (
           <div style={{ marginTop: 'clamp(26px, 5vh, 44px)' }}>
             <div style={{ background: '#fff', border: '1px solid #E5E4DF', borderRadius: 4, padding: 'clamp(28px, 7vw, 40px) clamp(20px, 5vw, 28px)', textAlign: 'center', marginBottom: 14 }}>

@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const ipHash = hashIp(clientIp(req.headers));
     const quota = await checkPalletQuota(admin, { userId, uid, ipHash });
     if (!quota.allowed) {
-      const limit = userId ? PALLET_LIMITS.USER : PALLET_LIMITS.ANON;
+      const limit = PALLET_LIMITS.DAILY;
       const msg = quota.scope === 'ip'
         ? '오늘 이용량이 많아 잠시 후 다시 시도해주세요.'
         : `오늘 추정 횟수(${limit}회)를 모두 사용했습니다. 내일 다시 이용해주세요.`;

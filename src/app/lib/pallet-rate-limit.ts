@@ -1,8 +1,7 @@
 // 씬박스 — 파렛트 추정 남용방지(레이트리밋) 헬퍼  /  서버 전용
 // PRD §4. Gemini 호출 전에 일일 횟수를 원자적으로 증가시켜 게이트한다.
-//   · 비로그인:  uid:<쿠키>      3회/일
-//   · 로그인:    user:<uuid>    10회/일
-//   · 백스톱:    ip:<sha256>    15회/일  (uid/user 통과 후에도 IP 단위로 한 번 더)
+//   · 일일 한도: uid:<쿠키> 또는 user:<uuid>   3회/일  (로그인·비로그인 동일)
+//   · 백스톱:    ip:<sha256>                   9회/일  (신원 게이트 통과 후 IP 단위로 한 번 더)
 // 날짜 경계는 KST(UTC+9) 기준. 모든 카운트는 service-role 클라이언트로만 기록한다.
 
 import crypto from 'crypto';
@@ -10,9 +9,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // 일일 한도 상수 (한 곳에서 관리)
 export const PALLET_LIMITS = {
-  ANON: 3,    // 비로그인 (pe_uid 쿠키)
-  USER: 10,   // 로그인 (user_id)
-  IP:   15,   // IP 백스톱
+  DAILY: 3,   // 일일 한도 — 로그인/비로그인 동일 (uid 쿠키 또는 user_id 기준)
+  IP:    9,   // IP 백스톱 (우회 방지 상한)
 } as const;
 
 /** KST(UTC+9) 기준 오늘 날짜를 YYYY-MM-DD 문자열로 반환. */
@@ -68,10 +66,10 @@ export async function checkPalletQuota(
 ): Promise<{ allowed: boolean; scope?: 'identity' | 'ip' }> {
   const day = kstDay();
 
+  // 카운트 키는 로그인 여부로 구분(user/uid)하되, 한도는 동일하게 적용한다.
   const identity = opts.userId ? `user:${opts.userId}` : `uid:${opts.uid}`;
-  const identityLimit = opts.userId ? PALLET_LIMITS.USER : PALLET_LIMITS.ANON;
 
-  if (!(await gate(admin, identity, day, identityLimit))) {
+  if (!(await gate(admin, identity, day, PALLET_LIMITS.DAILY))) {
     return { allowed: false, scope: 'identity' };
   }
   if (!(await gate(admin, `ip:${opts.ipHash}`, day, PALLET_LIMITS.IP))) {
