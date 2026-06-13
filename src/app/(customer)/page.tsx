@@ -569,14 +569,14 @@ const closePromoToday = () => {
       {/* CTA 버튼 */}
       <div style={{ padding: "0 24px 16px" }}>
         <button
-          onClick={openModal}
+          onClick={() => { window.location.href = "tel:07080576783"; }}
           style={{
             width: "100%", padding: "15px 0", borderRadius: 14, border: "none",
             background: "#1A36E8", color: "#fff", fontSize: 15, fontWeight: 800,
             cursor: "pointer", boxShadow: "0 6px 20px rgba(26,54,232,0.35)",
           }}
         >
-          지금 예약하고 혜택 받기
+          지금 문의하고 혜택받기
         </button>
       </div>
 
