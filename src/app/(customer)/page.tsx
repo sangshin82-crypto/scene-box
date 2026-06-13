@@ -480,6 +480,14 @@ const closePromoToday = () => {
         <section className="final">
           <h2>이제, 짐에<br />공간을 맞추세요.</h2>
           <button className="btn-primary" onClick={openModal}>보관 예약하기</button>
+          <a
+            href="https://naver.me/GCJSVjJt"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "block", marginTop: 24, color: BLUE_DEEP, fontWeight: 800, fontSize: 16, textDecoration: "underline" }}
+          >
+            오시는 길
+          </a>
         </section>
 
         {/* FOOTER */}
