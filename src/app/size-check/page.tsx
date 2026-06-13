@@ -303,7 +303,7 @@ export default function SizeCheckPage() {
               href={`tel:${PHONE_TEL}`}
               style={{ display: 'block', width: '100%', textAlign: 'center', minHeight: 56, padding: '16px 0', background: '#fff', color: BLUE, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 800, textDecoration: 'none' }}
             >
-              전화 바로 연결 →
+              전화로 더 알아보기
             </a>
 
             <button
