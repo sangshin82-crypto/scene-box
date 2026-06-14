@@ -298,6 +298,9 @@ const closePromoToday = () => {
         .lp-modal-body iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 880px) {
+          .lp .hero-top { padding: 28px 20px 18px; }
+          .lp .hero-logo { margin-bottom: 18px; }
+          .lp .hero-bottom { padding: 20px 20px 32px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
