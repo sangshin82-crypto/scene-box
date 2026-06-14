@@ -69,21 +69,20 @@ const closePromoToday = () => {
         }
         .lp .hero-top {
           background: #fff; display: flex; flex-direction: column; align-items: center;
-          padding: 56px 24px 32px;
+          padding: 64px 24px 56px;
         }
         .lp .hero-logo {
-          width: clamp(200px, 46vw, 340px); height: auto; display: block; margin-bottom: 26px;
+          width: clamp(260px, 64vw, 500px); height: auto; display: block; margin-bottom: 40px;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.1s forwards;
         }
         .lp .hero-stage {
-          width: 100%; max-width: 640px; margin: 0 auto;
-          display: flex; flex-direction: column;
+          width: 100%; background: #FBBA01;
         }
         .lp .hero-bottom {
-          background: #FBB902; text-align: center; padding: 28px 24px 48px; margin-top: -1px;
+          background: #FBBA01; text-align: center; padding: 8px 24px 44px; margin-top: -1px;
         }
         .lp .hero-img {
-          width: 100%; height: auto; display: block;
+          width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto;
           position: relative; z-index: 2;
           opacity: 0; animation: lpFadeUp 0.9s ease 0.15s forwards;
         }
@@ -298,9 +297,9 @@ const closePromoToday = () => {
         .lp-modal-body iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 880px) {
-          .lp .hero-top { padding: 28px 20px 18px; }
-          .lp .hero-logo { margin-bottom: 18px; }
-          .lp .hero-bottom { padding: 20px 20px 32px; }
+          .lp .hero-top { padding: 36px 20px 28px; }
+          .lp .hero-logo { margin-bottom: 20px; }
+          .lp .hero-bottom { padding: 6px 20px 30px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
@@ -339,7 +338,7 @@ const closePromoToday = () => {
           </div>
           <div className="hero-strip">
             <div className="marquee">
-              <span>SCENEBOX</span><span>비정형 짐 전문 보관</span><span>1.1m MODULE PALLET</span><span>촬영·무대·팝업</span><span>SCENEBOX</span><span>비정형 짐 전문 보관</span><span>1.1m MODULE PALLET</span><span>촬영·무대·팝업</span>
+              <span>SCENEBOX</span><span>비정형 짐 전문 보관</span><span>1.1m MODULE PALLET</span><span>촬영·무대·팝업</span><span>씬박스 문의 070-8057-6783</span><span>SCENEBOX</span><span>비정형 짐 전문 보관</span><span>1.1m MODULE PALLET</span><span>촬영·무대·팝업</span><span>씬박스 문의 070-8057-6783</span>
             </div>
           </div>
         </header>
