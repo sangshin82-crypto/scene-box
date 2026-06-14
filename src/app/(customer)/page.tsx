@@ -61,23 +61,6 @@ const closePromoToday = () => {
         .lp { font-family: 'Gothic A1', sans-serif; background: ${BEIGE}; color: ${INK}; overflow-x: hidden; }
         .lp .mono { font-family: 'Archivo', sans-serif; }
 
-        /* NAV */
-        .lp nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 22px 48px; mix-blend-mode: difference;
-        }
-        .lp nav .logo {
-          font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 22px;
-          letter-spacing: -0.5px; color: #fff; display: flex; align-items: center; gap: 8px;
-        }
-        .lp nav .logo .box { width: 16px; height: 16px; border: 2.5px solid #fff; display: inline-block; }
-        .lp nav .nav-cta {
-          color: #fff; text-decoration: none; font-size: 13px; font-weight: 700;
-          letter-spacing: 0.5px; border: 1.5px solid #fff; padding: 9px 22px; border-radius: 100px;
-          cursor: pointer; background: transparent;
-        }
-
         /* HERO */
         .lp .hero {
           min-height: 100vh; display: flex; flex-direction: column;
@@ -301,7 +284,6 @@ const closePromoToday = () => {
         .lp-modal-body iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 880px) {
-          .lp nav { padding: 18px 24px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
@@ -319,14 +301,6 @@ const closePromoToday = () => {
       `}</style>
 
       <div className="lp">
-        {/* NAV */}
-        <nav>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>씬박스 문의</span>
-            <a href="tel:07080576783" style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.5px", whiteSpace: "nowrap", textDecoration: "none" }}>070-8057-6783</a>
-          </div>
-        </nav>
-
         {/* HERO */}
         <header className="hero">
           <div className="hero-nav">
