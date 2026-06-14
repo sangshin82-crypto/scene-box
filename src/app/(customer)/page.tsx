@@ -63,14 +63,28 @@ const closePromoToday = () => {
 
         /* HERO */
         .lp .hero {
-          min-height: 100vh; display: flex; flex-direction: column;
-          justify-content: center; align-items: center; position: relative;
-          padding: 100px 24px 110px; overflow: hidden;
-          background: ${BEIGE};
+          display: flex; flex-direction: column;
+          align-items: stretch; position: relative; overflow: hidden;
+          background: #fff;
+        }
+        .lp .hero-top {
+          background: #fff; display: flex; flex-direction: column; align-items: center;
+          padding: 56px 24px 32px;
+        }
+        .lp .hero-logo {
+          width: clamp(200px, 46vw, 340px); height: auto; display: block; margin-bottom: 26px;
+          opacity: 0; animation: lpFadeUp 0.8s ease 0.1s forwards;
+        }
+        .lp .hero-stage {
+          width: 100%; max-width: 640px; margin: 0 auto;
+          display: flex; flex-direction: column;
+        }
+        .lp .hero-bottom {
+          background: #FBB902; text-align: center; padding: 28px 24px 48px; margin-top: -1px;
         }
         .lp .hero-img {
-          width: 100%; max-width: 1500px; height: auto; display: block;
-          margin-bottom: 24px; position: relative; z-index: 2;
+          width: 100%; height: auto; display: block;
+          position: relative; z-index: 2;
           opacity: 0; animation: lpFadeUp 0.9s ease 0.15s forwards;
         }
         .lp .hero-tag {
@@ -94,16 +108,16 @@ const closePromoToday = () => {
         .lp .hero h1 .line:nth-child(2) span { animation-delay: 0.55s; }
         .lp .hero h1 .blue { color: ${BLUE}; }
         .lp .hero-sub {
-          margin-top: 22px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600;
-          color: #555; text-align: center; line-height: 1.7; max-width: 500px;
+          margin: 0 auto; font-size: clamp(14px, 1.6vw, 18px); font-weight: 700;
+          color: ${BLUE_DEEP}; text-align: center; line-height: 1.7; max-width: 500px;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.8s forwards; z-index: 2;
         }
         .lp .hero-cta {
-          margin-top: 34px; display: flex; gap: 16px;
+          margin-top: 28px; display: flex; gap: 16px; justify-content: center;
           opacity: 0; animation: lpFadeUp 0.8s ease 1s forwards; z-index: 2;
         }
         .lp .hero-nav {
-          margin-bottom: 28px; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center;
+          margin-bottom: 0; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.3s forwards; z-index: 2;
         }
         .lp .hero-nav button {
@@ -122,8 +136,8 @@ const closePromoToday = () => {
         .lp .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 14px 36px rgba(26,54,232,0.42); }
 
         .lp .hero-strip {
-          position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
-          background: ${YELLOW}; display: flex; align-items: center; overflow: hidden; z-index: 3;
+          position: relative; height: 60px;
+          background: ${YELLOW}; display: flex; align-items: center; overflow: hidden;
         }
         .lp .hero-strip .marquee { display: flex; white-space: nowrap; animation: lpMarquee 22s linear infinite; }
         .lp .hero-strip .marquee span {
@@ -303,15 +317,22 @@ const closePromoToday = () => {
       <div className="lp">
         {/* HERO */}
         <header className="hero">
-          <div className="hero-nav">
-          <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
-            <button onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>PRICING</button>
-            <button onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}>REAL CASES</button>
+          <div className="hero-top">
+            <img className="hero-logo" src="/images/logo.png" alt="SCENE BOX - 비정형 짐 전문 보관" />
+            <div className="hero-nav">
+              <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
+              <button onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>PRICING</button>
+              <button onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}>REAL CASES</button>
+            </div>
           </div>
-          <img className="hero-img" src="/images/hero.png" alt="공간에 맞추지 말고 짐에 맞춰 보관하세요 - SCENE BOX" />
-          <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
-          <div className="hero-cta">
-            <button className="btn-primary" onClick={() => { window.location.href = "/size-check"; }}>AI로 내 짐 사이즈 알아보기</button>
+          <div className="hero-stage">
+            <img className="hero-img" src="/images/hero-new.png" alt="After Work, SCENE BOX - 짐에 공간을 맞추세요" />
+            <div className="hero-bottom">
+              <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
+              <div className="hero-cta">
+                <button className="btn-primary" onClick={() => { window.location.href = "/size-check"; }}>AI로 내 짐 사이즈 알아보기</button>
+              </div>
+            </div>
           </div>
           <div className="hero-strip">
             <div className="marquee">
