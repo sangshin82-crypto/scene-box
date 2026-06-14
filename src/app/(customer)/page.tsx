@@ -299,7 +299,7 @@ const closePromoToday = () => {
         @media (max-width: 880px) {
           .lp .hero-top { padding: 36px 20px 28px; }
           .lp .hero-logo { margin-bottom: 20px; }
-          .lp .hero-bottom { padding: 22px 20px 30px; }
+          .lp .hero-bottom { padding: 36px 20px 30px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
