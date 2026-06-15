@@ -14,6 +14,7 @@ const ZONES: Record<string, string[][]> = {
     ["A1","A2","A3","A4","A5"],
     ["A6","A7","A8","A9","A10"],
     ["A11","A12","A13","A14","A15"],
+    ["A16","A17","A18","A19","A20"],
   ],
   B: [
     ["B1","B2","B3","B4","B5"],
@@ -52,19 +53,39 @@ export default function BookingPage() {
 
   useEffect(() => {
     async function fetchOccupied() {
-      const { data, error } = await supabase
+      const occupied = new Set<string>();
+
+      // 1) 실제 계약된 공간 (spaces 테이블)
+      const { data: spaceData, error: spaceError } = await supabase
         .from("spaces")
         .select("grids(grid_number)")
         .eq("status", "active");
 
-      if (error) {
-        console.error("공간 현황 로딩 실패:", error);
-      } else if (data) {
-        const occupied = new Set(
-          data.map((s: any) => s.grids?.grid_number).filter(Boolean) as string[]
-        );
-        setUnavailable(occupied);
+      if (spaceError) {
+        console.error("공간 현황 로딩 실패:", spaceError);
+      } else if (spaceData) {
+        spaceData
+          .map((s: any) => s.grids?.grid_number)
+          .filter(Boolean)
+          .forEach((n: string) => occupied.add(n));
       }
+
+      // 2) grids 테이블에서 직접 occupied로 표시된 칸 (프리런칭 표시용)
+      const { data: gridData, error: gridError } = await supabase
+        .from("grids")
+        .select("grid_number")
+        .eq("status", "occupied");
+
+      if (gridError) {
+        console.error("그리드 현황 로딩 실패:", gridError);
+      } else if (gridData) {
+        gridData
+          .map((g: any) => g.grid_number)
+          .filter(Boolean)
+          .forEach((n: string) => occupied.add(n));
+      }
+
+      setUnavailable(occupied);
       setIsLoading(false);
     }
     fetchOccupied();
