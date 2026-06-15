@@ -76,10 +76,10 @@ const closePromoToday = () => {
           opacity: 0; animation: lpFadeUp 0.8s ease 0.1s forwards;
         }
         .lp .hero-stage {
-          width: 100%; background: #FBBA01;
+          width: 100%; background: #FBBA01; padding-top: 140px;
         }
         .lp .hero-bottom {
-          background: #FBBA01; text-align: center; padding: 32px 24px 44px; margin-top: -1px;
+          background: #FBBA01; text-align: center; padding: 64px 24px 80px; margin-top: -1px;
         }
         .lp .hero-img {
           width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto;
@@ -108,11 +108,11 @@ const closePromoToday = () => {
         .lp .hero h1 .blue { color: ${BLUE}; }
         .lp .hero-sub {
           margin: 0 auto; font-size: clamp(14px, 1.6vw, 18px); font-weight: 700;
-          color: ${BLUE_DEEP}; text-align: center; line-height: 1.7; max-width: 500px;
+          color: ${BLUE_DEEP}; text-align: center; line-height: 1.9; max-width: 500px;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.8s forwards; z-index: 2;
         }
         .lp .hero-cta {
-          margin-top: 28px; display: flex; gap: 16px; justify-content: center;
+          margin-top: 44px; display: flex; gap: 16px; justify-content: center;
           opacity: 0; animation: lpFadeUp 0.8s ease 1s forwards; z-index: 2;
         }
         .lp .hero-nav {
@@ -299,7 +299,9 @@ const closePromoToday = () => {
         @media (max-width: 880px) {
           .lp .hero-top { padding: 36px 20px 28px; }
           .lp .hero-logo { margin-bottom: 20px; }
-          .lp .hero-bottom { padding: 36px 20px 30px; }
+          .lp .hero-stage { padding-top: 80px; }
+          .lp .hero-bottom { padding: 44px 20px 48px; }
+          .lp .hero-cta { margin-top: 30px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
           .lp .module-grid { grid-template-columns: 1fr; }
