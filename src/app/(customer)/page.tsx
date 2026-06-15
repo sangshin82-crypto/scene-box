@@ -76,7 +76,7 @@ const closePromoToday = () => {
           opacity: 0; animation: lpFadeUp 0.8s ease 0.1s forwards;
         }
         .lp .hero-stage {
-          width: 100%; background: #FDD706; padding-top: 185px;
+          width: 100%; background: #FDD706; padding-top: 213px;
         }
         .lp .hero-bottom {
           background: #FDD706; text-align: center; padding: 90px 24px 80px; margin-top: 0;
@@ -299,7 +299,7 @@ const closePromoToday = () => {
         @media (max-width: 880px) {
           .lp .hero-top { padding: 36px 20px 0; }
           .lp .hero-logo { margin-bottom: 20px; }
-          .lp .hero-stage { padding-top: 106px; }
+          .lp .hero-stage { padding-top: 122px; }
           .lp .hero-bottom { padding: 60px 20px 48px; }
           .lp .hero-cta { margin-top: 30px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
