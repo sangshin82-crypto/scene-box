@@ -65,21 +65,21 @@ const closePromoToday = () => {
         .lp .hero {
           display: flex; flex-direction: column;
           align-items: stretch; position: relative; overflow: hidden;
-          background: #fff;
+          background: #FDD706;
         }
         .lp .hero-top {
-          background: #fff; display: flex; flex-direction: column; align-items: center;
-          padding: 64px 24px 56px;
+          background: #FDD706; display: flex; flex-direction: column; align-items: center;
+          padding: 64px 24px 0;
         }
         .lp .hero-logo {
-          width: clamp(260px, 64vw, 500px); height: auto; display: block; margin-bottom: 40px;
+          width: clamp(179px, 44.2vw, 345px); height: auto; display: block; margin-bottom: 40px;
           opacity: 0; animation: lpFadeUp 0.8s ease 0.1s forwards;
         }
         .lp .hero-stage {
-          width: 100%; background: #FBBA01; padding-top: 140px;
+          width: 100%; background: #FDD706; padding-top: 168px;
         }
         .lp .hero-bottom {
-          background: #FBBA01; text-align: center; padding: 64px 24px 80px; margin-top: -1px;
+          background: #FDD706; text-align: center; padding: 90px 24px 80px; margin-top: 0;
         }
         .lp .hero-img {
           width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto;
@@ -121,8 +121,8 @@ const closePromoToday = () => {
         }
         .lp .hero-nav button {
           font-family: 'Archivo', sans-serif; font-size: clamp(9px, 2.6vw, 12px); font-weight: 800;
-          letter-spacing: 0.5px; color: ${BLUE}; background: rgba(255,255,255,0.7);
-          border: 1.5px solid ${BLUE}; border-radius: 4px; padding: 8px clamp(10px, 3vw, 20px);
+          letter-spacing: 0.5px; color: ${BLUE}; background: transparent;
+          border: 2px solid ${BLUE}; border-radius: 4px; padding: 8px clamp(10px, 3vw, 20px);
           cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
         .lp .hero-nav button:hover { background: ${BLUE}; color: #fff; }
@@ -297,10 +297,10 @@ const closePromoToday = () => {
         .lp-modal-body iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 880px) {
-          .lp .hero-top { padding: 36px 20px 28px; }
+          .lp .hero-top { padding: 36px 20px 0; }
           .lp .hero-logo { margin-bottom: 20px; }
-          .lp .hero-stage { padding-top: 80px; }
-          .lp .hero-bottom { padding: 44px 20px 48px; }
+          .lp .hero-stage { padding-top: 96px; }
+          .lp .hero-bottom { padding: 60px 20px 48px; }
           .lp .hero-cta { margin-top: 30px; }
           .lp .howto-grid { grid-template-columns: 1fr; }
           .lp .howto { padding: 90px 24px; }
@@ -322,7 +322,7 @@ const closePromoToday = () => {
         {/* HERO */}
         <header className="hero">
           <div className="hero-top">
-            <img className="hero-logo" src="/images/logo.png" alt="SCENE BOX - 비정형 짐 전문 보관" />
+            <img className="hero-logo" src="/images/logo-v2-transparent-crisp.png" alt="SCENE BOX - 비정형 짐 전문 보관" />
             <div className="hero-nav">
               <button onClick={() => document.getElementById("module")?.scrollIntoView({ behavior: "smooth" })}>THE SYSTEM</button>
               <button onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>PRICING</button>
@@ -330,7 +330,7 @@ const closePromoToday = () => {
             </div>
           </div>
           <div className="hero-stage">
-            <img className="hero-img" src="/images/hero-new.png" alt="After Work, SCENE BOX - 짐에 공간을 맞추세요" />
+            <img className="hero-img" src="/images/hero-v2-trim.png" alt="After Work, SCENE BOX - 짐에 공간을 맞추세요" />
             <div className="hero-bottom">
               <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
               <div className="hero-cta">
