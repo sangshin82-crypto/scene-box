@@ -532,7 +532,8 @@ export default function SizeCheckPage() {
                     value={sizeHint}
                     onChange={e => setSizeHint(e.target.value)}
                     placeholder="예) 안마의자 높이 1m 정도"
-                    style={{ marginTop: 6, width: '100%', padding: '11px 12px', border: '1px solid #D6D5CE', borderRadius: 4, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                    className="sizehint-input"
+                    style={{ marginTop: 6, width: '100%', padding: '11px 12px', border: '1px solid #D6D5CE', borderRadius: 4, fontSize: 14, color: '#1F2933', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
@@ -542,9 +543,11 @@ export default function SizeCheckPage() {
                     value={itemDesc}
                     onChange={e => setItemDesc(e.target.value)}
                     placeholder="예) 안마의자, 이사박스 3개, 의자"
-                    style={{ marginTop: 6, width: '100%', padding: '11px 12px', border: '1px solid #D6D5CE', borderRadius: 4, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                    className="sizehint-input"
+                    style={{ marginTop: 6, width: '100%', padding: '11px 12px', border: '1px solid #D6D5CE', borderRadius: 4, fontSize: 14, color: '#1F2933', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
+                <style>{`.sizehint-input::placeholder { color: #9A9A92; }`}</style>
               </div>
             )}
 
