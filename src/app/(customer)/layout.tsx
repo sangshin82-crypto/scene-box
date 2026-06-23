@@ -9,7 +9,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const router   = useRouter();
   const pathname = usePathname();
 
-  const isLoginPage   = pathname === '/' || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password';
+  const isLoginPage   = pathname === '/' || pathname === '/personal' || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password';
   const isBookingPage = pathname.startsWith('/booking');
   const showPhoneBar  = !isLoginPage && !pathname.startsWith('/billing');
   const isLanding     = pathname === '/';
