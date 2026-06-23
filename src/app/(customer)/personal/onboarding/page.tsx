@@ -99,10 +99,10 @@ export default function PersonalOnboardingPage() {
               BOX
             </span>
           </div>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#1E293B", marginTop: 16 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", lineHeight: 1.5, letterSpacing: "-0.5px", margin: "16px 0 0" }}>
             집은 넓게, 짐은 가볍게 📦
-          </p>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 6, lineHeight: 1.7 }}>
+          </h1>
+          <p style={{ fontSize: 14, fontWeight: 500, color: "#64748B", lineHeight: 1.7, marginTop: 14 }}>
             안 쓰는 짐은 맡기고,<br />우리 집 공간을 넓게 쓰세요.
           </p>
         </div>
