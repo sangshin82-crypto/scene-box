@@ -67,7 +67,7 @@ export default function PersonalLandingPage() {
         <div style={{
           flex: "0 0 auto",
           background: "linear-gradient(165deg, #E8F5F0 0%, #F0F7F4 40%, #EEF4FF 100%)",
-          padding: "52px 24px 36px",
+          padding: "36px 24px 28px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -100,16 +100,13 @@ export default function PersonalLandingPage() {
             </span>
           </div>
 
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", lineHeight: 1.5, letterSpacing: "-0.5px", margin: "16px 0 0" }}>
-            집은 넓게,<br />짐은 가볍게 📦
-          </h1>
-          <p style={{ fontSize: 14, fontWeight: 500, color: "#64748B", lineHeight: 1.7, marginTop: 14 }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1.7, margin: "20px 0 0" }}>
             안 쓰는 짐은 맡기고,<br />우리 집 공간을 넓게 쓰세요.
           </p>
         </div>
 
         {/* ── 혜택 3가지 ── */}
-        <div style={{ padding: "28px 20px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 14 }}>
           {[
             { icon: Home, color: BLUE, bg: "#EFF6FF", title: "월 5만원, 우리 집 추가 창고", desc: "파레트 1칸 (박스 30개 분량) 공간을 내 창고처럼" },
             { icon: Truck, color: GREEN, bg: "#ECFDF5", title: "문 앞에서 수거·배송", desc: "직접 안 옮기셔도 돼요. 매주 월·목 방문" },
