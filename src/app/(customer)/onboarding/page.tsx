@@ -98,22 +98,11 @@ export default function OnboardingPage() {
               BOX
             </span>
           </div>
-          <div style={{ marginBottom: 10 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: "#334155", letterSpacing: "6px" }}>
-              씬박스
-            </span>
-          </div>
-          <span style={{
-            fontSize: 11, fontWeight: 600, color: "#94A3B8",
-            letterSpacing: "3px", textTransform: "uppercase",
-          }}>
-            Move &amp; Keep
-          </span>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#1E293B", marginTop: 16 }}>
-            안녕하세요! 👋
-          </p>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 6, lineHeight: 1.7 }}>
-            서비스 이용을 위해<br />정보를 입력해주세요.
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", lineHeight: 1.5, letterSpacing: "-0.5px", margin: "16px 0 0" }}>
+            짐에 공간을 맞추세요 📦
+          </h1>
+          <p style={{ fontSize: 14, fontWeight: 500, color: "#64748B", lineHeight: 1.7, marginTop: 14 }}>
+            촬영 소품부터 무대 설치물까지,<br />보관·배차·폐기를 한 번에.
           </p>
         </div>
 
