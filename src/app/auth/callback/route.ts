@@ -20,6 +20,7 @@ const sendTelegram = async (message: string) => {
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const type = requestUrl.searchParams.get("type"); // 개인/기업 구분
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,10 +51,12 @@ export async function GET(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (!clientData?.contact_phone) {
-      return NextResponse.redirect(new URL("/onboarding", requestUrl.origin));
+      if (!clientData?.contact_phone) {
+        // 개인 흐름이면 개인 온보딩으로, 아니면 기존 온보딩
+        const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
+        return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
+      }
     }
+  
+    return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
   }
-
-  return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
-}
