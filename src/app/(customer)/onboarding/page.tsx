@@ -84,11 +84,31 @@ export default function OnboardingPage() {
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: GREEN, display: "inline-block" }} />
             <span style={{ fontSize: 11, fontWeight: 600, color: "#059669" }}>B2B 특수화물 전문 공유창고</span>
           </div>
-          <div style={{ marginBottom: 6 }}>
-            <span style={{ fontSize: 36, fontWeight: 900, color: "#0F172A", letterSpacing: "-1.5px" }}>
-              Scene<span style={{ color: BLUE }}>Box</span>
+          <div style={{ marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+            <span style={{ fontSize: 38, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>
+              SCENE
+            </span>
+            <span style={{
+              width: 26, height: 26,
+              border: "3px solid #0A0A0A",
+              display: "inline-block",
+              borderRadius: 2,
+            }} />
+            <span style={{ fontSize: 38, fontWeight: 900, color: "#0A0A0A", letterSpacing: "-0.5px", fontFamily: "'Archivo','Apple SD Gothic Neo',sans-serif" }}>
+              BOX
             </span>
           </div>
+          <div style={{ marginBottom: 10 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#334155", letterSpacing: "6px" }}>
+              씬박스
+            </span>
+          </div>
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: "#94A3B8",
+            letterSpacing: "3px", textTransform: "uppercase",
+          }}>
+            Move &amp; Keep
+          </span>
           <p style={{ fontSize: 15, fontWeight: 700, color: "#1E293B", marginTop: 16 }}>
             안녕하세요! 👋
           </p>
