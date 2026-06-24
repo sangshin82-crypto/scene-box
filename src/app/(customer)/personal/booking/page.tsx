@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Minus, Plus, Package } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Package, MapPin } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
 const BLUE = "#2563EB";
@@ -28,6 +28,30 @@ export default function PersonalBookingPage() {
     }
     loadAddr();
   }, []);
+
+  // 다음 우편번호 스크립트 로드
+  useEffect(() => {
+    const SCRIPT_SRC = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+    if (document.querySelector(`script[src="${SCRIPT_SRC}"]`)) return;
+    const script = document.createElement("script");
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  // 주소 검색 팝업 열기
+  const openAddressSearch = () => {
+    const daum = (window as any).daum;
+    if (!daum || !daum.Postcode) {
+      alert("주소 검색 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    new daum.Postcode({
+      oncomplete: (data: any) => {
+        setAddress(data.roadAddress || data.jibunAddress);
+      },
+    }).open();
+  };
 
   const amount = boxCount * BOX_PRICE;
 
@@ -71,7 +95,7 @@ export default function PersonalBookingPage() {
           <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>보관 예약</span>
         </header>
 
-        <div className="flex flex-col gap-4" style={{ padding: "20px 16px" }}>
+        <div className="flex flex-col gap-4" style={{ padding: "52px 16px 20px" }}>
 
           {/* 안내 */}
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px 18px", border: "0.5px solid #D1E8DF" }}>
@@ -110,12 +134,20 @@ export default function PersonalBookingPage() {
 
           {/* 주소 */}
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 8 }}>수거 주소</label>
-            <input
-              type="text" value={address} onChange={(e) => setAddress(e.target.value)}
-              placeholder="박스를 배송·수거할 주소"
-              style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid #D1E8DF", fontSize: 15, color: "#0F172A", outline: "none", boxSizing: "border-box", background: "#fff", WebkitTextFillColor: "#0F172A" }}
-            />
+          <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 8 }}>수거 주소</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div onClick={openAddressSearch}
+                style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, background: "#fff", borderRadius: 14, border: "1.5px solid #D1E8DF", padding: "13px 14px", cursor: "pointer" }}>
+                <MapPin size={17} color={BLUE} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 14, color: address ? "#0F172A" : "#94A3B8" }}>
+                  {address || "주소 검색"}
+                </span>
+              </div>
+              <button type="button" onClick={openAddressSearch}
+                style={{ flexShrink: 0, padding: "13px 14px", borderRadius: 14, border: "none", background: BLUE, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+                검색
+              </button>
+            </div>
             <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", margin: "16px 0 8px" }}>요청사항 (선택)</label>
             <input
               type="text" value={memo} onChange={(e) => setMemo(e.target.value)}
