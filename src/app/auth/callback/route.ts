@@ -20,7 +20,7 @@ const sendTelegram = async (message: string) => {
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const type = requestUrl.searchParams.get("type");
+  const type = requestUrl.searchParams.get("type"); // 개인/기업 구분
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -44,20 +44,19 @@ export async function GET(request: Request) {
         : `🔄 <b>기존 고객 로그인</b>\n\n👤 이름: ${name}\n🕐 로그인: ${new Date().toLocaleDateString("ko-KR")}`
     );
 
+    // 전화번호 없으면 온보딩 페이지로 이동
     const { data: clientData } = await supabase
       .from("clients")
-      .select("contact_phone, user_type")
+      .select("contact_phone")
       .eq("id", user.id)
       .single();
 
-    if (!clientData?.contact_phone) {
-      const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
-      return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
+      if (!clientData?.contact_phone) {
+        // 개인 흐름이면 개인 온보딩으로, 아니면 기존 온보딩
+        const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
+        return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
+      }
     }
-
-    const dashboardPath = clientData?.user_type === "personal" ? "/personal/dashboard" : "/dashboard";
-    return NextResponse.redirect(new URL(dashboardPath, requestUrl.origin));
+  
+    return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
   }
-
-  return NextResponse.redirect(new URL("/", requestUrl.origin));
-}
