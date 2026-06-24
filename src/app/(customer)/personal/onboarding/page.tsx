@@ -54,7 +54,7 @@ export default function PersonalOnboardingPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/personal/dashboard");
   };
 
   return (

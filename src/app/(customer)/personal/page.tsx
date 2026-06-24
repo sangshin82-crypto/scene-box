@@ -44,7 +44,7 @@ export default function PersonalLandingPage() {
         return;
       }
     }
-    window.location.href = "/dashboard";
+    window.location.href = "/personal/dashboard";
   };
 
   return (

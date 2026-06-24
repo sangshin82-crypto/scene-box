@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     // 전화번호 없으면 온보딩 페이지로 이동
     const { data: clientData } = await supabase
       .from("clients")
-      .select("contact_phone")
+      .select("contact_phone, user_type")
       .eq("id", user.id)
       .single();
 
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
         const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
         return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
       }
+      const dashboardPath = clientData?.user_type === "personal" ? "/personal/dashboard" : "/dashboard";
+      return NextResponse.redirect(new URL(dashboardPath, requestUrl.origin));
     }
-  
-    return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
   }
