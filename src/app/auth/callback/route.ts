@@ -60,3 +60,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL(dashboardPath, requestUrl.origin));
     }
   }
+
+  // user 없음(로그인 실패 등) → 첫 화면으로
+  return NextResponse.redirect(new URL("/", requestUrl.origin));
+}
