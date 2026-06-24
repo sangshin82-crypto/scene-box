@@ -13,6 +13,7 @@ export default function PersonalBookingPage() {
   const router = useRouter();
   const [boxCount, setBoxCount] = useState(MIN_BOX);
   const [address, setAddress]   = useState("");
+  const [addressDetail, setAddressDetail] = useState("");
   const [memo, setMemo]         = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]       = useState("");
@@ -57,7 +58,8 @@ export default function PersonalBookingPage() {
 
   const handleSubmit = async () => {
     if (boxCount < MIN_BOX) { setError(`최소 ${MIN_BOX}개부터 신청 가능합니다.`); return; }
-    if (!address.trim())    { setError("주소를 입력해주세요."); return; }
+    if (!address.trim())    { setError("주소를 검색해주세요."); return; }
+    if (!addressDetail.trim()) { setError("상세주소(동·호수)를 입력해주세요."); return; }
     setIsSubmitting(true);
     setError("");
 
@@ -68,7 +70,7 @@ export default function PersonalBookingPage() {
       client_id: user.id,
       request_type: "storage",
       box_count: boxCount,
-      address_detail: address.trim(),
+      address_detail: `${address.trim()} ${addressDetail.trim()}`,
       amount,
       memo: memo.trim() || null,
       status: "requested",
@@ -148,6 +150,13 @@ export default function PersonalBookingPage() {
                 검색
               </button>
             </div>
+            {address && (
+              <input
+                type="text" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)}
+                placeholder="상세주소 입력 (동·호수 등)"
+                style={{ width: "100%", marginTop: 8, padding: "13px 14px", borderRadius: 14, border: "1.5px solid #D1E8DF", fontSize: 14, color: "#0F172A", outline: "none", boxSizing: "border-box", background: "#fff", WebkitTextFillColor: "#0F172A" }}
+              />
+            )}
             <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", margin: "16px 0 8px" }}>요청사항 (선택)</label>
             <input
               type="text" value={memo} onChange={(e) => setMemo(e.target.value)}
