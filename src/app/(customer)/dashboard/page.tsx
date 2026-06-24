@@ -75,9 +75,14 @@ export default function DashboardPage() {
 
       const { data: phoneData } = await supabase
         .from("clients")
-        .select("contact_phone")
+        .select("contact_phone, user_type")
         .eq("id", user.id)
         .single();
+
+      if (phoneData?.user_type === "personal") {
+        router.replace("/personal/dashboard");
+        return;
+      }
 
       if (!phoneData?.contact_phone) {
         router.push("/onboarding");
