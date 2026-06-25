@@ -232,9 +232,11 @@ export default function PersonalLandingPage() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 12, borderTop: "0.5px solid #D1E8DF", paddingTop: 14 }}>
-            <a href="/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
+            <a href="/personal/terms" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>이용약관</a>
             <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
-            <a href="/privacy" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>개인정보처리방침</a>
+            <a href="/personal/privacy" style={{ fontSize: 11, color: "#374151", textDecoration: "underline", fontWeight: 800 }}>개인정보처리방침</a>
+            <span style={{ fontSize: 11, color: "#D1D5DB" }}>|</span>
+            <a href="/personal/refund" style={{ fontSize: 11, color: "#6B7280", textDecoration: "underline" }}>취소 및 환불 규정</a>
           </div>
           <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 10 }}>
             © 2026 씬박스(SceneBox). All rights reserved.
