@@ -79,7 +79,11 @@ export default function DashboardPage() {
         .eq("id", user.id)
         .single();
 
-      if (phoneData?.user_type === "personal") {
+      // 개인 입구로 로그인했거나 개인 회원이면 개인 대시보드로
+      let entryMode = "";
+      try { entryMode = sessionStorage.getItem("entry_mode") || ""; } catch {}
+      if (entryMode === "personal" || phoneData?.user_type === "personal") {
+        try { sessionStorage.removeItem("entry_mode"); } catch {}
         router.replace("/personal/dashboard");
         return;
       }

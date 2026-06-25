@@ -9,6 +9,7 @@ const GREEN = "#10B981";
 export default function PersonalLandingPage() {
   // 카카오 로그인 — type=personal 달고 callback으로
   const handleKakaoLogin = async () => {
+    try { sessionStorage.setItem("entry_mode", "personal"); } catch {}
     await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
