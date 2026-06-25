@@ -71,14 +71,63 @@ export default function AdminPersonalPage() {
 
   useEffect(() => { fetchReqs(); }, [filter]);
 
-  const updateStatus = async (id: string, next: string) => {
+  const updateStatus = async (id: string, next: string, req: Req) => {
     if (!window.confirm(`상태를 변경하시겠어요?`)) return;
+
     const { error } = await supabase
       .from('personal_requests')
       .update({ status: next, updated_at: new Date().toISOString() })
       .eq('id', id);
     if (error) { alert('변경 실패: ' + error.message); return; }
+
+    // 보관 요청이 결제완료되면 구독 생성/갱신
+    if (next === 'paid' && req.request_type === 'storage' && req.box_count) {
+      await applySubscription(req.client_id, req.box_count);
+    }
+
     fetchReqs();
+  };
+
+  // 구독 생성 또는 박스 수 추가
+  const applySubscription = async (clientId: string, addBoxes: number) => {
+    // 기존 active 구독 확인
+    const { data: existing } = await supabase
+      .from('personal_subscriptions')
+      .select('id, box_count')
+      .eq('client_id', clientId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    const nextPay = new Date();
+    nextPay.setMonth(nextPay.getMonth() + 1);
+    const nextPayStr = nextPay.toISOString().slice(0, 10);
+
+    if (existing) {
+      // 기존 구독에 박스 수 추가
+      const newCount = existing.box_count + addBoxes;
+      const { error } = await supabase
+        .from('personal_subscriptions')
+        .update({
+          box_count: newCount,
+          monthly_fee: newCount * 10000,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+      if (error) alert('구독 갱신 실패: ' + error.message);
+    } else {
+      // 새 구독 생성
+      const { error } = await supabase
+        .from('personal_subscriptions')
+        .insert({
+          client_id: clientId,
+          box_count: addBoxes,
+          monthly_fee: addBoxes * 10000,
+          start_date: new Date().toISOString().slice(0, 10),
+          next_payment_date: nextPayStr,
+          status: 'active',
+        });
+      if (error) alert('구독 생성 실패: ' + error.message);
+    }
   };
 
   const cancelReq = async (id: string) => {
@@ -154,7 +203,7 @@ export default function AdminPersonalPage() {
                 {r.status !== 'completed' && r.status !== 'cancelled' && (
                   <div className="flex gap-2">
                     {action && (
-                      <button onClick={() => updateStatus(r.id, action.next)}
+                      <button onClick={() => updateStatus(r.id, action.next, r)}
                         className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold active:bg-blue-700">
                         {action.label}
                       </button>
