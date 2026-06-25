@@ -14,6 +14,10 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isOnboarding  = pathname === '/onboarding' || pathname === '/personal/onboarding';
   const showPhoneBar  = !isLoginPage && !isOnboarding && !pathname.startsWith('/billing');
   const isLanding     = pathname === '/';
+  const isPersonal    = pathname.startsWith('/personal');
+  const termsPath     = isPersonal ? '/personal/terms' : '/terms';
+  const privacyPath   = isPersonal ? '/personal/privacy' : '/privacy';
+  const refundPath    = isPersonal ? '/personal/refund' : '/refund';
 
   return (
     <div style={{
@@ -84,17 +88,17 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             </div>
           </div>
           <div style={{ display: 'flex', gap: 12, borderTop: '1px solid #D1E8DF', paddingTop: 14 }}>
-            <button onClick={() => router.push('/terms')}
+          <button onClick={() => router.push(termsPath)}
               style={{ fontSize: 11, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
               이용약관
             </button>
             <span style={{ fontSize: 11, color: '#D1D5DB' }}>|</span>
-            <button onClick={() => router.push('/privacy')}
+            <button onClick={() => router.push(privacyPath)}
               style={{ fontSize: 11, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', fontWeight: 800 }}>
               개인정보처리방침
             </button>
             <span style={{ fontSize: 11, color: '#D1D5DB' }}>|</span>
-            <button onClick={() => router.push('/refund')}
+            <button onClick={() => router.push(refundPath)}
               style={{ fontSize: 11, color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
               취소 및 환불 규정
             </button>
