@@ -109,7 +109,7 @@ export default function PersonalLandingPage() {
         {/* ── 혜택 3가지 ── */}
         <div style={{ padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 14 }}>
           {[
-            { icon: Home, color: BLUE, bg: "#EFF6FF", title: "월 5만원, 우리 집 추가 창고", desc: "파레트 1칸 (박스 30개 분량) 공간을 내 창고처럼" },
+            { icon: Home, color: BLUE, bg: "#EFF6FF", title: "박스 1개 월 1만원부터", desc: "필요한 만큼만, 최소 3개부터 신청하세요" },
             { icon: Truck, color: GREEN, bg: "#ECFDF5", title: "문 앞에서 수거·배송", desc: "직접 안 옮기셔도 돼요. 매주 월·목 방문" },
             { icon: Sparkles, color: "#7C3AED", bg: "#F5F3FF", title: "기업 화물 전문 시설에서 안전 관리", desc: "전문 보관시설 씬박스가 직접 관리합니다" },
           ].map(({ icon: Icon, color, bg, title, desc }, i) => (
