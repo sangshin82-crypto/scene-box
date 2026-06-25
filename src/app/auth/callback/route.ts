@@ -44,19 +44,27 @@ export async function GET(request: Request) {
         : `🔄 <b>기존 고객 로그인</b>\n\n👤 이름: ${name}\n🕐 로그인: ${new Date().toLocaleDateString("ko-KR")}`
     );
 
-    // 전화번호 없으면 온보딩 페이지로 이동
     const { data: clientData } = await supabase
       .from("clients")
       .select("contact_phone")
       .eq("id", user.id)
       .single();
 
-      if (!clientData?.contact_phone) {
-        // 개인 흐름이면 개인 온보딩으로, 아니면 기존 온보딩
-        const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
-        return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
-      }
+    // 전화번호 없으면 온보딩으로
+    if (!clientData?.contact_phone) {
+      const onboardingPath = type === "personal" ? "/personal/onboarding" : "/onboarding";
+      return NextResponse.redirect(new URL(onboardingPath, requestUrl.origin));
     }
-  
+
+    // 개인 입구(type=personal)로 들어오면 무조건 개인 대시보드로
+    if (type === "personal") {
+      return NextResponse.redirect(new URL("/personal/dashboard", requestUrl.origin));
+    }
+
+    // 그 외는 기업 대시보드로
     return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
   }
+
+  // user 없음(로그인 실패 등) → 첫 화면으로
+  return NextResponse.redirect(new URL("/", requestUrl.origin));
+}
