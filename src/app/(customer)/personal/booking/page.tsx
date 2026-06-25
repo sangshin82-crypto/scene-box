@@ -16,6 +16,7 @@ export default function PersonalBookingPage() {
   const [addressDetail, setAddressDetail] = useState("");
   const [memo, setMemo]         = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreed, setAgreed]     = useState(false);
   const [error, setError]       = useState("");
 
   // 기존 주소 미리 채우기
@@ -178,11 +179,23 @@ export default function PersonalBookingPage() {
             ※ 결제는 관리자 방문 수거 후 페이앱 링크로 진행됩니다.
           </p>
 
+          {/* 약관 동의 */}
+          <div onClick={() => setAgreed((v) => !v)} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#fff", borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", cursor: "pointer" }}>
+            <div style={{ width: 22, height: 22, borderRadius: 6, border: agreed ? "none" : "1.5px solid #CBD5E1", background: agreed ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+              {agreed && <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>✓</span>}
+            </div>
+            <p style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.6 }}>
+              <a href="/personal/terms" target="_blank" onClick={(e) => e.stopPropagation()} style={{ color: BLUE, textDecoration: "underline" }}>이용약관</a>,{" "}
+              <a href="/personal/refund" target="_blank" onClick={(e) => e.stopPropagation()} style={{ color: BLUE, textDecoration: "underline" }}>환불규정</a>,{" "}
+              <a href="/personal/privacy" target="_blank" onClick={(e) => e.stopPropagation()} style={{ color: BLUE, textDecoration: "underline" }}>개인정보처리방침</a>에 동의합니다.
+            </p>
+          </div>
+
           {error && <p style={{ fontSize: 13, color: "#EF4444", textAlign: "center" }}>{error}</p>}
 
           <button
-            onClick={handleSubmit} disabled={isSubmitting}
-            style={{ width: "100%", padding: "16px 0", borderRadius: 14, border: "none", background: isSubmitting ? "#E5E7EB" : `linear-gradient(90deg, ${BLUE}, #3B82F6)`, color: isSubmitting ? "#9CA3AF" : "#fff", fontSize: 16, fontWeight: 700, cursor: isSubmitting ? "not-allowed" : "pointer" }}>
+            onClick={handleSubmit} disabled={isSubmitting || !agreed}
+            style={{ width: "100%", padding: "16px 0", borderRadius: 14, border: "none", background: (isSubmitting || !agreed) ? "#E5E7EB" : `linear-gradient(90deg, ${BLUE}, #3B82F6)`, color: (isSubmitting || !agreed) ? "#9CA3AF" : "#fff", fontSize: 16, fontWeight: 700, cursor: (isSubmitting || !agreed) ? "not-allowed" : "pointer" }}>
             {isSubmitting ? "접수 중..." : "예약하기"}
           </button>
         </div>
