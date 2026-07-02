@@ -123,11 +123,13 @@ export default function QuickPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F5F4EF", padding: "0 0 90px", fontFamily: FONT }}>
+    <div className="quick-page" style={{ minHeight: "100vh", background: "#F5F4EF", padding: "0 0 90px", fontFamily: FONT }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Gothic+A1:wght@400;500;700;800;900&display=swap');
         .qspin { animation: qspin 1s linear infinite; }
         @keyframes qspin { to { transform: rotate(360deg); } }
+        .quick-page input, .quick-page textarea { color: #0A0A0A !important; -webkit-text-fill-color: #0A0A0A !important; }
+        .quick-page input::placeholder, .quick-page textarea::placeholder { color: #B0B0AC !important; -webkit-text-fill-color: #B0B0AC !important; opacity: 1; }
       `}</style>
 
       <div style={{ maxWidth: 480, margin: "0 auto" }}>
