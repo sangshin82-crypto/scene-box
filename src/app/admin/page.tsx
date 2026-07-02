@@ -152,12 +152,20 @@ export default function AdminDashboard() {
           💰 요금 청구
         </button>
       </div>
-      <div className="px-4 mb-6">
+      <div className="px-4 mb-3">
         <button
           onClick={() => router.push('/admin/personal')}
           className="w-full bg-white border border-gray-200 text-gray-800 py-3.5 rounded-xl font-bold shadow-sm active:bg-gray-50"
         >
           👤 개인 보관 요청
+        </button>
+      </div>
+      <div className="px-4 mb-6">
+        <button
+          onClick={() => router.push('/admin/quick')}
+          className="w-full bg-white border border-gray-200 text-gray-800 py-3.5 rounded-xl font-bold shadow-sm active:bg-gray-50"
+        >
+          🏠 씬박스홈 상담 신청
         </button>
       </div>
 
