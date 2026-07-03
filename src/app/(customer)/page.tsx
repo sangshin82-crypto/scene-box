@@ -345,7 +345,7 @@ const closePromoToday = () => {
                   }}
                 >
                   <span>씬박스홈 바로가기</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9 }}>개인고객 전용</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9 }}>(개인고객 전용)</span>
                 </button>
               </div>
             </div>
