@@ -333,8 +333,20 @@ const closePromoToday = () => {
             <img className="hero-img" src="/images/hero-v2-trim.png" alt="After Work, SCENE BOX - 짐에 공간을 맞추세요" />
             <div className="hero-bottom">
               <p className="hero-sub">촬영 소품, 무대 설치물, 팝업 집기, 비정형 화물까지.<br />씬박스는 당신의 짐에 공간을 맞춥니다.</p>
-              <div className="hero-cta">
+              <div className="hero-cta" style={{ flexDirection: "column", gap: 14, marginBottom: 40 }}>
                 <button className="btn-primary" onClick={() => { window.location.href = "/size-check"; }}>AI로 내 짐 사이즈 알아보기</button>
+                <button
+                  className="btn-primary"
+                  onClick={() => { window.location.href = "/personal"; }}
+                  style={{
+                    background: "#C0392B",
+                    boxShadow: "0 8px 28px rgba(192,57,43,0.35)",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 3, lineHeight: 1.3,
+                  }}
+                >
+                  <span>씬박스홈 바로가기</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9 }}>개인고객 전용</span>
+                </button>
               </div>
             </div>
           </div>
