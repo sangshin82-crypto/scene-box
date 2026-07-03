@@ -160,9 +160,8 @@ export default function QuickPage() {
               가로 1.1m × 세로 0.8m × 높이 1.5m
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 14, color: "#aaa", textDecoration: "line-through", marginBottom: 2 }}>정가 월 39,900원</div>
+              <div style={{ fontSize: 14, color: "#aaa", textDecoration: "line-through", marginBottom: 2 }}>정가 월 44,000원</div>
               <div style={{ fontSize: 34, fontWeight: 900, color: BLUE, lineHeight: 1.1, letterSpacing: "-1px" }}>월 33,000원</div>
-              <div style={{ fontSize: 12, color: "#94A3B8", fontWeight: 600, marginTop: 3 }}>부가세 포함</div>
               <div style={{ fontSize: 17, fontWeight: 900, color: BLUE, marginTop: 6 }}>무료 방문 수거·반출</div>
             </div>
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid #eee", fontSize: 13.5, color: "#555", lineHeight: 1.7, textAlign: "center" }}>
