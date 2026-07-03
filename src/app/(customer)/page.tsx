@@ -337,7 +337,7 @@ const closePromoToday = () => {
                 <button className="btn-primary" onClick={() => { window.location.href = "/size-check"; }}>AI로 내 짐 사이즈 알아보기</button>
                 <button
                   className="btn-primary"
-                  onClick={() => { window.location.href = "/personal"; }}
+                  onClick={() => { alert("씬박스홈 개인 서비스는 곧 오픈 예정이에요! 조금만 기다려 주세요 🙏"); }}
                   style={{
                     background: "#C0392B",
                     boxShadow: "0 8px 28px rgba(192,57,43,0.35)",
