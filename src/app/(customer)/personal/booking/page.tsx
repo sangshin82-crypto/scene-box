@@ -6,12 +6,21 @@ import { ArrowLeft, Minus, Plus, Package, MapPin } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
 const BLUE = "#2563EB";
-const BOX_PRICE = 10000;
-const MIN_BOX = 3;
+const GREEN = "#10B981";
+
+// 롤테이너 요금 (VAT 포함, 1칸 기준)
+const PRICE_3M_MONTHLY = 33000;   // 3개월 약정 월 단가
+const PRICE_1M = 44000;           // 1개월 이용 단가
+const PICKUP_FEE = 25000;         // 1개월 최초 수거비
+const RETRIEVAL_FEE = 25000;      // 1개월 반출비
+const MIN_UNIT = 1;               // 최소 1칸
+
+type PlanType = "3month" | "1month";
 
 export default function PersonalBookingPage() {
   const router = useRouter();
-  const [boxCount, setBoxCount] = useState(MIN_BOX);
+  const [planType, setPlanType] = useState<PlanType>("3month"); // 3개월 기본 선택
+  const [unitCount, setUnitCount] = useState(MIN_UNIT);
   const [address, setAddress]   = useState("");
   const [addressDetail, setAddressDetail] = useState("");
   const [memo, setMemo]         = useState("");
@@ -55,10 +64,14 @@ export default function PersonalBookingPage() {
     }).open();
   };
 
-  const amount = boxCount * BOX_PRICE;
+  // ── 금액 계산 (예상액) ──
+  // 3개월 약정: 월 33,000 × 3개월 × 칸 = 선결제 총액. 수거·반출 무료.
+  // 1개월 이용: 44,000 × 칸 + (수거 25,000 + 반출 25,000) × 칸.
+  const total3m = PRICE_3M_MONTHLY * 3 * unitCount;
+  const total1m = (PRICE_1M + PICKUP_FEE + RETRIEVAL_FEE) * unitCount;
+  const amount = planType === "3month" ? total3m : total1m;
 
   const handleSubmit = async () => {
-    if (boxCount < MIN_BOX) { setError(`최소 ${MIN_BOX}개부터 신청 가능합니다.`); return; }
     if (!address.trim())    { setError("주소를 검색해주세요."); return; }
     if (!addressDetail.trim()) { setError("상세주소(동·호수)를 입력해주세요."); return; }
     setIsSubmitting(true);
@@ -67,13 +80,18 @@ export default function PersonalBookingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
+    // plan_type 컬럼은 런칭 전 DB 정합성 스프린트에서 정식화 예정.
+    // 현재는 memo 앞에 태그로 임시 저장.
+    const planTag = planType === "3month" ? "[3개월 약정]" : "[1개월 이용]";
+    const memoWithPlan = `${planTag}${memo.trim() ? " " + memo.trim() : ""}`;
+
     const { error: insErr } = await supabase.from("personal_requests").insert({
       client_id: user.id,
       request_type: "storage",
-      box_count: boxCount,
+      box_count: unitCount,   // DB 컬럼명은 box_count 유지(칸 수). 스프린트에서 리네이밍 예정.
       address_detail: `${address.trim()} ${addressDetail.trim()}`,
-      amount,
-      memo: memo.trim() || null,
+      amount,                 // 예상액. 현장 칸 수 확정 후 관리자가 최종 조정.
+      memo: memoWithPlan,
       status: "requested",
     });
 
@@ -82,7 +100,7 @@ export default function PersonalBookingPage() {
       setIsSubmitting(false);
       return;
     }
-    alert("보관 예약이 접수되었습니다!\n관리자가 가까운 월요일 방문 일정을 안내해 드립니다.");
+    alert("보관 예약이 접수되었습니다!\n회사가 지정하는 정기 방문일을 별도로 안내해 드립니다.");
     router.push("/personal/dashboard");
   };
 
@@ -98,41 +116,102 @@ export default function PersonalBookingPage() {
           <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>보관 예약</span>
         </header>
 
-        <div className="flex flex-col gap-4" style={{ padding: "52px 16px 20px" }}>
+        <div className="flex flex-col gap-4" style={{ padding: "20px 16px 20px" }}>
 
-          {/* 안내 */}
+          {/* 안내 — 롤테이너 소개 + 흐름 */}
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px 18px", border: "0.5px solid #D1E8DF" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <Package size={20} color={BLUE} strokeWidth={2} />
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>이사박스 보관</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>롤테이너 보관</span>
             </div>
+            <p style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.7, marginBottom: 10 }}>
+              <b>1칸 = 가로 1.1m × 세로 0.8m × 높이 1.5m (약 1,300L)</b><br />
+              옷장 하나를 통째로 담을 수 있는 크기예요.
+            </p>
             <p style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.7 }}>
-              박스 1개당 월 10,000원 (최소 3개)<br />
-              신청하시면 가까운 <b>월요일에 빈 박스를 배송</b>하고,<br />
-              채워두시면 <b>목요일에 회수</b>해 보관합니다.
+              직접 포장해 두시면, 정기 방문일에 <b>현관 앞에서 수거</b>해 롤테이너에 적재·라벨링 후 보관합니다.
             </p>
           </div>
 
-          {/* 박스 수 선택 */}
+          {/* 약정 선택 */}
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 14 }}>박스 개수</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 14 }}>이용 유형</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+              {/* 3개월 약정 */}
+              <button
+                onClick={() => setPlanType("3month")}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "16px 16px", borderRadius: 14, cursor: "pointer", width: "100%",
+                  border: planType === "3month" ? `2px solid ${GREEN}` : "1.5px solid #E5E7EB",
+                  background: planType === "3month" ? "#ECFDF5" : "#fff",
+                }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>3개월 약정</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: GREEN, padding: "2px 7px", borderRadius: 99 }}>추천</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#64748B" }}>월 33,000원 · 수거·반출 무료</p>
+                </div>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", border: planType === "3month" ? "none" : "1.5px solid #CBD5E1", background: planType === "3month" ? GREEN : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {planType === "3month" && <span style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                </div>
+              </button>
+
+              {/* 1개월 이용 */}
+              <button
+                onClick={() => setPlanType("1month")}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "16px 16px", borderRadius: 14, cursor: "pointer", width: "100%",
+                  border: planType === "1month" ? `2px solid ${BLUE}` : "1.5px solid #E5E7EB",
+                  background: planType === "1month" ? "#EFF6FF" : "#fff",
+                }}>
+                <div style={{ textAlign: "left" }}>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", marginBottom: 3 }}>1개월 이용</p>
+                  <p style={{ fontSize: 12, color: "#64748B" }}>44,000원 · 수거·반출 각 25,000원 별도</p>
+                </div>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", border: planType === "1month" ? "none" : "1.5px solid #CBD5E1", background: planType === "1month" ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {planType === "1month" && <span style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                </div>
+              </button>
+
+            </div>
+
+            {/* 디코이 넛지 — 1개월 선택 시 */}
+            {planType === "1month" && (
+              <div style={{ marginTop: 12, background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: "12px 14px" }}>
+                <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.6 }}>
+                  1개월 이용은 수거·반출 비용이 별도라 <b>1칸 기준 94,000원</b>이 됩니다.
+                  단 <b>5,000원 차이</b>인 <b>3개월 약정(99,000원)</b>이 보관 기간 3배로 훨씬 유리해요.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* 칸 수 선택 */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 14 }}>롤테이너 칸 수</p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 24 }}>
               <button
-                onClick={() => setBoxCount((c) => Math.max(MIN_BOX, c - 1))}
-                style={{ width: 44, height: 44, borderRadius: 12, border: "1.5px solid #E5E7EB", background: "#F9FAFB", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: boxCount <= MIN_BOX ? "#D1D5DB" : "#374151" }}>
+                onClick={() => setUnitCount((c) => Math.max(MIN_UNIT, c - 1))}
+                style={{ width: 44, height: 44, borderRadius: 12, border: "1.5px solid #E5E7EB", background: "#F9FAFB", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: unitCount <= MIN_UNIT ? "#D1D5DB" : "#374151" }}>
                 <Minus size={20} strokeWidth={2} />
               </button>
               <div style={{ textAlign: "center", minWidth: 80 }}>
-                <span style={{ fontSize: 36, fontWeight: 800, color: "#0F172A" }}>{boxCount}</span>
-                <span style={{ fontSize: 16, fontWeight: 600, color: "#94A3B8", marginLeft: 4 }}>개</span>
+                <span style={{ fontSize: 36, fontWeight: 800, color: "#0F172A" }}>{unitCount}</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: "#94A3B8", marginLeft: 4 }}>칸</span>
               </div>
               <button
-                onClick={() => setBoxCount((c) => c + 1)}
+                onClick={() => setUnitCount((c) => c + 1)}
                 style={{ width: 44, height: 44, borderRadius: 12, border: "1.5px solid #E5E7EB", background: "#F9FAFB", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}>
                 <Plus size={20} strokeWidth={2} />
               </button>
             </div>
-            <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 12 }}>최소 3개부터 신청 가능합니다</p>
+            <p style={{ textAlign: "center", fontSize: 11, color: "#94A3B8", marginTop: 12, lineHeight: 1.6 }}>
+              예상 칸 수입니다. 실제 칸 수는 수거 현장에서 확인 후 최종 산정됩니다.
+            </p>
           </div>
 
           {/* 주소 */}
@@ -166,17 +245,27 @@ export default function PersonalBookingPage() {
             />
           </div>
 
-          {/* 금액 */}
-          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>월 이용료</span>
-            <div style={{ textAlign: "right" }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: BLUE }}>{amount.toLocaleString()}원</span>
-              <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>박스 {boxCount}개 × 10,000원</p>
+          {/* 예상 금액 */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>예상 결제 금액</span>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontSize: 22, fontWeight: 800, color: BLUE }}>{amount.toLocaleString()}원</span>
+                {planType === "3month" ? (
+                  <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+                    3개월 선결제 · 월 33,000원 × {unitCount}칸 · 카드 할부 가능
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+                    (44,000 + 수거 25,000 + 반출 25,000) × {unitCount}칸
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
           <p style={{ fontSize: 11, color: "#94A3B8", lineHeight: 1.6, paddingLeft: 2 }}>
-            ※ 결제는 관리자 방문 수거 후 페이앱 링크로 진행됩니다.
+            ※ 위 금액은 예상액입니다. 실제 금액은 현장에서 칸 수 확정 후 페이앱 링크로 안내·결제됩니다.
           </p>
 
           {/* 약관 동의 */}
@@ -196,7 +285,7 @@ export default function PersonalBookingPage() {
           <button
             onClick={handleSubmit} disabled={isSubmitting || !agreed}
             style={{ width: "100%", padding: "16px 0", borderRadius: 14, border: "none", background: (isSubmitting || !agreed) ? "#E5E7EB" : `linear-gradient(90deg, ${BLUE}, #3B82F6)`, color: (isSubmitting || !agreed) ? "#9CA3AF" : "#fff", fontSize: 16, fontWeight: 700, cursor: (isSubmitting || !agreed) ? "not-allowed" : "pointer" }}>
-            {isSubmitting ? "접수 중..." : "예약하기"}
+            {isSubmitting ? "접수 중..." : "예약 신청하기"}
           </button>
         </div>
       </div>
