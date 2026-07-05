@@ -23,14 +23,14 @@ export default function PersonalPrivacyPage() {
             <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 6, letterSpacing: "-0.5px" }}>
               개인정보 처리방침
             </h1>
-            <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 6월 26일</p>
+            <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 __월 __일</p>
           </div>
 
           <div style={{ background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 12, padding: "16px 18px" }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#1D4ED8", marginBottom: 10 }}>📌 주요 내용 요약</p>
             <ul style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "#374151", lineHeight: 1.7 }}>
               <li><strong>수집 항목</strong>: 성명, 휴대전화, 주소</li>
-              <li><strong>이용 목적</strong>: 보관 예약·관리, 박스 수거·배송, 결제, 안내 발송</li>
+              <li><strong>이용 목적</strong>: 보관 예약·관리, 물품 수거·반출, 결제, 안내 발송</li>
               <li><strong>보유 기간</strong>: 관계 법령에 따라 최대 5년</li>
               <li><strong>제3자 제공</strong>: 원칙적으로 제공하지 않음</li>
               <li><strong>처리 위탁 및 국외 이전</strong>: 결제·데이터 저장·메시지 발송 업무 위탁(아래 참조)</li>
@@ -41,9 +41,9 @@ export default function PersonalPrivacyPage() {
           </div>
 
           <Section title="1. 개인정보의 수집 및 이용 목적">
-            <p style={{ marginBottom: 10 }}>씬박스(이하 "회사")는 개인 보관 서비스 제공을 위해 아래 목적으로 개인정보를 수집·이용합니다.</p>
+            <p style={{ marginBottom: 10 }}>씬박스(이하 "회사")는 개인 보관 서비스 '씬박스홈' 제공을 위해 아래 목적으로 개인정보를 수집·이용합니다.</p>
             <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-              <li><strong>보관 예약 및 관리</strong>, 박스 수거·배송, 반출 처리, 고객 상담</li>
+              <li><strong>보관 예약 및 관리</strong>, 물품 수거·반출, 고객 상담</li>
               <li>서비스 이용 <strong>요금 결제</strong> 및 정산</li>
               <li>방문 일정, 변경 사항 등 <strong>안내 메시지(카카오 알림톡, 이메일 등) 발송</strong></li>
             </ul>
@@ -52,7 +52,7 @@ export default function PersonalPrivacyPage() {
           <Section title="2. 수집하는 개인정보 항목">
             <p style={{ marginBottom: 10 }}>회사는 서비스 예약 및 결제 과정에서 아래의 최소한의 정보를 수집합니다.</p>
             <ul style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-              <li><strong>필수 항목:</strong> 성명, 휴대전화 번호, 수거·배송 주소(상세주소 포함)</li>
+              <li><strong>필수 항목:</strong> 성명, 휴대전화 번호, 수거·반출 주소(상세주소 포함)</li>
               <li><strong>결제 관련 항목:</strong> 결제 및 정산 정보. 단, 카드번호 등 결제수단 정보는 결제대행 페이지에서 처리되며 <strong>회사가 직접 저장하지 않습니다.</strong></li>
               <li><strong>카카오 로그인 시:</strong> 카카오 계정 프로필(닉네임, 프로필 이미지)</li>
               <li><strong>서비스 이용 과정에서 자동 수집:</strong> 접속 IP, 서비스 이용 기록</li>
