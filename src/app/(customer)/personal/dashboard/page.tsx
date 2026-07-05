@@ -14,6 +14,7 @@ const KAKAO_CHAT_URL = "http://pf.kakao.com/_ngBCX/chat";
 
 type Client = { name: string };
 type Subscription = {
+  plan_type: string | null;
   unit_count: number;
   monthly_fee: number;
   next_payment_date: string | null;
@@ -70,7 +71,7 @@ export default function PersonalDashboardPage() {
 
       const { data: subData } = await supabase
         .from("personal_subscriptions")
-        .select("unit_count, monthly_fee, next_payment_date, status")
+        .select("plan_type, unit_count, monthly_fee, next_payment_date, status")
         .eq("client_id", user.id)
         .eq("status", "active")
         .maybeSingle();
@@ -192,12 +193,20 @@ export default function PersonalDashboardPage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>다음 결제일</p>
+                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>
+                  {sub?.plan_type === "1month" ? "이용 만료일" : "약정 갱신 예정일"}
+                </p>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{sub?.next_payment_date ? fmtDate(sub.next_payment_date) : "—"}</p>
               </div>
               <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>월 이용료</p>
-                <p style={{ fontSize: 16, fontWeight: 800, color: BLUE }}>{sub ? `${sub.monthly_fee.toLocaleString()}원` : "—"}</p>
+                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>이용 요금제</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: BLUE }}>
+                  {sub
+                    ? sub.plan_type === "1month"
+                      ? "1개월 · 칸당 44,000원"
+                      : "3개월 약정 · 칸당 33,000원"
+                    : "—"}
+                </p>
               </div>
             </div>
           </div>
