@@ -13,7 +13,7 @@ const GREEN = "#10B981";
 const OPTIONS = [
   { id: "regular", label: "정기 반출", price: 0,     desc: "약정 종료 후 전체 짐을 돌려받습니다 (계약 종료)", color: GREEN },
   { id: "parcel",  label: "택배 반출", price: 5000,  desc: "라벨 번호 기준 소형 물품을 택배로 받습니다 (보관 유지)", color: BLUE },
-  { id: "urgent",  label: "수시 반출", price: 15000, desc: "라벨 번호 기준 대형 물품을 정기 방문일에 직접 받습니다 (보관 유지)", color: "#F59E0B" },
+  { id: "oncall",  label: "수시 반출", price: 15000, desc: "라벨 번호 기준 대형 물품을 정기 방문일에 직접 받습니다 (보관 유지)", color: "#F59E0B" },
 ];
 
 export default function PersonalRetrievalPage() {
@@ -60,8 +60,8 @@ export default function PersonalRetrievalPage() {
 
   const selected = OPTIONS.find((o) => o.id === type)!;
   const amount = selected.price;
-  const needItem = type === "parcel" || type === "urgent";
-  const needDate = type === "urgent";
+  const needItem = type === "parcel" || type === "oncall";
+  const needDate = type === "oncall";
 
   const handleSubmit = async () => {
     if (needItem && !itemDesc.trim()) { setError("찾으실 라벨 번호를 입력해주세요."); return; }
@@ -78,7 +78,7 @@ export default function PersonalRetrievalPage() {
       client_id: user.id,
       request_type: "retrieval",
       retrieval_type: type,
-      item_desc: needItem ? itemDesc.trim() : null,
+      label_no: needItem ? itemDesc.trim() : null,
       desired_date: needDate ? desiredDate : null,
       address_detail: `${address.trim()} ${addressDetail.trim()}`,
       amount,
