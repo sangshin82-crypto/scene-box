@@ -67,8 +67,9 @@ export default function PersonalBookingPage() {
   // ── 금액 계산 (예상액) ──
   // 3개월 약정: 월 33,000 × 3개월 × 칸 = 선결제 총액. 수거·반출 무료.
   // 1개월 이용: 44,000 × 칸 + (수거 25,000 + 반출 25,000) × 칸.
+  // 3개월: 보관료만(수거·반출 무료). 1개월: 보관료는 칸마다, 수거·반출비는 왕복 1회 고정(칸 무관).
   const total3m = PRICE_3M_MONTHLY * 3 * unitCount;
-  const total1m = (PRICE_1M + PICKUP_FEE + RETRIEVAL_FEE) * unitCount;
+  const total1m = PRICE_1M * unitCount + (PICKUP_FEE + RETRIEVAL_FEE);
   const amount = planType === "3month" ? total3m : total1m;
 
   const handleSubmit = async () => {
@@ -116,7 +117,7 @@ export default function PersonalBookingPage() {
           <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>보관 예약</span>
         </header>
 
-        <div className="flex flex-col gap-4" style={{ padding: "20px 16px 20px" }}>
+        <div className="flex flex-col gap-4" style={{ padding: "28px 16px 20px" }}>
 
           {/* 안내 — 롤테이너 소개 + 흐름 */}
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px 18px", border: "0.5px solid #D1E8DF" }}>
@@ -179,15 +180,26 @@ export default function PersonalBookingPage() {
 
             </div>
 
-            {/* 디코이 넛지 — 1개월 선택 시 */}
-            {planType === "1month" && (
-              <div style={{ marginTop: 12, background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: "12px 14px" }}>
-                <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.6 }}>
-                  1개월 이용은 수거·반출 비용이 별도라 <b>1칸 기준 94,000원</b>이 됩니다.
-                  단 <b>5,000원 차이</b>인 <b>3개월 약정(99,000원)</b>이 보관 기간 3배로 훨씬 유리해요.
-                </p>
-              </div>
-            )}
+            {/* 디코이 넛지 — 1개월 선택 시. 실제 선택 칸 수 기준 동적 계산 */}
+            {planType === "1month" && (() => {
+              const diff = total3m - total1m; // 3개월 총액 - 1개월 총액
+              return (
+                <div style={{ marginTop: 12, background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: "12px 14px" }}>
+                  <p style={{ fontSize: 12, color: "#B45309", lineHeight: 1.6 }}>
+                    1개월 이용은 수거·반출 비용이 별도라 <b>{unitCount}칸 기준 {total1m.toLocaleString()}원</b>입니다.
+                    {diff >= 0 ? (
+                      <>
+                        {" "}단 <b>{diff.toLocaleString()}원</b>만 더하면 <b>3개월 약정({total3m.toLocaleString()}원)</b>으로 보관 기간이 3배가 돼요.
+                      </>
+                    ) : (
+                      <>
+                        {" "}<b>3개월 약정({total3m.toLocaleString()}원)</b>과 큰 차이 없이 보관 기간을 3배로 늘릴 수 있어요.
+                      </>
+                    )}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* 칸 수 선택 */}
@@ -257,7 +269,7 @@ export default function PersonalBookingPage() {
                   </p>
                 ) : (
                   <p style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
-                    (44,000 + 수거 25,000 + 반출 25,000) × {unitCount}칸
+                    보관 44,000원 × {unitCount}칸 + 수거·반출 50,000원(1회)
                   </p>
                 )}
               </div>
