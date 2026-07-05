@@ -129,11 +129,13 @@ export default function AdminPersonalPage() {
 
   // 구독 생성 또는 칸 수 추가
   const applySubscription = async (clientId: string, planType: string | null, addUnits: number) => {
+    // 같은 plan_type의 active 구독만 찾아 합산. 다른 유형이면 새 행 생성.
     const { data: existing } = await supabase
       .from('personal_subscriptions')
       .select('id, unit_count')
       .eq('client_id', clientId)
       .eq('status', 'active')
+      .eq('plan_type', planType)
       .maybeSingle();
 
     // 약정 유형에 따른 다음 결제일: 3개월 약정=3개월 후, 1개월=1개월 후

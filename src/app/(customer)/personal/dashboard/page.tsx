@@ -14,7 +14,8 @@ const KAKAO_CHAT_URL = "http://pf.kakao.com/_ngBCX/chat";
 
 type Client = { name: string };
 type Subscription = {
-  plan_type: string | null;
+  id: string;
+  plan_type: string | null;   // '3month' | '1month'
   unit_count: number;
   monthly_fee: number;
   next_payment_date: string | null;
@@ -33,8 +34,6 @@ const fmtDate = (d: string) => {
   const date = new Date(d);
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
 };
-const getDday = (d: string) =>
-  Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
 const statusLabel: Record<string, string> = {
   requested: "접수됨",
@@ -48,7 +47,7 @@ export default function PersonalDashboardPage() {
   const router = useRouter();
 
   const [client, setClient]       = useState<Client | null>(null);
-  const [sub, setSub]             = useState<Subscription | null>(null);
+  const [subs, setSubs]           = useState<Subscription[]>([]);
   const [requests, setRequests]   = useState<ReqRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -71,11 +70,11 @@ export default function PersonalDashboardPage() {
 
       const { data: subData } = await supabase
         .from("personal_subscriptions")
-        .select("plan_type, unit_count, monthly_fee, next_payment_date, status")
+        .select("id, plan_type, unit_count, monthly_fee, next_payment_date, status")
         .eq("client_id", user.id)
         .eq("status", "active")
-        .maybeSingle();
-      if (subData) setSub(subData as Subscription);
+        .order("created_at", { ascending: true });
+      if (subData) setSubs(subData as Subscription[]);
 
       const { data: reqData } = await supabase
         .from("personal_requests")
@@ -90,7 +89,7 @@ export default function PersonalDashboardPage() {
     fetchData();
   }, []);
 
-  const dday = sub?.next_payment_date ? getDday(sub.next_payment_date) : null;
+  const totalUnits = subs.reduce((sum, s) => sum + (s.unit_count ?? 0), 0);
 
   const quickActions = [
     { id: "store", icon: Package, label: "보관 예약", sub: "롤테이너 신청하고 짐 맡기기", grad: "linear-gradient(135deg, #2563EB, #1D4ED8)", shadow: "rgba(37,99,235,0.35)", route: "/personal/booking" },
@@ -166,50 +165,50 @@ export default function PersonalDashboardPage() {
 
         <div className="flex flex-col gap-4 px-4" style={{ paddingTop: 20 }}>
 
-          {/* 보관 현황 카드 */}
+          {/* 인사 + 총 보관 현황 요약 */}
           <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "20px" }}>
             <p style={{ fontSize: 12, color: "#94A3B8", marginBottom: 4, fontWeight: 500 }}>나의 보관 현황</p>
             <h2 style={{ fontSize: 19, fontWeight: 800, color: "#0F172A", lineHeight: 1.3, marginBottom: 16 }}>
               {client?.name ?? "고객"} 님,<br />환영합니다 👋
             </h2>
 
-            <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "14px 16px", marginBottom: 14 }}>
-              <div className="mb-3 flex items-center justify-between">
-              <span style={{ fontSize: 12, color: "#64748B" }}>보관 중인 롤테이너</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
-              {sub ? `${sub.unit_count}칸 보관 중` : "보관 내역 없음"}
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 10, padding: "10px 14px", border: "0.5px solid #D1E8DF" }}>
-                <div className="flex items-center gap-2">
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: sub ? GREEN : "#D1D5DB", display: "inline-block" }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{sub ? "이용 중" : "미이용"}</span>
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: BLUE, background: "#EFF6FF", padding: "3px 10px", borderRadius: 99 }}>
-                  {dday !== null ? `결제 D-${dday}` : "—"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>
-                  {sub?.plan_type === "1month" ? "이용 만료일" : "약정 갱신 예정일"}
-                </p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{sub?.next_payment_date ? fmtDate(sub.next_payment_date) : "—"}</p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>이용 요금제</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: BLUE }}>
-                  {sub
-                    ? sub.plan_type === "1month"
-                      ? "1개월 · 칸당 44,000원"
-                      : "3개월 약정 · 칸당 33,000원"
-                    : "—"}
-                </p>
-              </div>
+            <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 12, color: "#64748B" }}>총 보관 중인 롤테이너</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: subs.length > 0 ? "#0F172A" : "#94A3B8" }}>
+                {subs.length > 0 ? `${totalUnits}칸` : "보관 내역 없음"}
+              </span>
             </div>
           </div>
+
+          {/* 구독별 카드 (plan_type별로 분리 표시) */}
+          {subs.map((s) => {
+            const is1m = s.plan_type === "1month";
+            return (
+              <div key={s.id} style={{ background: "#fff", borderRadius: 18, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "18px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: GREEN, display: "inline-block" }} />
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>
+                      {is1m ? "1개월 이용" : "3개월 약정"}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{s.unit_count}칸</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>{is1m ? "이용 만료일" : "약정 갱신 예정일"}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{s.next_payment_date ? fmtDate(s.next_payment_date) : "—"}</p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>이용 요금제</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: BLUE }}>
+                      {is1m ? "칸당 44,000원" : "칸당 33,000원"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
           {/* 빠른 액션 */}
           <div>
