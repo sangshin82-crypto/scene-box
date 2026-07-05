@@ -117,7 +117,7 @@ export default function PersonalBookingPage() {
           <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>보관 예약</span>
         </header>
 
-        <div className="flex flex-col gap-4" style={{ padding: "28px 16px 20px" }}>
+        <div className="flex flex-col gap-4" style={{ padding: "44px 16px 20px" }}>
 
           {/* 안내 — 롤테이너 소개 + 흐름 */}
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px 18px", border: "0.5px solid #D1E8DF" }}>
