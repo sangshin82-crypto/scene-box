@@ -171,6 +171,20 @@ export default function QuickPage() {
             <div style={{ marginTop: 12, textAlign: "center" }}>
               <span style={{ fontSize: 12, color: "#94A3B8", fontWeight: 600 }}>3개월 약정 시 혜택</span>
             </div>
+
+            <button
+              onClick={() => { window.location.href = "/personal"; }}
+              style={{
+                width: "100%", marginTop: 20, padding: "15px", borderRadius: 12, border: "none",
+                background: BLUE, color: "#fff", fontSize: 15, fontWeight: 900, cursor: "pointer",
+                fontFamily: FONT, boxShadow: "0 6px 18px rgba(26,54,232,0.25)",
+              }}
+            >
+              상담 없이 바로 예약하기 →
+            </button>
+            <p style={{ fontSize: 11.5, color: "#94A3B8", textAlign: "center", marginTop: 8, fontWeight: 500 }}>
+              이미 마음을 정하셨다면 바로 예약하세요 (로그인 필요)
+            </p>
           </div>
         </div>
 
