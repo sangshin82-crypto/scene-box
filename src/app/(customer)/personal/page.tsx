@@ -108,9 +108,9 @@ export default function PersonalLandingPage() {
 
         {/* ── 혜택 3가지 ── */}
         <div style={{ padding: "20px 20px 0", display: "flex", flexDirection: "column", gap: 14 }}>
-          {[
-            { icon: Home, color: BLUE, bg: "#EFF6FF", title: "박스 1개 월 1만원부터", desc: "필요한 만큼만, 최소 3개부터 신청하세요" },
-            { icon: Truck, color: GREEN, bg: "#ECFDF5", title: "문 앞에서 수거·배송", desc: "직접 안 옮기셔도 돼요. 매주 월·목 방문" },
+        {[
+            { icon: Home, color: BLUE, bg: "#EFF6FF", title: "옷장 하나가 통째로", desc: "롤테이너 한 칸에 옷장 하나 분량을 담아 보관하세요" },
+            { icon: Truck, color: GREEN, bg: "#ECFDF5", title: "무료 수거·반출", desc: "직접 안 옮기셔도 돼요. 정기 방문일에 문 앞에서 맡기고 받으세요" },
             { icon: Sparkles, color: "#7C3AED", bg: "#F5F3FF", title: "기업 화물 전문 시설에서 안전 관리", desc: "전문 보관시설 씬박스가 직접 관리합니다" },
           ].map(({ icon: Icon, color, bg, title, desc }, i) => (
             <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "#fff", borderRadius: 16, padding: "16px 18px", border: "0.5px solid #D1E8DF" }}>
