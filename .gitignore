@@ -1,3 +1,9 @@
 node_modules/
 .next/
 .env.local
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# VS Code
+.vscode/
