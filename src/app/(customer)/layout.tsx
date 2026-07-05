@@ -109,8 +109,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         </div>
       )}
 
-      {/* 하단 네비게이션 */}
-      {!isLoginPage && (
+      {/* 하단 네비게이션 — 개인(personal) 라우트에서는 숨김 (개인은 드로어+본문 버튼으로 이동) */}
+      {!isLoginPage && !isPersonal && (
         <div style={{
           position: 'fixed',
           bottom: 0,
