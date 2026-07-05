@@ -81,18 +81,14 @@ export default function PersonalBookingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
-    // plan_type 컬럼은 런칭 전 DB 정합성 스프린트에서 정식화 예정.
-    // 현재는 memo 앞에 태그로 임시 저장.
-    const planTag = planType === "3month" ? "[3개월 약정]" : "[1개월 이용]";
-    const memoWithPlan = `${planTag}${memo.trim() ? " " + memo.trim() : ""}`;
-
     const { error: insErr } = await supabase.from("personal_requests").insert({
       client_id: user.id,
       request_type: "storage",
-      box_count: unitCount,   // DB 컬럼명은 box_count 유지(칸 수). 스프린트에서 리네이밍 예정.
+      plan_type: planType,    // '3month' | '1month'
+      unit_count: unitCount,  // 롤테이너 칸 수
       address_detail: `${address.trim()} ${addressDetail.trim()}`,
       amount,                 // 예상액. 현장 칸 수 확정 후 관리자가 최종 조정.
-      memo: memoWithPlan,
+      memo: memo.trim() || null,
       status: "requested",
     });
 
