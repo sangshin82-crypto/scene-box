@@ -14,7 +14,7 @@ const KAKAO_CHAT_URL = "http://pf.kakao.com/_ngBCX/chat";
 
 type Client = { name: string };
 type Subscription = {
-  box_count: number;
+  unit_count: number;
   monthly_fee: number;
   next_payment_date: string | null;
   status: string;
@@ -23,7 +23,7 @@ type ReqRow = {
   id: string;
   request_type: string;
   retrieval_type: string | null;
-  box_count: number | null;
+  unit_count: number | null;
   status: string;
   created_at: string;
 };
@@ -70,7 +70,7 @@ export default function PersonalDashboardPage() {
 
       const { data: subData } = await supabase
         .from("personal_subscriptions")
-        .select("box_count, monthly_fee, next_payment_date, status")
+        .select("unit_count, monthly_fee, next_payment_date, status")
         .eq("client_id", user.id)
         .eq("status", "active")
         .maybeSingle();
@@ -78,7 +78,7 @@ export default function PersonalDashboardPage() {
 
       const { data: reqData } = await supabase
         .from("personal_requests")
-        .select("id, request_type, retrieval_type, box_count, status, created_at")
+        .select("id, request_type, retrieval_type, unit_count, status, created_at")
         .eq("client_id", user.id)
         .order("created_at", { ascending: false })
         .limit(3);
@@ -175,8 +175,8 @@ export default function PersonalDashboardPage() {
             <div style={{ background: "#F0F7F4", borderRadius: 14, padding: "14px 16px", marginBottom: 14 }}>
               <div className="mb-3 flex items-center justify-between">
               <span style={{ fontSize: 12, color: "#64748B" }}>보관 중인 롤테이너</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
-                  {sub ? `${sub.box_count}칸 보관 중` : "보관 내역 없음"}
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
+              {sub ? `${sub.unit_count}칸 보관 중` : "보관 내역 없음"}
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 10, padding: "10px 14px", border: "0.5px solid #D1E8DF" }}>
@@ -231,8 +231,8 @@ export default function PersonalDashboardPage() {
                 requests.map((r, i) => {
                   const isStorage = r.request_type === "storage";
                   const title = isStorage
-                    ? `롤테이너 보관 ${r.box_count ?? ""}칸`
-                    : `짐 반출 (${r.retrieval_type === "urgent" ? "수시" : r.retrieval_type === "parcel" ? "택배" : "정기"})`;
+                    ? `롤테이너 보관 ${r.unit_count ?? ""}칸`
+                    : `짐 반출 (${r.retrieval_type === "oncall" ? "수시" : r.retrieval_type === "parcel" ? "택배" : "정기"})`;
                   return (
                     <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderBottom: i < requests.length - 1 ? "0.5px solid #F0F7F4" : "none" }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: isStorage ? "#EFF6FF" : "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
