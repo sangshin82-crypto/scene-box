@@ -137,7 +137,7 @@ function ConfirmBookingInner() {
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }} className="flex justify-center">
       <div style={{ width: "100%", maxWidth: 430, minHeight: "100vh", paddingBottom: 40 }}>
 
-        <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }} className="sticky top-0 z-50 flex items-center gap-3 px-5 py-4">
+      <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF", paddingTop: "max(env(safe-area-inset-top), 20px)" }} className="sticky top-0 z-50 flex items-center gap-3 px-5 pb-4">
           <button onClick={() => router.push("/personal/dashboard")} style={{ color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
             <ArrowLeft size={22} strokeWidth={1.8} />
           </button>
