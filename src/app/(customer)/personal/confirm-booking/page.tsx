@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Package, Check } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
@@ -21,7 +21,7 @@ type Pending = {
   status: string;
 };
 
-export default function ConfirmBookingPage() {
+function ConfirmBookingInner() {
   const router = useRouter();
   const params = useSearchParams();
   const pendingId = params.get("id");
@@ -39,7 +39,6 @@ export default function ConfirmBookingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/"); return; }
 
-      // 내 이름 (재확인 표시용)
       const { data: client } = await supabase
         .from("clients").select("name").eq("id", user.id).single();
       if (client?.name) setClientName(client.name);
@@ -72,7 +71,6 @@ export default function ConfirmBookingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
-    // ① personal_requests로 확정 이동 (client_id 채움)
     const { data: reqRow, error: reqErr } = await supabase
       .from("personal_requests")
       .insert({
@@ -94,7 +92,6 @@ export default function ConfirmBookingPage() {
       return;
     }
 
-    // ② 동의 기록 (agreements)
     await supabase.from("agreements").insert({
       client_id: user.id,
       terms_version: TERMS_VERSION,
@@ -102,7 +99,6 @@ export default function ConfirmBookingPage() {
       request_id: reqRow?.id ?? null,
     });
 
-    // ③ 대기 예약을 claimed 처리
     await supabase
       .from("pending_bookings")
       .update({ status: "claimed", claimed_at: new Date().toISOString() })
@@ -141,7 +137,6 @@ export default function ConfirmBookingPage() {
     <div style={{ background: "#F0F7F4", minHeight: "100vh", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }} className="flex justify-center">
       <div style={{ width: "100%", maxWidth: 430, minHeight: "100vh", paddingBottom: 40 }}>
 
-        {/* 헤더 */}
         <header style={{ background: "#fff", borderBottom: "0.5px solid #D1E8DF" }} className="sticky top-0 z-50 flex items-center gap-3 px-5 py-4">
           <button onClick={() => router.push("/personal/dashboard")} style={{ color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
             <ArrowLeft size={22} strokeWidth={1.8} />
@@ -151,7 +146,6 @@ export default function ConfirmBookingPage() {
 
         <div className="flex flex-col gap-4" style={{ padding: "24px 16px 20px" }}>
 
-          {/* 안내 */}
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px", border: "0.5px solid #D1E8DF" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <Package size={20} color={BLUE} strokeWidth={2} />
@@ -164,7 +158,6 @@ export default function ConfirmBookingPage() {
             </p>
           </div>
 
-          {/* 예약 내용 (읽기 전용) */}
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
             <p style={{ fontSize: 12, color: "#94A3B8", fontWeight: 600, marginBottom: 14 }}>예약 내용</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -183,7 +176,6 @@ export default function ConfirmBookingPage() {
             </p>
           </div>
 
-          {/* 약관 동의 */}
           <div onClick={() => setAgreed((v) => !v)} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#fff", borderRadius: 14, padding: "14px 16px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", cursor: "pointer" }}>
             <div style={{ width: 22, height: 22, borderRadius: 6, border: agreed ? "none" : "1.5px solid #CBD5E1", background: agreed ? BLUE : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
               {agreed && <Check size={14} color="#fff" strokeWidth={3} />}
@@ -214,5 +206,17 @@ function Row({ label, value }: { label: string; value: string }) {
       <span style={{ fontSize: 13, color: "#64748B" }}>{label}</span>
       <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{value}</span>
     </div>
+  );
+}
+
+export default function ConfirmBookingPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ background: "#F0F7F4", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif" }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "#94A3B8" }}>불러오는 중...</p>
+      </div>
+    }>
+      <ConfirmBookingInner />
+    </Suspense>
   );
 }
