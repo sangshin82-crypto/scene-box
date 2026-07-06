@@ -144,7 +144,7 @@ function ConfirmBookingInner() {
           <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>예약 확인</span>
         </header>
 
-        <div className="flex flex-col gap-4" style={{ padding: "24px 16px 20px" }}>
+        <div className="flex flex-col gap-4" style={{ padding: "40px 16px 20px" }}>
 
           <div style={{ background: "linear-gradient(135deg, #EFF6FF, #F0F7F4)", borderRadius: 16, padding: "18px", border: "0.5px solid #D1E8DF" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
