@@ -67,7 +67,6 @@ export default function PersonalOnboardingPage() {
       .maybeSingle();
 
     if (pending) {
-      // 대기 예약이 있으면 확인·동의 화면으로
       router.push(`/personal/confirm-booking?id=${pending.id}`);
     } else {
       router.push("/personal/dashboard");
