@@ -39,12 +39,14 @@ export default function PersonalOnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
+    const phoneNorm = phone.replace(/\D/g, ""); // 숫자만 정규화 (매칭 일관성)
+
     const { error: upsertError } = await supabase
       .from("clients")
       .upsert({
         id: user.id,
         name: name.trim(),
-        contact_phone: phone,
+        contact_phone: phoneNorm,
         user_type: "personal",
       }, { onConflict: "id" });
 
@@ -54,7 +56,22 @@ export default function PersonalOnboardingPage() {
       return;
     }
 
-    router.push("/personal/dashboard");
+    // 전화번호로 대기 예약(pending_bookings) 매칭 조회
+    const { data: pending } = await supabase
+      .from("pending_bookings")
+      .select("id")
+      .eq("phone", phoneNorm)
+      .eq("status", "waiting")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (pending) {
+      // 대기 예약이 있으면 확인·동의 화면으로
+      router.push(`/personal/confirm-booking?id=${pending.id}`);
+    } else {
+      router.push("/personal/dashboard");
+    }
   };
 
   return (
