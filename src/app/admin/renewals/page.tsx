@@ -27,6 +27,7 @@ type Item = {
   subId?: string;           // 개인 구독 id (결제확인용)
   planType?: string | null; // 개인 3month/1month
   nextPaymentDate?: string; // 개인 원본 날짜
+  startDate?: string;       // 최초 계약일
 };
 
 const planLabel = (p: string | null | undefined) =>
@@ -47,7 +48,7 @@ export default function AdminRenewalsPage() {
     // ══════════ 개인 구독 ══════════
     const { data: subs } = await supabase
       .from('personal_subscriptions')
-      .select('id, client_id, plan_type, unit_count, monthly_fee, next_payment_date, last_paid_date, status, clients(name, contact_phone)')
+      .select('id, client_id, plan_type, unit_count, monthly_fee, start_date, next_payment_date, last_paid_date, status, clients(name, contact_phone)')
       .eq('status', 'active');
 
     for (const s of (subs ?? []) as any[]) {
@@ -64,7 +65,7 @@ export default function AdminRenewalsPage() {
           id: `p-unpaid-${s.id}`, kind: 'personal', category: 'unpaid',
           clientId: s.client_id, name, phone, detail, amount: s.monthly_fee ?? 0,
           dueDate: due, dDay: dday, urgent: true,
-          subId: s.id, planType: s.plan_type, nextPaymentDate: s.next_payment_date,
+          subId: s.id, planType: s.plan_type, nextPaymentDate: s.next_payment_date, startDate: s.start_date,
         });
       } else if (dday <= 5) {
         // 재계약 알림: 5일 이내
@@ -72,7 +73,7 @@ export default function AdminRenewalsPage() {
           id: `p-renew-${s.id}`, kind: 'personal', category: 'renew',
           clientId: s.client_id, name, phone, detail, amount: s.monthly_fee ?? 0,
           dueDate: due, dDay: dday, urgent: dday === 0,
-          subId: s.id, planType: s.plan_type, nextPaymentDate: s.next_payment_date,
+          subId: s.id, planType: s.plan_type, nextPaymentDate: s.next_payment_date, startDate: s.start_date,
         });
       }
     }
@@ -293,7 +294,10 @@ function ItemCard({ item, processing, onConfirm, onBilling }: {
             <span className="text-xs font-bold text-gray-400">{item.kind === 'personal' ? '개인' : '기업'}</span>
           </div>
           <p className="font-bold text-gray-900 mt-1">{item.name}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{item.phone}</p>
+          <a href={`tel:${item.phone}`} className="text-xs text-blue-600 mt-0.5 inline-block font-medium">📞 {item.phone}</a>
+          {item.startDate && (
+            <p className="text-xs text-gray-400 mt-0.5">최초 계약: {item.startDate}</p>
+          )}
         </div>
         <div className="text-right">
           <p className={`text-sm font-bold ${item.dDay < 0 ? 'text-red-500' : item.dDay === 0 ? 'text-orange-500' : 'text-gray-600'}`}>{ddayText}</p>
