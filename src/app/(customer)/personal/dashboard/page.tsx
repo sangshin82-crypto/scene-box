@@ -163,7 +163,7 @@ export default function PersonalDashboardPage() {
           </div>
         )}
 
-        <div className="flex flex-col gap-4 px-4" style={{ paddingTop: 20 }}>
+<div className="flex flex-col gap-4 px-4" style={{ paddingTop: 40 }}>
 
           {/* 인사 + 총 보관 현황 요약 */}
           <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "20px" }}>
