@@ -75,6 +75,16 @@ export default function AdminPersonalPage() {
   const [editId, setEditId] = useState<string | null>(null);   // 칸 수 편집 중인 요청 id
   const [editUnits, setEditUnits] = useState<number>(1);        // 편집 중 칸 수
 
+  // ── 전화 예약 생성 폼 상태 ──
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [nfPhone, setNfPhone] = useState('');
+  const [nfName, setNfName] = useState('');
+  const [nfPlan, setNfPlan] = useState<'3month' | '1month'>('3month');
+  const [nfUnits, setNfUnits] = useState(1);
+  const [nfAddress, setNfAddress] = useState('');
+  const [nfMemo, setNfMemo] = useState('');
+  const [nfSaving, setNfSaving] = useState(false);
+
   async function fetchReqs() {
     setIsLoading(true);
     let query = supabase
@@ -171,6 +181,32 @@ export default function AdminPersonalPage() {
     }
   };
 
+  // ── 전화 예약 생성 (pending_bookings에 대기 예약 저장) ──
+  const createPendingBooking = async () => {
+    const phoneNorm = nfPhone.replace(/\D/g, ''); // 숫자만 정규화
+    if (phoneNorm.length < 10) { alert('전화번호를 정확히 입력해주세요.'); return; }
+    if (!nfName.trim()) { alert('예약자 이름을 입력해주세요.'); return; }
+    setNfSaving(true);
+
+    const amount = calcAmount(nfPlan, nfUnits);
+    const { error } = await supabase.from('pending_bookings').insert({
+      phone: phoneNorm,
+      name: nfName.trim(),
+      plan_type: nfPlan,
+      unit_count: nfUnits,
+      amount,
+      address_detail: nfAddress.trim() || null,
+      memo: nfMemo.trim() || null,
+      status: 'waiting',
+    });
+
+    if (error) { alert('예약 생성 실패: ' + error.message); setNfSaving(false); return; }
+    alert(`전화 예약이 생성되었습니다.\n고객이 ${phoneNorm} 번호로 가입·온보딩하면 이 예약이 자동으로 연결됩니다.`);
+    // 폼 초기화
+    setNfPhone(''); setNfName(''); setNfPlan('3month'); setNfUnits(1);
+    setNfAddress(''); setNfMemo(''); setShowNewForm(false); setNfSaving(false);
+  };
+
   const cancelReq = async (id: string) => {
     if (!window.confirm('이 요청을 취소 처리하시겠어요?')) return;
     const { error } = await supabase
@@ -199,6 +235,88 @@ export default function AdminPersonalPage() {
           <h1 className="text-lg font-bold text-gray-900">개인 보관 요청</h1>
         </div>
         <button onClick={fetchReqs} className="text-gray-500 text-sm">새로고침</button>
+      </div>
+
+      {/* 전화 예약 생성 */}
+      <div className="px-4 pt-4">
+        {!showNewForm ? (
+          <button onClick={() => setShowNewForm(true)}
+            className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold active:bg-blue-700">
+            ＋ 전화 예약 생성
+          </button>
+        ) : (
+          <div className="bg-white border border-blue-200 rounded-xl p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <p className="text-sm font-bold text-gray-900">전화 예약 생성</p>
+              <button onClick={() => setShowNewForm(false)} className="text-gray-400 text-sm">닫기</button>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">전화번호 *</label>
+              <input type="tel" value={nfPhone} onChange={(e) => setNfPhone(e.target.value)}
+                placeholder="01012345678 (하이픈 없이)"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900" />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">예약자 이름 *</label>
+              <input type="text" value={nfName} onChange={(e) => setNfName(e.target.value)}
+                placeholder="홍길동"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900" />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">이용 유형</label>
+              <div className="flex gap-2">
+                <button onClick={() => setNfPlan('3month')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border ${nfPlan === '3month' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300'}`}>
+                  3개월 약정
+                </button>
+                <button onClick={() => setNfPlan('1month')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold border ${nfPlan === '1month' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300'}`}>
+                  1개월
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">칸 수</label>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setNfUnits((c) => Math.max(1, c - 1))}
+                  className="w-8 h-8 rounded-lg border border-gray-300 bg-white font-bold text-gray-600">−</button>
+                <span className="text-lg font-bold text-gray-900 w-8 text-center">{nfUnits}</span>
+                <button onClick={() => setNfUnits((c) => c + 1)}
+                  className="w-8 h-8 rounded-lg border border-gray-300 bg-white font-bold text-gray-600">+</button>
+                <span className="text-xs text-gray-400 ml-2">롤테이너 칸</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">주소 (선택)</label>
+              <input type="text" value={nfAddress} onChange={(e) => setNfAddress(e.target.value)}
+                placeholder="협의 시 알면 입력"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900" />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">메모 (선택)</label>
+              <input type="text" value={nfMemo} onChange={(e) => setNfMemo(e.target.value)}
+                placeholder="관리자 참고사항"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900" />
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+              <span className="text-gray-600">예상 금액: </span>
+              <b className="text-blue-600">{calcAmount(nfPlan, nfUnits).toLocaleString()}원</b>
+              {nfPlan === '1month' && <span className="text-xs text-gray-400"> (보관료 + 수거·반출 50,000원)</span>}
+            </div>
+
+            <button onClick={createPendingBooking} disabled={nfSaving}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold active:bg-blue-700 disabled:bg-gray-300">
+              {nfSaving ? '생성 중...' : '대기 예약 생성'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 필터 */}
