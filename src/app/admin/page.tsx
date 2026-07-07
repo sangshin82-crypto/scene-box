@@ -4,97 +4,131 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
 
+// 날짜 유틸
+const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const toDate = (s: string) => { const d = new Date(s); d.setHours(0,0,0,0); return d; };
+const daysBetween = (a: Date, b: Date) => Math.round((a.getTime() - b.getTime()) / 86400000);
+
 export default function AdminDashboard() {
   const router = useRouter();
 
+  // 오늘 처리할 일 카운트
+  const [personalReqCount, setPersonalReqCount] = useState(0);   // 개인 요청(requested)
+  const [pendingBookingCount, setPendingBookingCount] = useState(0); // 대기 예약(waiting)
+  const [renewalCount, setRenewalCount] = useState(0);           // 갱신·수금(5일내+미납)
+  const [bizRequestCount, setBizRequestCount] = useState(0);     // 기업 배차·폐기(pending)
+
+  // 매출
+  const [personalRevenue, setPersonalRevenue] = useState(0);     // 개인 구독 월 매출
+  const [bizRevenue, setBizRevenue] = useState(0);               // 기업 이번달 청구
+  const [unpaidAmount, setUnpaidAmount] = useState(0);
+
+  // 기업 가동률
   const [totalGrids, setTotalGrids] = useState(0);
   const [usedGrids, setUsedGrids] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
-  const [unpaidAmount, setUnpaidAmount] = useState(0);
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      // 1. 전체 Grid 수
-      const { count: total } = await supabase
-        .from('grids')
-        .select('*', { count: 'exact', head: true });
-      setTotalGrids(total ?? 0);
+      const now = today();
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
 
-      // 2. 사용 중인 Grid 수
-      const { count: used } = await supabase
-        .from('spaces')
+      // ─── 개인 요청(requested) 카운트 ───
+      const { count: pReq } = await supabase
+        .from('personal_requests')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
-      setUsedGrids(used ?? 0);
+        .eq('status', 'requested');
+      setPersonalReqCount(pReq ?? 0);
 
-      // 3. 이번 달 예상 매출
-      const now = new Date();
+      // ─── 대기 예약(pending_bookings waiting) 카운트 ───
+      const { count: pending } = await supabase
+        .from('pending_bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'waiting');
+      setPendingBookingCount(pending ?? 0);
+
+      // ─── 개인 구독: 매출 + 갱신·수금 카운트 ───
+      const { data: subs } = await supabase
+        .from('personal_subscriptions')
+        .select('monthly_fee, next_payment_date, status')
+        .eq('status', 'active');
+
+      let pRev = 0, renewCnt = 0;
+      for (const s of (subs ?? []) as any[]) {
+        pRev += s.monthly_fee ?? 0;
+        if (s.next_payment_date) {
+          const dday = daysBetween(toDate(s.next_payment_date), now);
+          if (dday < 0 || dday <= 5) renewCnt++; // 미납 or 5일내 갱신
+        }
+      }
+      setPersonalRevenue(pRev);
+
+      // ─── 기업 청구: 매출 + 미납 + 갱신(청구일 임박·미납) 카운트 ───
       const { data: bills } = await supabase
         .from('monthly_bills')
-        .select('storage_fee, transport_fee, disposal_fee, status')
-        .eq('billing_year', now.getFullYear())
-        .eq('billing_month', now.getMonth() + 1);
+        .select('storage_fee, transport_fee, disposal_fee, total_amount, status')
+        .eq('billing_year', y)
+        .eq('billing_month', m);
 
-      if (bills) {
-        const revenue = bills.reduce((sum, b) =>
-          sum + (b.storage_fee ?? 0) + (b.transport_fee ?? 0) + (b.disposal_fee ?? 0), 0);
-        const unpaid = bills
-          .filter(b => b.status === 'pending')
-          .reduce((sum, b) =>
-            sum + (b.storage_fee ?? 0) + (b.transport_fee ?? 0) + (b.disposal_fee ?? 0), 0);
-        setMonthlyRevenue(revenue);
-        setUnpaidAmount(unpaid);
+      let bRev = 0, unpaid = 0;
+      for (const b of (bills ?? []) as any[]) {
+        const amt = b.total_amount ?? ((b.storage_fee ?? 0) + (b.transport_fee ?? 0) + (b.disposal_fee ?? 0));
+        bRev += amt;
+        if (b.status !== 'paid') unpaid += amt;
       }
+      setBizRevenue(bRev);
+      setUnpaidAmount(unpaid);
 
-      // 4. 최근 배차/폐기 요청
-      const { data: transports } = await supabase
+      // 기업 갱신·수금(billing_day 설정된 기업의 청구 임박/미납) - 간이 카운트
+      const { data: bizClients } = await supabase
+        .from('clients')
+        .select('id, billing_day')
+        .eq('user_type', 'business')
+        .eq('is_active', true)
+        .not('billing_day', 'is', null);
+      let bizRenew = 0;
+      for (const c of (bizClients ?? []) as any[]) {
+        const billDay = Math.min(c.billing_day, 28);
+        const billDate = new Date(y, now.getMonth(), billDay); billDate.setHours(0,0,0,0);
+        const dday = daysBetween(billDate, now);
+        const { data: bill } = await supabase
+          .from('monthly_bills')
+          .select('status')
+          .eq('client_id', c.id).eq('billing_year', y).eq('billing_month', m)
+          .order('created_at', { ascending: false }).limit(1).maybeSingle();
+        if (!bill && dday <= 5 && dday >= -30) bizRenew++;               // 청구 예정
+        else if (bill && bill.status !== 'paid' && dday <= -3) bizRenew++; // 미납
+      }
+      // 갱신·수금 통합 카운트 = 개인 + 기업
+      setRenewalCount(renewCnt + bizRenew);
+
+      // ─── 기업 배차·폐기 요청(pending) 카운트 ───
+      const { count: tCount } = await supabase
         .from('transport_requests')
-        .select('id, client_id, truck_type, status, created_at, clients(name)')
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      const { data: disposals } = await supabase
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      const { count: dCount } = await supabase
         .from('disposal_requests')
-        .select('id, client_id, status, created_at, clients(name)')
-        .order('created_at', { ascending: false })
-        .limit(3);
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      setBizRequestCount((tCount ?? 0) + (dCount ?? 0));
 
-      const combined = [
-        ...(transports ?? []).map(t => ({
-          id: t.id,
-          name: (t.clients as any)?.name ?? '고객',
-          desc: `${t.truck_type} 배차 요청`,
-          status: t.status,
-          type: 'transport',
-        })),
-        ...(disposals ?? []).map(d => ({
-          id: d.id,
-          name: (d.clients as any)?.name ?? '고객',
-          desc: '폐기 정산 요청',
-          status: d.status,
-          type: 'disposal',
-        })),
-      ].slice(0, 5);
+      // ─── 가동률 ───
+      const { count: total } = await supabase.from('grids').select('*', { count: 'exact', head: true });
+      const { count: used } = await supabase.from('spaces').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      setTotalGrids(total ?? 0);
+      setUsedGrids(used ?? 0);
 
-      setRecentRequests(combined);
       setIsLoading(false);
     }
-
     fetchData();
   }, []);
 
+  const totalRevenue = personalRevenue + bizRevenue;
   const occupancyRate = totalGrids > 0 ? Math.round((usedGrids / totalGrids) * 100) : 0;
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':   return { label: '처리 대기', color: 'text-red-500',    bg: 'bg-red-50'    };
-      case 'confirmed': return { label: '확정됨',   color: 'text-blue-500',   bg: 'bg-blue-50'   };
-      case 'completed': return { label: '완료',     color: 'text-green-600',  bg: 'bg-green-50'  };
-      default:          return { label: status,     color: 'text-gray-500',   bg: 'bg-gray-50'   };
-    }
-  };
+  const totalTodo = personalReqCount + pendingBookingCount + renewalCount + bizRequestCount;
 
   if (isLoading) {
     return (
@@ -110,95 +144,102 @@ export default function AdminDashboard() {
       {/* 헤더 */}
       <div className="flex justify-between items-center bg-white px-4 py-3 border-b border-gray-200">
         <h1 className="text-lg font-bold text-gray-900">관리 대시보드</h1>
-        <button className="text-gray-500 text-xl">🔔</button>
+        <button onClick={() => router.push('/admin/renewals')} className="text-gray-500 text-xl">🔔</button>
       </div>
 
-      {/* 핵심 지표 카드 */}
       <div className="p-4 space-y-4">
+
+        {/* ─── 오늘 처리할 일 (통합 요약) ─── */}
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">창고 가동률</h2>
-          <div className="flex justify-between items-end mb-3">
-            <span className="text-3xl font-bold text-blue-600">{occupancyRate}%</span>
-            <span className="text-sm text-gray-400 font-medium">{usedGrids}/{totalGrids} Grid 사용 중</span>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800">📋 오늘 처리할 일</h2>
+            <span className="text-xs font-bold text-white bg-blue-600 px-2 py-0.5 rounded-full">총 {totalTodo}건</span>
           </div>
-          <div className="w-full bg-gray-100 rounded-full h-2.5">
-            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${occupancyRate}%` }}></div>
+          <div className="grid grid-cols-2 gap-2">
+            <TodoCell label="개인 요청" count={personalReqCount} color="text-blue-600" onClick={() => router.push('/admin/personal')} />
+            <TodoCell label="대기 예약" count={pendingBookingCount} color="text-indigo-600" onClick={() => router.push('/admin/personal')} />
+            <TodoCell label="갱신·수금" count={renewalCount} color="text-orange-600" onClick={() => router.push('/admin/renewals')} />
+            <TodoCell label="기업 배차" count={bizRequestCount} color="text-purple-600" onClick={() => router.push('/admin/booking')} />
           </div>
         </div>
 
+        {/* ─── 이번 달 매출 (통합) ─── */}
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">이번 달 예상 매출</h2>
-          <p className="text-2xl font-bold text-gray-900">{monthlyRevenue.toLocaleString()}원</p>
+          <h2 className="text-sm font-medium text-gray-500 mb-2">이번 달 매출 (개인+기업)</h2>
+          <p className="text-2xl font-bold text-gray-900">{totalRevenue.toLocaleString()}원</p>
+          <div className="flex gap-3 mt-2 text-xs">
+            <span className="text-gray-500">개인 <b className="text-gray-700">{personalRevenue.toLocaleString()}</b></span>
+            <span className="text-gray-500">기업 <b className="text-gray-700">{bizRevenue.toLocaleString()}</b></span>
+          </div>
           {unpaidAmount > 0 && (
             <p className="text-xs text-red-500 mt-2 font-medium bg-red-50 inline-block px-2 py-1 rounded">
-              미결제 {unpaidAmount.toLocaleString()}원 포함
+              기업 미결제 {unpaidAmount.toLocaleString()}원 포함
             </p>
           )}
         </div>
-      </div>
 
-      {/* 퀵 메뉴 */}
-      <div className="px-4 mb-3 flex gap-3">
-        <button
-          onClick={() => router.push('/admin/booking')}
-          className="flex-1 bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-sm active:bg-blue-700"
-        >
-          📦 예약 관리
+        {/* ─── 갱신·수금 관리 진입 ─── */}
+        <button onClick={() => router.push('/admin/renewals')}
+          className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 rounded-2xl shadow-sm active:opacity-90 flex items-center justify-between">
+          <div className="text-left">
+            <p className="font-bold">🔔 갱신·수금 관리</p>
+            <p className="text-xs opacity-90 mt-0.5">오늘 처리할 갱신·미납 {renewalCount}건</p>
+          </div>
+          <span className="text-xl">→</span>
         </button>
-        <button
-          onClick={() => router.push('/admin/billing')}
-          className="flex-1 bg-white border border-gray-200 text-gray-800 py-3.5 rounded-xl font-bold shadow-sm active:bg-gray-50"
-        >
-          💰 요금 청구
-        </button>
-      </div>
-      <div className="px-4 mb-3">
-        <button
-          onClick={() => router.push('/admin/personal')}
-          className="w-full bg-white border border-gray-200 text-gray-800 py-3.5 rounded-xl font-bold shadow-sm active:bg-gray-50"
-        >
-          👤 개인 보관 요청
-        </button>
-      </div>
-      <div className="px-4 mb-6">
-        <button
-          onClick={() => router.push('/admin/quick')}
-          className="w-full bg-white border border-gray-200 text-gray-800 py-3.5 rounded-xl font-bold shadow-sm active:bg-gray-50"
-        >
-          🏠 씬박스홈 상담 신청
-        </button>
-      </div>
 
-      {/* 실시간 현황 */}
-      <div className="px-4">
-        <h3 className="text-sm font-bold text-gray-800 mb-3 ml-1">최근 요청 현황</h3>
-        <div className="space-y-3">
-          {recentRequests.length === 0 ? (
-            <div className="bg-white p-4 rounded-xl text-center text-sm text-gray-400">
-              최근 요청이 없습니다.
-            </div>
-          ) : (
-            recentRequests.map(req => {
-              const { label, color, bg } = statusLabel(req.status);
-              return (
-                <div
-                  key={req.id}
-                  onClick={() => router.push(req.type === 'transport' ? '/admin/booking' : '/admin/billing')}
-                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer"
-                >
-                  <div>
-                    <p className="font-bold text-gray-900">{req.name}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{req.desc}</p>
-                  </div>
-                  <span className={`text-xs font-bold ${color} ${bg} px-2.5 py-1 rounded-md`}>
-                    {label}
-                  </span>
-                </div>
-              );
-            })
-          )}
+        {/* ─── 개인 영역 ─── */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-sm font-bold text-gray-800 mb-3">👤 개인 보관</p>
+          <div className="flex gap-2">
+            <button onClick={() => router.push('/admin/personal')}
+              className="flex-1 bg-blue-600 text-white py-3 rounded-xl text-sm font-bold active:bg-blue-700">
+              개인 관리
+              {personalReqCount > 0 && <span className="ml-1 text-xs">({personalReqCount})</span>}
+            </button>
+            <button onClick={() => router.push('/admin/quick')}
+              className="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-bold active:bg-gray-50">
+              🏠 씬박스홈 상담
+            </button>
+          </div>
         </div>
+
+        {/* ─── 기업 영역 ─── */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-bold text-gray-800">🏢 기업 물류</p>
+            <span className="text-xs text-gray-400">가동률 {occupancyRate}% ({usedGrids}/{totalGrids})</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+            <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${occupancyRate}%` }}></div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => router.push('/admin/booking')}
+              className="flex-1 bg-purple-600 text-white py-3 rounded-xl text-sm font-bold active:bg-purple-700">
+              📦 예약 관리
+              {bizRequestCount > 0 && <span className="ml-1 text-xs">({bizRequestCount})</span>}
+            </button>
+            <button onClick={() => router.push('/admin/billing')}
+              className="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-bold active:bg-gray-50">
+              💰 요금 청구
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
+  );
+}
+
+// 오늘 처리할 일 셀
+function TodoCell({ label, count, color, onClick }: {
+  label: string; count: number; color: string; onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick}
+      className={`text-left p-3 rounded-xl border ${count > 0 ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-white'} active:bg-gray-100`}>
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className={`text-xl font-bold ${count > 0 ? color : 'text-gray-300'}`}>{count}</p>
+    </button>
   );
 }
