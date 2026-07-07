@@ -81,7 +81,7 @@ export default function PersonalBookingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/"); return; }
 
-    const { error: insErr } = await supabase.from("personal_requests").insert({
+    const { data: reqRow, error: insErr } = await supabase.from("personal_requests").insert({
       client_id: user.id,
       request_type: "storage",
       plan_type: planType,    // '3month' | '1month'
@@ -90,13 +90,22 @@ export default function PersonalBookingPage() {
       amount,                 // 예상액. 현장 칸 수 확정 후 관리자가 최종 조정.
       memo: memo.trim() || null,
       status: "requested",
-    });
+    }).select("id").single();
 
     if (insErr) {
       setError("신청 중 오류가 발생했습니다. 다시 시도해주세요.");
       setIsSubmitting(false);
       return;
     }
+
+    // 약관 동의 기록 (웹 예약 경로)
+    await supabase.from("agreements").insert({
+      client_id: user.id,
+      terms_version: "2026-07-10",
+      channel: "web_booking",
+      request_id: reqRow?.id ?? null,
+    });
+
     alert("보관 예약이 접수되었습니다!\n회사가 지정하는 정기 방문일을 별도로 안내해 드립니다.");
     router.push("/personal/dashboard");
   };
