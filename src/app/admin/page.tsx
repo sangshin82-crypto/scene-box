@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [pendingBookingCount, setPendingBookingCount] = useState(0); // 대기 예약(waiting)
   const [renewalCount, setRenewalCount] = useState(0);           // 갱신·수금(5일내+미납)
   const [bizRequestCount, setBizRequestCount] = useState(0);     // 기업 배차·폐기(pending)
+  const [quickCount, setQuickCount] = useState(0);               // 씬박스홈 상담(requested)
 
   // 매출
   const [personalRevenue, setPersonalRevenue] = useState(0);     // 개인 구독 월 매출
@@ -48,6 +49,13 @@ export default function AdminDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'waiting');
       setPendingBookingCount(pending ?? 0);
+
+      // ─── 씬박스홈 상담(quick_requests requested) 카운트 ───
+      const { count: quick } = await supabase
+        .from('quick_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'requested');
+      setQuickCount(quick ?? 0);
 
       // ─── 개인 구독: 매출 + 갱신·수금 카운트 ───
       const { data: subs } = await supabase
@@ -128,7 +136,7 @@ export default function AdminDashboard() {
 
   const totalRevenue = personalRevenue + bizRevenue;
   const occupancyRate = totalGrids > 0 ? Math.round((usedGrids / totalGrids) * 100) : 0;
-  const totalTodo = personalReqCount + pendingBookingCount + renewalCount + bizRequestCount;
+  const totalTodo = personalReqCount + pendingBookingCount + renewalCount + bizRequestCount + quickCount;
 
   if (isLoading) {
     return (
@@ -156,10 +164,11 @@ export default function AdminDashboard() {
             <span className="text-xs font-bold text-white bg-blue-600 px-2 py-0.5 rounded-full">총 {totalTodo}건</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <TodoCell label="개인 요청" count={personalReqCount} color="text-blue-600" onClick={() => router.push('/admin/personal')} />
-            <TodoCell label="대기 예약" count={pendingBookingCount} color="text-indigo-600" onClick={() => router.push('/admin/personal')} />
-            <TodoCell label="갱신·수금" count={renewalCount} color="text-orange-600" onClick={() => router.push('/admin/renewals')} />
-            <TodoCell label="기업 배차" count={bizRequestCount} color="text-purple-600" onClick={() => router.push('/admin/booking')} />
+            <TodoCell label="상담 신청" desc="신규 문의" count={quickCount} color="text-teal-600" onClick={() => router.push('/admin/quick')} />
+            <TodoCell label="개인 요청" desc="기존 고객 보관·반출" count={personalReqCount} color="text-blue-600" onClick={() => router.push('/admin/personal')} />
+            <TodoCell label="대기 예약" desc="전화 예약 대기" count={pendingBookingCount} color="text-indigo-600" onClick={() => router.push('/admin/personal')} />
+            <TodoCell label="갱신·수금" desc="갱신·미납" count={renewalCount} color="text-orange-600" onClick={() => router.push('/admin/renewals')} />
+            <TodoCell label="기업 배차" desc="배차·폐기" count={bizRequestCount} color="text-purple-600" onClick={() => router.push('/admin/booking')} />
           </div>
         </div>
 
@@ -232,13 +241,14 @@ export default function AdminDashboard() {
 }
 
 // 오늘 처리할 일 셀
-function TodoCell({ label, count, color, onClick }: {
-  label: string; count: number; color: string; onClick: () => void;
+function TodoCell({ label, desc, count, color, onClick }: {
+  label: string; desc?: string; count: number; color: string; onClick: () => void;
 }) {
   return (
     <button onClick={onClick}
       className={`text-left p-3 rounded-xl border ${count > 0 ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-white'} active:bg-gray-100`}>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-xs font-medium text-gray-600">{label}</p>
+      {desc && <p className="text-[10px] text-gray-400 mb-0.5">{desc}</p>}
       <p className={`text-xl font-bold ${count > 0 ? color : 'text-gray-300'}`}>{count}</p>
     </button>
   );
