@@ -205,6 +205,15 @@ function CheckoutInner() {
         const { error: spacesError } = await supabase.from("spaces").insert(spaceRows);
         if (spacesError) throw new Error("계약 저장 실패: " + spacesError.message);
 
+        // 약관 동의 기록 (기업 온라인 예약 경로) — 로그인 고객만
+        if (user?.id) {
+          await supabase.from("agreements").insert({
+            client_id: user.id,
+            terms_version: "2026-05-11",
+            channel: "business_web",
+          });
+        }
+
         // 2) 포트원 V2 결제창 호출 (동적 로드된 모듈 사용)
         const PortOne = portoneRef.current;
         if (!PortOne) {
