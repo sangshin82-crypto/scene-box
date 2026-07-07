@@ -51,6 +51,7 @@ export default function PersonalDashboardPage() {
   const [requests, setRequests]   = useState<ReqRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState<{ id: string } | null>(null); // 대기 예약
 
   const handleLogout = async () => {
     if (!window.confirm("로그아웃 하시겠어요?")) return;
@@ -67,6 +68,20 @@ export default function PersonalDashboardPage() {
         .from("clients").select("name, contact_phone").eq("id", user.id).single();
       if (!clientData?.contact_phone) { router.push("/personal/onboarding"); return; }
       if (clientData) setClient({ name: clientData.name });
+
+      // 내 전화번호로 대기 중인 예약(pending_bookings) 검사
+      const phoneNorm = (clientData.contact_phone ?? "").replace(/\D/g, "");
+      if (phoneNorm) {
+        const { data: pending } = await supabase
+          .from("pending_bookings")
+          .select("id")
+          .eq("phone", phoneNorm)
+          .eq("status", "waiting")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (pending) setPendingBooking(pending);
+      }
 
       const { data: subData } = await supabase
         .from("personal_subscriptions")
@@ -164,6 +179,27 @@ export default function PersonalDashboardPage() {
         )}
 
 <div className="flex flex-col gap-4 px-4" style={{ paddingTop: 40 }}>
+        {pendingBooking && (
+          <div
+            onClick={() => router.push(`/personal/confirm-booking?id=${pendingBooking.id}`)}
+            style={{
+              background: "linear-gradient(135deg, #2563EB, #3B82F6)",
+              borderRadius: 16, padding: "16px 18px", cursor: "pointer",
+              boxShadow: "0 4px 16px rgba(37,99,235,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 3 }}>
+                📦 {client?.name ? `${client.name}님, ` : ""}준비된 예약이 있어요
+              </p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)" }}>
+                전화로 협의하신 예약을 확인하고 동의해주세요
+              </p>
+            </div>
+            <span style={{ fontSize: 20, color: "#fff", flexShrink: 0, marginLeft: 12 }}>→</span>
+          </div>
+        )}
 
           {/* 인사 + 총 보관 현황 요약 */}
           <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 1px 12px rgba(0,0,0,0.05)", padding: "20px" }}>
