@@ -19,7 +19,7 @@ export default function PersonalTermsPage() {
 
         <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 
-          <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 __월 __일</p>
+        <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 7월 10일</p>
 
           <Section title="제1조 (목적 및 서비스의 성격)">
             <ol style={{ paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>

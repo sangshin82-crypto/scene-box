@@ -18,7 +18,7 @@ export default function PersonalRefundPage() {
         </div>
 
         <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
-          <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 __월 __일</p>
+          <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 7월 10일</p>
 
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 10 }}>보관 예약 취소 및 환불</h2>

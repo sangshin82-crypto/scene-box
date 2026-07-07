@@ -23,7 +23,7 @@ export default function PersonalPrivacyPage() {
             <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 6, letterSpacing: "-0.5px" }}>
               개인정보 처리방침
             </h1>
-            <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 __월 __일</p>
+            <p style={{ fontSize: 12, color: "#9CA3AF" }}>시행일: 2026년 7월 10일</p>
           </div>
 
           <div style={{ background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 12, padding: "16px 18px" }}>
