@@ -60,6 +60,7 @@ export default function PersonalDashboardPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingBooking, setPendingBooking] = useState<{ id: string } | null>(null); // 대기 예약
   const [renewingSub, setRenewingSub] = useState<string | null>(null); // 연장 신청 중
+  const [renewHistory, setRenewHistory] = useState<any[]>([]); // 연장 이력
 
   const requestRenewal = async (sub: Subscription, period: '3month' | '1month') => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -118,7 +119,14 @@ export default function PersonalDashboardPage() {
         .eq("client_id", user.id)
         .eq("status", "active")
         .order("created_at", { ascending: true });
-      if (subData) setSubs(subData as Subscription[]);
+        if (subData) setSubs(subData as Subscription[]);
+
+        const { data: histData } = await supabase
+          .from("subscription_renewals")
+          .select("subscription_id, period_months, amount, renewed_at, new_next_payment, created_at")
+          .eq("client_id", user.id)
+          .order("created_at", { ascending: false });
+        if (histData) setRenewHistory(histData);
 
       const { data: reqData } = await supabase
         .from("personal_requests")
@@ -288,9 +296,33 @@ export default function PersonalDashboardPage() {
                         1개월 연장
                         <span style={{ display: "block", fontSize: 10, opacity: 0.85, fontWeight: 400, marginTop: 2 }}>44,000원·반출무료</span>
                       </button>
-                    </div>
+                      </div>
                   </div>
                 )}
+
+                {/* 연장 이력 (이 구독의 것만, 최신순) */}
+                {(() => {
+                  const hist = renewHistory.filter((h) => h.subscription_id === s.id);
+                  if (hist.length === 0) return null;
+                  return (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #F1F5F9" }}>
+                      <p style={{ fontSize: 11, color: "#94A3B8", fontWeight: 600, marginBottom: 8 }}>📋 연장 이력</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {hist.map((h, i) => {
+                          const p = h.period_months === 3 ? "3개월 연장" : "1개월 연장";
+                          const rDate = h.renewed_at ? fmtDate(h.renewed_at) : (h.created_at ? fmtDate(h.created_at) : "-");
+                          const eDate = h.new_next_payment ? fmtDate(h.new_next_payment) : "-";
+                          return (
+                            <div key={i} style={{ fontSize: 12 }}>
+                              <p style={{ color: "#374151", fontWeight: 600 }}>· {p} · 칸당 월 {(h.amount || 0).toLocaleString()}원</p>
+                              <p style={{ color: "#94A3B8", fontSize: 11, marginLeft: 10 }}>연장일 {rDate} → 만료 {eDate}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
