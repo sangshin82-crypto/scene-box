@@ -19,6 +19,7 @@ type Subscription = {
   unit_count: number;
   monthly_fee: number;
   next_payment_date: string | null;
+  start_date: string | null;
   status: string;
 };
 type ReqRow = {
@@ -115,7 +116,7 @@ export default function PersonalDashboardPage() {
 
       const { data: subData } = await supabase
         .from("personal_subscriptions")
-        .select("id, plan_type, unit_count, monthly_fee, next_payment_date, status")
+        .select("id, plan_type, unit_count, monthly_fee, next_payment_date, start_date, status")
         .eq("client_id", user.id)
         .eq("status", "active")
         .order("created_at", { ascending: true });
@@ -123,7 +124,7 @@ export default function PersonalDashboardPage() {
 
         const { data: histData } = await supabase
           .from("subscription_renewals")
-          .select("subscription_id, period_months, amount, renewed_at, new_next_payment, created_at")
+          .select("subscription_id, period_months, amount, renewed_at, prev_next_payment, new_next_payment, created_at")
           .eq("client_id", user.id)
           .order("created_at", { ascending: false });
         if (histData) setRenewHistory(histData);
@@ -268,7 +269,13 @@ export default function PersonalDashboardPage() {
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{s.unit_count}칸</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div>
+                <div>
+                    {s.start_date && (
+                      <>
+                        <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>최초 계약일</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "#64748B", marginBottom: 6 }}>{fmtDate(s.start_date)}</p>
+                      </>
+                    )}
                     <p style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>{is1m ? "이용 만료일" : "약정 갱신 예정일"}</p>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{s.next_payment_date ? fmtDate(s.next_payment_date) : "—"}</p>
                   </div>
@@ -311,11 +318,12 @@ export default function PersonalDashboardPage() {
                         {hist.map((h, i) => {
                           const p = h.period_months === 3 ? "3개월 연장" : "1개월 연장";
                           const rDate = h.renewed_at ? fmtDate(h.renewed_at) : (h.created_at ? fmtDate(h.created_at) : "-");
+                          const prevDate = h.prev_next_payment ? fmtDate(h.prev_next_payment) : "-";
                           const eDate = h.new_next_payment ? fmtDate(h.new_next_payment) : "-";
                           return (
                             <div key={i} style={{ fontSize: 12 }}>
                               <p style={{ color: "#374151", fontWeight: 600 }}>· {p} · 칸당 월 {(h.amount || 0).toLocaleString()}원</p>
-                              <p style={{ color: "#94A3B8", fontSize: 11, marginLeft: 10 }}>연장일 {rDate} → 만료 {eDate}</p>
+                              <p style={{ color: "#94A3B8", fontSize: 11, marginLeft: 10 }}>연장일 {rDate} · 만료 {prevDate} → {eDate}</p>
                             </div>
                           );
                         })}
