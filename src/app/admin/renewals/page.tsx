@@ -191,7 +191,7 @@ export default function AdminRenewalsPage() {
     if (error) { setProcessing(null); alert('처리 실패: ' + error.message); return; }
 
     // 연장 이력 기록 (관리자 처리)
-    await supabase.from('subscription_renewals').insert({
+    const { error: histErr } = await supabase.from('subscription_renewals').insert({
       subscription_id: item.subId,
       client_id: item.clientId,
       period_months: period,
@@ -200,6 +200,7 @@ export default function AdminRenewalsPage() {
       new_next_payment: newNextStr,
       channel: 'admin',
     });
+    if (histErr) { console.error('이력 저장 실패:', histErr); alert('이력 저장 실패: ' + histErr.message); }
 
     setProcessing(null);
     alert(`✅ ${period}개월 연장 완료.`);
