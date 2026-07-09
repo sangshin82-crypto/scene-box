@@ -155,18 +155,26 @@ export default function AdminRenewalsPage() {
   useEffect(() => { fetchData(); }, []);
 
   // ── 개인 결제 확인 → 자동연장 ──
-  const confirmPersonalPayment = async (item: Item) => {
+  // 연장 처리: period(1 또는 3개월) 선택. 1개월 연장 시 요금을 44,000 정가로 변경(수거·반출 없음).
+  const confirmPersonalPayment = async (item: Item, period: 1 | 3) => {
     if (!item.subId || !item.nextPaymentDate) return;
-    const period = item.planType === '3month' ? 3 : 1;
     const base = toDate(item.nextPaymentDate);       // 기존 next_payment_date 기준
-    const newNext = addMonths(base, period);          // 기존 날짜 + 주기 (주기 유지)
+    const newNext = addMonths(base, period);          // 기존 날짜 + 선택 주기
     const todayStr = today().toISOString().slice(0,10);
     const newNextStr = newNext.toISOString().slice(0,10);
 
-    const msg = `${item.name}님 결제 확인 처리\n\n` +
-      `• 마지막 결제일: ${todayStr}\n` +
+    // 1개월 연장 = 정가 44,000 (짐 이미 보관 중 → 수거·반출 없음)
+    // 3개월 연장 = 약정가 유지 (기존 monthly_fee)
+    const newFee = period === 1 ? 44000 : (item.amount || 0);
+
+    const feeMsg = period === 1
+      ? `• 요금: ${(item.amount||0).toLocaleString()}원 → 44,000원 (1개월 정가, 수거·반출 무료)`
+      : `• 요금: ${(item.amount||0).toLocaleString()}원 (약정가 유지)`;
+
+    const msg = `${item.name}님 ${period}개월 연장 처리\n\n` +
+      `${feeMsg}\n` +
       `• 다음 결제일: ${item.nextPaymentDate} → ${newNextStr}\n\n` +
-      `구독이 다음 주기로 자동 연장됩니다. 진행할까요?`;
+      `진행할까요?`;
     if (!window.confirm(msg)) return;
 
     setProcessing(item.id);
@@ -175,13 +183,14 @@ export default function AdminRenewalsPage() {
       .update({
         last_paid_date: todayStr,
         next_payment_date: newNextStr,
+        monthly_fee: newFee,          // 1개월 연장 시 44,000, 3개월은 기존 유지
         updated_at: new Date().toISOString(),
       })
       .eq('id', item.subId);
     setProcessing(null);
 
     if (error) { alert('처리 실패: ' + error.message); return; }
-    alert('✅ 결제 확인 완료. 다음 주기로 연장되었습니다.');
+    alert(`✅ ${period}개월 연장 완료.`);
     fetchData();
   };
 
@@ -275,7 +284,7 @@ export default function AdminRenewalsPage() {
 // ── 항목 카드 ──
 function ItemCard({ item, processing, onConfirm, onBilling }: {
   item: Item; processing: string | null;
-  onConfirm: (i: Item) => void; onBilling: () => void;
+  onConfirm: (i: Item, period: 1 | 3) => void; onBilling: () => void;
 }) {
   const catInfo = {
     renew:       { label: '재계약 알림', color: 'text-blue-600',   bg: 'bg-blue-50' },
@@ -312,12 +321,22 @@ function ItemCard({ item, processing, onConfirm, onBilling }: {
 
       {/* 액션 */}
       {item.kind === 'personal' ? (
-        <button
-          onClick={() => onConfirm(item)}
-          disabled={processing === item.id}
-          className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold active:bg-blue-700 disabled:bg-gray-300">
-          {processing === item.id ? '처리 중...' : '✅ 결제 확인 (다음 주기 연장)'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onConfirm(item, 3)}
+            disabled={processing === item.id}
+            className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-xs font-bold active:bg-blue-700 disabled:bg-gray-300">
+            {processing === item.id ? '처리 중...' : '3개월 연장'}
+            <span className="block text-[10px] opacity-80 font-normal mt-0.5">약정가 유지</span>
+          </button>
+          <button
+            onClick={() => onConfirm(item, 1)}
+            disabled={processing === item.id}
+            className="flex-1 bg-indigo-500 text-white py-2.5 rounded-lg text-xs font-bold active:bg-indigo-600 disabled:bg-gray-300">
+            {processing === item.id ? '처리 중...' : '1개월 연장'}
+            <span className="block text-[10px] opacity-80 font-normal mt-0.5">44,000원·수거반출무료</span>
+          </button>
+        </div>
       ) : (
         <button
           onClick={onBilling}
