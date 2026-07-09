@@ -187,9 +187,21 @@ export default function AdminRenewalsPage() {
         updated_at: new Date().toISOString(),
       })
       .eq('id', item.subId);
-    setProcessing(null);
 
-    if (error) { alert('처리 실패: ' + error.message); return; }
+    if (error) { setProcessing(null); alert('처리 실패: ' + error.message); return; }
+
+    // 연장 이력 기록 (관리자 처리)
+    await supabase.from('subscription_renewals').insert({
+      subscription_id: item.subId,
+      client_id: item.clientId,
+      period_months: period,
+      amount: newFee,
+      prev_next_payment: item.nextPaymentDate,
+      new_next_payment: newNextStr,
+      channel: 'admin',
+    });
+
+    setProcessing(null);
     alert(`✅ ${period}개월 연장 완료.`);
     fetchData();
   };
