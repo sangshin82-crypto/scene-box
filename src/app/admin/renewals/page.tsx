@@ -39,6 +39,7 @@ export default function AdminRenewalsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<'all'|'personal'|'business'>('all');
   const [processing, setProcessing] = useState<string | null>(null);
+  const [renewReqs, setRenewReqs] = useState<any[]>([]); // 고객 연장 신청
 
   async function fetchData() {
     setIsLoading(true);
@@ -149,12 +150,73 @@ export default function AdminRenewalsPage() {
     });
 
     setItems(result);
+
+    // 고객이 셀프로 신청한 연장 (personal_requests renewal, requested)
+    const { data: rr } = await supabase
+      .from('personal_requests')
+      .select('id, client_id, plan_type, unit_count, amount, created_at, clients(name, contact_phone)')
+      .eq('request_type', 'renewal')
+      .eq('status', 'requested')
+      .order('created_at', { ascending: false });
+    setRenewReqs(rr || []);
     setIsLoading(false);
   }
 
   useEffect(() => { fetchData(); }, []);
 
   // ── 개인 결제 확인 → 자동연장 ──
+  // 고객 연장 신청 처리: 결제 확인 후 구독 연장 + 이력(self) + 신청 완료
+  const processRenewalRequest = async (req: any) => {
+    const period = req.plan_type === '3month' ? 3 : 1;
+    const fee = req.plan_type === '3month' ? 33000 : 44000;
+    const cname = req.clients?.name || '고객';
+    if (!window.confirm(`${cname}님 연장 신청 처리\n\n• ${period}개월 연장 (${fee.toLocaleString()}원)\n• 페이앱 결제가 확인되었나요?\n\n확인 시 구독이 연장됩니다.`)) return;
+
+    setProcessing(req.id);
+    // 해당 고객의 활성 구독 찾기 (보통 1개)
+    const { data: subs } = await supabase
+      .from('personal_subscriptions')
+      .select('id, next_payment_date, monthly_fee')
+      .eq('client_id', req.client_id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: true })
+      .limit(1);
+    const sub = subs && subs[0];
+    if (!sub) { setProcessing(null); alert('연장할 활성 구독을 찾지 못했습니다.'); return; }
+
+    const base = sub.next_payment_date ? toDate(sub.next_payment_date) : today();
+    const newNext = addMonths(base, period);
+    const todayStr = today().toISOString().slice(0,10);
+    const newNextStr = newNext.toISOString().slice(0,10);
+
+    // 구독 연장
+    const { error: upErr } = await supabase.from('personal_subscriptions').update({
+      last_paid_date: todayStr,
+      next_payment_date: newNextStr,
+      monthly_fee: fee,
+      updated_at: new Date().toISOString(),
+    }).eq('id', sub.id);
+    if (upErr) { setProcessing(null); alert('연장 실패: ' + upErr.message); return; }
+
+    // 이력 (channel='self')
+    await supabase.from('subscription_renewals').insert({
+      subscription_id: sub.id,
+      client_id: req.client_id,
+      period_months: period,
+      amount: fee,
+      prev_next_payment: sub.next_payment_date,
+      new_next_payment: newNextStr,
+      channel: 'self',
+    });
+
+    // 신청 완료 처리
+    await supabase.from('personal_requests').update({ status: 'completed' }).eq('id', req.id);
+
+    setProcessing(null);
+    alert(`✅ ${cname}님 ${period}개월 연장 완료.`);
+    fetchData();
+  };
+
   // 연장 처리: period(1 또는 3개월) 선택. 1개월 연장 시 요금을 44,000 정가로 변경(수거·반출 없음).
   const confirmPersonalPayment = async (item: Item, period: 1 | 3) => {
     if (!item.subId || !item.nextPaymentDate) return;
@@ -264,6 +326,36 @@ export default function AdminRenewalsPage() {
           </button>
         ))}
       </div>
+
+      {/* 고객 연장 신청 */}
+      {renewReqs.length > 0 && (
+        <div className="p-4 pb-0">
+          <h3 className="text-sm font-bold text-emerald-600 mb-2 ml-1">🙋 고객 연장 신청 ({renewReqs.length})</h3>
+          <div className="space-y-3">
+            {renewReqs.map((req) => {
+              const is1m = req.plan_type === '1month';
+              const fee = is1m ? 44000 : 33000;
+              return (
+                <div key={req.id} className="bg-white p-4 rounded-xl border border-emerald-100">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">연장 신청</span>
+                    <span className="text-xs text-gray-400">{String(req.created_at).slice(0,10)}</span>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">{req.clients?.name || '고객'}</p>
+                  <a href={`tel:${req.clients?.contact_phone || ''}`} className="text-xs text-pink-500 font-medium">📞 {req.clients?.contact_phone || '-'}</a>
+                  <div className="bg-gray-50 rounded-lg p-2 my-2 text-xs text-gray-700">
+                    {is1m ? '1개월 연장' : '3개월 약정 연장'} · {fee.toLocaleString()}원{is1m ? ' · 수거반출무료' : ''}
+                  </div>
+                  <button onClick={() => processRenewalRequest(req)} disabled={processing === req.id}
+                    className="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-bold active:bg-emerald-700 disabled:bg-gray-300">
+                    {processing === req.id ? '처리 중...' : '💳 결제 확인 & 연장 처리'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 긴급 (오늘·지남) */}
       <div className="p-4">
