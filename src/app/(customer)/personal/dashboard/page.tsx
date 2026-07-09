@@ -74,6 +74,7 @@ export default function PersonalDashboardPage() {
       plan_type: period,
       unit_count: sub.unit_count,
       amount: fee,
+      address_detail: '연장 신청 (기존 보관)',
       status: 'requested',
     });
     setRenewingSub(null);
