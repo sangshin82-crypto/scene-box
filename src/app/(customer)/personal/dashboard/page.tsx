@@ -30,6 +30,13 @@ type ReqRow = {
   created_at: string;
 };
 
+const daysUntil = (d: string | null) => {
+  if (!d) return 999;
+  const target = new Date(d); target.setHours(0,0,0,0);
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.round((target.getTime() - t.getTime()) / 86400000);
+};
+
 const fmtDate = (d: string) => {
   const date = new Date(d);
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -52,6 +59,27 @@ export default function PersonalDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingBooking, setPendingBooking] = useState<{ id: string } | null>(null); // 대기 예약
+  const [renewingSub, setRenewingSub] = useState<string | null>(null); // 연장 신청 중
+
+  const requestRenewal = async (sub: Subscription, period: '3month' | '1month') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const fee = period === '3month' ? 33000 : 44000;
+    const label = period === '3month' ? '3개월 약정 연장' : '1개월 연장';
+    if (!window.confirm(`${label} (월 ${fee.toLocaleString()}원)을 신청하시겠어요?\n\n신청하시면 담당자가 결제 링크를 보내드립니다.`)) return;
+    setRenewingSub(sub.id);
+    const { error } = await supabase.from('personal_requests').insert({
+      client_id: user.id,
+      request_type: 'renewal',
+      plan_type: period,
+      unit_count: sub.unit_count,
+      amount: fee,
+      status: 'requested',
+    });
+    setRenewingSub(null);
+    if (error) { alert('신청 실패: ' + error.message); return; }
+    alert('✅ 연장 신청이 접수되었습니다.\n담당자가 결제 링크를 보내드릴 예정입니다.');
+  };
 
   const handleLogout = async () => {
     if (!window.confirm("로그아웃 하시겠어요?")) return;
@@ -242,6 +270,26 @@ export default function PersonalDashboardPage() {
                     </p>
                   </div>
                 </div>
+
+                {daysUntil(s.next_payment_date) <= 10 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #F1F5F9" }}>
+                    <p style={{ fontSize: 12, color: "#EA580C", fontWeight: 600, marginBottom: 8 }}>
+                      ⏰ {daysUntil(s.next_payment_date) <= 0 ? "만료되었습니다" : `만료 ${daysUntil(s.next_payment_date)}일 전`} · 연장하시겠어요?
+                    </p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => requestRenewal(s, '3month')} disabled={renewingSub === s.id}
+                        style={{ flex: 1, background: BLUE, color: "#fff", border: "none", borderRadius: 12, padding: "12px 8px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        3개월 연장
+                        <span style={{ display: "block", fontSize: 10, opacity: 0.85, fontWeight: 400, marginTop: 2 }}>월 33,000원</span>
+                      </button>
+                      <button onClick={() => requestRenewal(s, '1month')} disabled={renewingSub === s.id}
+                        style={{ flex: 1, background: "#6366F1", color: "#fff", border: "none", borderRadius: 12, padding: "12px 8px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        1개월 연장
+                        <span style={{ display: "block", fontSize: 10, opacity: 0.85, fontWeight: 400, marginTop: 2 }}>44,000원·반출무료</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
